@@ -374,7 +374,7 @@ class DataExportService {
 
       // Generate filename
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const destinationName = this.getDestinationName(completeData.entryInfo.destinationId);
+      const destinationName = this.getDestinationName(completeData.entryInfo.destinationId ?? undefined);
       const filename = `entry-info-${destinationName}-${timestamp}.json`;
       const filePath = this.exportDirectory + filename;
 
@@ -416,7 +416,7 @@ class DataExportService {
 
       // Generate filename
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const destinationName = this.getDestinationName(completeData.entryInfo.destinationId);
+      const destinationName = this.getDestinationName(completeData.entryInfo.destinationId ?? undefined);
       const filename = `entry-info-${destinationName}-${timestamp}.pdf`;
       const filePath = this.exportDirectory + filename;
 
@@ -599,7 +599,7 @@ class DataExportService {
 
       // Generate filename
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const destinationName = this.getDestinationName(entryInfo.destinationId);
+      const destinationName = this.getDestinationName(entryInfo.destinationId ?? undefined);
       const filename = `qr-code-${destinationName}-${timestamp}.jpg`;
       const filePath = this.exportDirectory + filename;
 
@@ -688,7 +688,7 @@ class DataExportService {
 
       // Generate filename
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const destinationName = this.getDestinationName(entryInfo.destinationId);
+      const destinationName = this.getDestinationName(entryInfo.destinationId ?? undefined);
       const filename = `entry-summary-${destinationName}-${timestamp}.jpg`;
       const filePath = this.exportDirectory + filename;
 
@@ -712,7 +712,7 @@ class DataExportService {
         filePath,
         fileSize,
         summaryData: {
-          destination: this.getDestinationName(entryInfo.destinationId),
+          destination: this.getDestinationName(entryInfo.destinationId ?? undefined),
           arrivalDate: travel?.arrivalDate,
           passengerName: passport?.fullName,
           passportNumber: passport?.passportNumber
@@ -853,7 +853,7 @@ class DataExportService {
         }
       };
 
-      const destinationName = this.getDestinationName(entryInfo.destinationId).toUpperCase();
+      const destinationName = this.getDestinationName(entryInfo.destinationId ?? undefined).toUpperCase();
       const passengerName = passport?.fullName || 'Not provided';
       const passportNumber = passport?.passportNumber || 'Not provided';
       const arrivalDate = formatDate(travel?.arrivalDate);
@@ -1043,7 +1043,7 @@ class DataExportService {
           <div class="container">
             <div class="header">
               <h1 class="title">Travel Entry Pack</h1>
-              <div class="destination">${this.getDestinationName(entryInfo.destinationId).toUpperCase()}</div>
+              <div class="destination">${this.getDestinationName(entryInfo.destinationId ?? undefined).toUpperCase()}</div>
             </div>
 
             <div class="section">
@@ -1298,7 +1298,7 @@ class DataExportService {
         <html>
         <head>
           <meta charset="UTF-8">
-          <title>Entry Info Export - ${this.getDestinationName(entryInfo.destinationId).toUpperCase()}</title>
+          <title>Entry Info Export - ${this.getDestinationName(entryInfo.destinationId ?? undefined).toUpperCase()}</title>
           <style>
             ${this.getPDFStyles()}
           </style>
@@ -1307,7 +1307,7 @@ class DataExportService {
           <div class="container">
             <div class="header">
               <h1>Travel Entry Pack</h1>
-              <div class="destination">${this.getDestinationName(entryInfo.destinationId).toUpperCase()}</div>
+              <div class="destination">${this.getDestinationName(entryInfo.destinationId ?? undefined).toUpperCase()}</div>
               <div class="export-info">
                 <p>Exported on: ${formatDate(new Date().toISOString())}</p>
                 <p>Entry Info ID: ${entryInfo.id}</p>
@@ -2104,7 +2104,7 @@ class DataExportService {
 
             entryInfoInfo.push({
               entryInfoId,
-              destination: this.getDestinationName(entryInfo.destinationId),
+              destination: this.getDestinationName(entryInfo.destinationId ?? undefined),
               estimatedSize,
               hasPhotos: completeData.funds ? completeData.funds.some((f: FundItemData) => f.photoUri) : false
             });

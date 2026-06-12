@@ -12,7 +12,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import styles from '../../screens/thailand/TDACWebViewScreen.styles';
 import { useTranslation } from '../../i18n/LocaleContext';
 
-const HelperModal = ({ visible, onClose, formFields, renderCopyField }) => {
+interface HelperModalProps {
+  visible: boolean;
+  onClose: () => void;
+  formFields: Array<Record<string, unknown>>;
+  renderCopyField: (item: Record<string, unknown>) => React.ReactNode;
+}
+
+const HelperModal = ({ visible, onClose, formFields, renderCopyField }: HelperModalProps) => {
   const { t } = useTranslation();
 
   return (
@@ -50,8 +57,8 @@ const HelperModal = ({ visible, onClose, formFields, renderCopyField }) => {
               <Text style={styles.sectionTitle}>Personal Information</Text>
             </View>
             {formFields
-              .filter((f) => f.section === 'personal')
-              .map((item) => renderCopyField(item))}
+              .filter((f: Record<string, unknown>) => f.section === 'personal')
+              .map((item: Record<string, unknown>) => renderCopyField(item))}
           </View>
 
           {/* Step 2: Trip Information */}
@@ -61,8 +68,8 @@ const HelperModal = ({ visible, onClose, formFields, renderCopyField }) => {
               <Text style={styles.sectionTitle}>Trip & Accommodation</Text>
             </View>
             {formFields
-              .filter((f) => f.section === 'trip')
-              .map((item) => renderCopyField(item))}
+              .filter((f: Record<string, unknown>) => f.section === 'trip')
+              .map((item: Record<string, unknown>) => renderCopyField(item))}
           </View>
 
           {/* Step 3: Accommodation */}
@@ -72,8 +79,8 @@ const HelperModal = ({ visible, onClose, formFields, renderCopyField }) => {
               <Text style={styles.sectionTitle}>Accommodation</Text>
             </View>
             {formFields
-              .filter((f) => f.section === 'accommodation')
-              .map((item) => renderCopyField(item))}
+              .filter((f: Record<string, unknown>) => f.section === 'accommodation')
+              .map((item: Record<string, unknown>) => renderCopyField(item))}
           </View>
 
           {/* Health Declaration Note */}

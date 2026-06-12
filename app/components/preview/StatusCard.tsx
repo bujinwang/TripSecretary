@@ -35,6 +35,16 @@ import { PreviewHaptics } from '../../utils/haptics';
  *   onActionPress={() => navigation.navigate('EditTDAC')}
  * />
  */
+interface StatusCardProps {
+  variant?: 'incomplete' | 'complete' | 'submitted' | 'error';
+  title?: string;
+  missingItems?: Array<{ key: string; label: string; onPress?: () => void }>;
+  progress?: { completed: number; total: number };
+  onActionPress?: () => void;
+  actionLabel?: string;
+  style?: object;
+}
+
 const StatusCard = ({
   variant = 'incomplete',
   title,
@@ -43,7 +53,7 @@ const StatusCard = ({
   onActionPress,
   actionLabel,
   style,
-}) => {
+}: StatusCardProps) => {
   const { t } = useTranslation();
   const [reduceMotion, setReduceMotion] = useState(false);
 

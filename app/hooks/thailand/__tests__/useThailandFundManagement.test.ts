@@ -8,6 +8,31 @@
 import { renderHook, act } from '@testing-library/react-native';
 import { useThailandFundManagement } from '../useThailandFundManagement';
 
+interface MockFundItem {
+  id: string;
+  type: string;
+  amount: number;
+  currency: string;
+  photoUri?: string;
+  photo?: string;
+  description?: string;
+  details?: string;
+  itemType?: string;
+}
+
+interface MockFormState {
+  funds: MockFundItem[];
+  fundItemModalVisible: boolean;
+  currentFundItem: MockFundItem | null;
+  newFundItemType: string | null;
+  selectedFundItem: MockFundItem | null;
+  setFunds: jest.Mock;
+  setFundItemModalVisible: jest.Mock;
+  setCurrentFundItem: jest.Mock;
+  setNewFundItemType: jest.Mock;
+  setSelectedFundItem: jest.Mock;
+}
+
 // Mock DebouncedSave
 jest.mock('../../../utils/DebouncedSave', () => ({
   default: {
@@ -16,9 +41,9 @@ jest.mock('../../../utils/DebouncedSave', () => ({
 }));
 
 describe('useThailandFundManagement', () => {
-  let mockFormState;
-  let mockRefreshFundItems;
-  let mockDebouncedSaveData;
+  let mockFormState: MockFormState;
+  let mockRefreshFundItems: jest.Mock;
+  let mockDebouncedSaveData: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();

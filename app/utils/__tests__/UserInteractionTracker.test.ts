@@ -8,12 +8,32 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+jest.mock('@react-native-async-storage/async-storage');
+
+const mockGetItem = AsyncStorage.getItem as jest.Mock;
+const mockSetItem = AsyncStorage.setItem as jest.Mock;
+const mockRemoveItem = AsyncStorage.removeItem as jest.Mock;
+
 // Since we don't have React Testing Library, we'll test the hook logic directly
 // by importing and testing the internal functions and state management
 
 // Test the core functionality by creating a mock implementation
+interface InteractionState {
+  [fieldName: string]: {
+    isUserModified: boolean;
+    lastModified?: string;
+    initialValue?: unknown;
+  };
+}
+
 class MockUserInteractionTracker {
-  constructor(screenId) {
+  screenId: string;
+  storageKey: string;
+  interactionState: InteractionState;
+  isInitialized: boolean;
+  sessionId: string;
+
+  constructor(screenId: string) {
     this.screenId = screenId;
     this.storageKey = `user_interaction_state_${screenId}`;
     this.interactionState = {};
@@ -23,7 +43,7 @@ class MockUserInteractionTracker {
 
   async initialize() {
     try {
-      const storedState = await AsyncStorage.getItem(this.storageKey);
+      const storedState = await mockGetItem(this.storageKey);
       if (storedState) {
         const parsedState = JSON.parse(storedState);
         this.interactionState = parsedState.fieldInteractions || {};
@@ -34,20 +54,20 @@ class MockUserInteractionTracker {
     }
   }
 
-  async saveInteractionState(newState) {
+  async saveInteractionState(newState: InteractionState) {
     try {
       const stateToSave = {
         fieldInteractions: newState,
         sessionId: this.sessionId,
         lastUpdated: new Date().toISOString()
       };
-      await AsyncStorage.setItem(this.storageKey, JSON.stringify(stateToSave));
+      await mockSetItem(this.storageKey, JSON.stringify(stateToSave));
     } catch (error) {
       // Handle error silently
     }
   }
 
-  markFieldAsModified(fieldName, value) {
+  markFieldAsModified(fieldName: string, value: string) {
     // Handle invalid field names gracefully
     if (!fieldName || typeof fieldName !== 'string') {
       return;
@@ -64,7 +84,7 @@ class MockUserInteractionTracker {
     this.saveInteractionState(this.interactionState);
   }
 
-  isFieldUserModified(fieldName) {
+  isFieldUserModified(fieldName: string) {
     return this.interactionState[fieldName]?.isUserModified || false;
   }
 
@@ -74,14 +94,14 @@ class MockUserInteractionTracker {
     );
   }
 
-  resetField(fieldName) {
+  resetField(fieldName: string) {
     const newState = { ...this.interactionState };
     delete newState[fieldName];
     this.interactionState = newState;
     this.saveInteractionState(newState);
   }
 
-  initializeWithExistingData(existingData) {
+  initializeWithExistingData(existingData: Record<string, unknown>) {
     if (!existingData || typeof existingData !== 'object') {
       return;
     }
@@ -106,13 +126,13 @@ class MockUserInteractionTracker {
     this.saveInteractionState(newState);
   }
 
-  getFieldInteractionDetails(fieldName) {
+  getFieldInteractionDetails(fieldName: string) {
     return this.interactionState[fieldName] || null;
   }
 
   async clearAllInteractions() {
     try {
-      await AsyncStorage.removeItem(this.storageKey);
+      await mockRemoveItem(this.storageKey);
       this.interactionState = {};
     } catch (error) {
       // Handle error silently but still clear memory state
@@ -128,14 +148,14 @@ describe('UserInteractionTracker', () => {
 
   describe('initialization', () => {
     test('should initialize with empty state when no stored data exists', async () => {
-      AsyncStorage.getItem.mockResolvedValue(null);
+      mockGetItem.mockResolvedValue(null);
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
 
       expect(tracker.isInitialized).toBe(true);
       expect(tracker.getModifiedFields()).toEqual([]);
-      expect(AsyncStorage.getItem).toHaveBeenCalledWith('user_interaction_state_test-screen');
+      expect(mockGetItem).toHaveBeenCalledWith('user_interaction_state_test-screen');
     });
 
     test('should load existing interaction state from storage', async () => {
@@ -151,7 +171,7 @@ describe('UserInteractionTracker', () => {
         lastUpdated: '2024-01-01T00:00:00.000Z'
       };
       
-      AsyncStorage.getItem.mockResolvedValue(JSON.stringify(storedState));
+      mockGetItem.mockResolvedValue(JSON.stringify(storedState));
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -161,7 +181,7 @@ describe('UserInteractionTracker', () => {
     });
 
     test('should handle corrupted storage data gracefully', async () => {
-      AsyncStorage.getItem.mockResolvedValue('invalid-json');
+      mockGetItem.mockResolvedValue('invalid-json');
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -173,7 +193,7 @@ describe('UserInteractionTracker', () => {
 
   describe('markFieldAsModified', () => {
     test('should mark field as user-modified and save to storage', async () => {
-      AsyncStorage.getItem.mockResolvedValue(null);
+      mockGetItem.mockResolvedValue(null);
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -182,11 +202,11 @@ describe('UserInteractionTracker', () => {
 
       expect(tracker.isFieldUserModified('testField')).toBe(true);
       expect(tracker.getModifiedFields()).toEqual(['testField']);
-      expect(AsyncStorage.setItem).toHaveBeenCalled();
+      expect(mockSetItem).toHaveBeenCalled();
     });
 
     test('should preserve initial value when marking field as modified', async () => {
-      AsyncStorage.getItem.mockResolvedValue(null);
+      mockGetItem.mockResolvedValue(null);
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -202,7 +222,7 @@ describe('UserInteractionTracker', () => {
 
   describe('isFieldUserModified', () => {
     test('should return false for unmodified fields', async () => {
-      AsyncStorage.getItem.mockResolvedValue(null);
+      mockGetItem.mockResolvedValue(null);
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -221,7 +241,7 @@ describe('UserInteractionTracker', () => {
         }
       };
       
-      AsyncStorage.getItem.mockResolvedValue(JSON.stringify(storedState));
+      mockGetItem.mockResolvedValue(JSON.stringify(storedState));
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -232,7 +252,7 @@ describe('UserInteractionTracker', () => {
 
   describe('getModifiedFields', () => {
     test('should return empty array when no fields are modified', async () => {
-      AsyncStorage.getItem.mockResolvedValue(null);
+      mockGetItem.mockResolvedValue(null);
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -249,7 +269,7 @@ describe('UserInteractionTracker', () => {
         }
       };
       
-      AsyncStorage.getItem.mockResolvedValue(JSON.stringify(storedState));
+      mockGetItem.mockResolvedValue(JSON.stringify(storedState));
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -272,7 +292,7 @@ describe('UserInteractionTracker', () => {
         }
       };
       
-      AsyncStorage.getItem.mockResolvedValue(JSON.stringify(storedState));
+      mockGetItem.mockResolvedValue(JSON.stringify(storedState));
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -283,13 +303,13 @@ describe('UserInteractionTracker', () => {
 
       expect(tracker.isFieldUserModified('testField')).toBe(false);
       expect(tracker.getModifiedFields()).toEqual([]);
-      expect(AsyncStorage.setItem).toHaveBeenCalled();
+      expect(mockSetItem).toHaveBeenCalled();
     });
   });
 
   describe('initializeWithExistingData', () => {
     test('should mark populated fields as user-modified', async () => {
-      AsyncStorage.getItem.mockResolvedValue(null);
+      mockGetItem.mockResolvedValue(null);
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -323,7 +343,7 @@ describe('UserInteractionTracker', () => {
         }
       };
       
-      AsyncStorage.getItem.mockResolvedValue(JSON.stringify(storedState));
+      mockGetItem.mockResolvedValue(JSON.stringify(storedState));
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -341,14 +361,14 @@ describe('UserInteractionTracker', () => {
     });
 
     test('should handle invalid data gracefully', async () => {
-      AsyncStorage.getItem.mockResolvedValue(null);
+      mockGetItem.mockResolvedValue(null);
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
 
-      tracker.initializeWithExistingData(null);
-      tracker.initializeWithExistingData(undefined);
-      tracker.initializeWithExistingData('invalid');
+      tracker.initializeWithExistingData(null as unknown as Record<string, unknown>);
+      tracker.initializeWithExistingData(undefined as unknown as Record<string, unknown>);
+      tracker.initializeWithExistingData('invalid' as unknown as Record<string, unknown>);
 
       expect(tracker.getModifiedFields()).toEqual([]);
     });
@@ -366,7 +386,7 @@ describe('UserInteractionTracker', () => {
         }
       };
       
-      AsyncStorage.getItem.mockResolvedValue(JSON.stringify(storedState));
+      mockGetItem.mockResolvedValue(JSON.stringify(storedState));
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -376,13 +396,13 @@ describe('UserInteractionTracker', () => {
       await tracker.clearAllInteractions();
 
       expect(tracker.getModifiedFields()).toEqual([]);
-      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('user_interaction_state_test-screen');
+      expect(mockRemoveItem).toHaveBeenCalledWith('user_interaction_state_test-screen');
     });
   });
 
   describe('session management', () => {
     test('should generate unique session IDs', async () => {
-      AsyncStorage.getItem.mockResolvedValue(null);
+      mockGetItem.mockResolvedValue(null);
       
       const tracker1 = new MockUserInteractionTracker('test-screen-1');
       const tracker2 = new MockUserInteractionTracker('test-screen-2');
@@ -398,7 +418,7 @@ describe('UserInteractionTracker', () => {
 
   describe('error handling and recovery', () => {
     test('should handle AsyncStorage errors gracefully during initialization', async () => {
-      AsyncStorage.getItem.mockRejectedValue(new Error('Storage error'));
+      mockGetItem.mockRejectedValue(new Error('Storage error'));
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -408,8 +428,8 @@ describe('UserInteractionTracker', () => {
     });
 
     test('should handle save errors gracefully', async () => {
-      AsyncStorage.getItem.mockResolvedValue(null);
-      AsyncStorage.setItem.mockRejectedValue(new Error('Save error'));
+      mockGetItem.mockResolvedValue(null);
+      mockSetItem.mockRejectedValue(new Error('Save error'));
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -421,7 +441,7 @@ describe('UserInteractionTracker', () => {
     });
 
     test('should recover from corrupted JSON data', async () => {
-      AsyncStorage.getItem.mockResolvedValue('{"invalid": json}');
+      mockGetItem.mockResolvedValue('{"invalid": json}');
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -445,7 +465,7 @@ describe('UserInteractionTracker', () => {
         }
       };
       
-      AsyncStorage.getItem.mockResolvedValue(JSON.stringify(malformedState));
+      mockGetItem.mockResolvedValue(JSON.stringify(malformedState));
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -459,32 +479,32 @@ describe('UserInteractionTracker', () => {
     });
 
     test('should handle invalid field names gracefully', async () => {
-      AsyncStorage.getItem.mockResolvedValue(null);
+      mockGetItem.mockResolvedValue(null);
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
 
       // Should not throw errors for invalid field names
-      tracker.markFieldAsModified(null, 'value');
-      tracker.markFieldAsModified(undefined, 'value');
+      tracker.markFieldAsModified(null as unknown as string, 'value');
+      tracker.markFieldAsModified(undefined as unknown as string, 'value');
       tracker.markFieldAsModified('', 'value');
 
       expect(tracker.getModifiedFields()).toEqual([]);
     });
 
     test('should preserve interaction state during save failures', async () => {
-      AsyncStorage.getItem.mockResolvedValue(null);
+      mockGetItem.mockResolvedValue(null);
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
 
       // First save succeeds
-      AsyncStorage.setItem.mockResolvedValueOnce();
+      mockSetItem.mockResolvedValueOnce();
       tracker.markFieldAsModified('field1', 'value1');
       expect(tracker.isFieldUserModified('field1')).toBe(true);
 
       // Second save fails
-      AsyncStorage.setItem.mockRejectedValueOnce(new Error('Save failed'));
+      mockSetItem.mockRejectedValueOnce(new Error('Save failed'));
       tracker.markFieldAsModified('field2', 'value2');
       
       // State should still be preserved in memory
@@ -493,7 +513,7 @@ describe('UserInteractionTracker', () => {
     });
 
     test('should handle concurrent modification attempts', async () => {
-      AsyncStorage.getItem.mockResolvedValue(null);
+      mockGetItem.mockResolvedValue(null);
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -511,8 +531,8 @@ describe('UserInteractionTracker', () => {
     });
 
     test('should recover from storage quota exceeded errors', async () => {
-      AsyncStorage.getItem.mockResolvedValue(null);
-      AsyncStorage.setItem.mockRejectedValue(new Error('QuotaExceededError'));
+      mockGetItem.mockResolvedValue(null);
+      mockSetItem.mockRejectedValue(new Error('QuotaExceededError'));
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
@@ -525,17 +545,17 @@ describe('UserInteractionTracker', () => {
     });
 
     test('should handle initializeWithExistingData errors gracefully', async () => {
-      AsyncStorage.getItem.mockResolvedValue(null);
+      mockGetItem.mockResolvedValue(null);
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();
 
       // Should handle various invalid inputs
-      tracker.initializeWithExistingData(null);
-      tracker.initializeWithExistingData(undefined);
-      tracker.initializeWithExistingData('string');
-      tracker.initializeWithExistingData(123);
-      tracker.initializeWithExistingData([]);
+      tracker.initializeWithExistingData(null as unknown as Record<string, unknown>);
+      tracker.initializeWithExistingData(undefined as unknown as Record<string, unknown>);
+      tracker.initializeWithExistingData('string' as unknown as Record<string, unknown>);
+      tracker.initializeWithExistingData(123 as unknown as Record<string, unknown>);
+      tracker.initializeWithExistingData([] as unknown as Record<string, unknown>);
 
       expect(tracker.getModifiedFields()).toEqual([]);
     });
@@ -547,8 +567,8 @@ describe('UserInteractionTracker', () => {
         }
       };
       
-      AsyncStorage.getItem.mockResolvedValue(JSON.stringify(storedState));
-      AsyncStorage.removeItem.mockRejectedValue(new Error('Remove failed'));
+      mockGetItem.mockResolvedValue(JSON.stringify(storedState));
+      mockRemoveItem.mockRejectedValue(new Error('Remove failed'));
       
       const tracker = new MockUserInteractionTracker('test-screen');
       await tracker.initialize();

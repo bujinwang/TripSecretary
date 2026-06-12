@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 // TDAC Entry Pack Preview - Design Token Extensions
 // Extends the base TripSecretary theme with preview-specific tokens
 // Following the spec from front-end-spec.md

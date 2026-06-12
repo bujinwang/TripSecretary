@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Design Tokens for ThailandEntryFlowScreen Redesign
  * Centralized design system constants for consistent UI

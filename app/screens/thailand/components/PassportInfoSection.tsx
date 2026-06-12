@@ -20,7 +20,14 @@ import { getFullName as getFullNameHelper, safeString } from '../helpers';
  * @param {Function} props.formatDateForDisplay - Date formatting function
  * @param {Function} props.t - Translation function
  */
-const PassportInfoSection = ({ passportData, language, formatDateForDisplay, t }) => {
+interface PassportInfoSectionProps {
+  passportData?: Record<string, unknown>;
+  language: string;
+  formatDateForDisplay: (date: string | undefined) => string;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}
+
+const PassportInfoSection = ({ passportData, language, formatDateForDisplay, t }: PassportInfoSectionProps) => {
   /**
    * Safely get full name from passport data using centralized helper
    */
@@ -38,9 +45,9 @@ return 'N/A';
     // Note: Helper expects surname, middleName, givenName
     // but data might have firstName, middleName, lastName
     const nameData = {
-      surname: passportData.lastName || passportData.surname,
-      middleName: passportData.middleName,
-      givenName: passportData.firstName || passportData.givenName,
+      surname: (passportData.lastName || passportData.surname) as string | undefined | null,
+      middleName: passportData.middleName as string | undefined | null,
+      givenName: (passportData.firstName || passportData.givenName) as string | undefined | null,
     };
 
     return getFullNameHelper(nameData, 'N/A');
@@ -98,7 +105,7 @@ return 'N/A';
       <View style={styles.infoRow}>
         <Text style={styles.infoLabel}>{getLabel('dateOfBirth', 'วันเกิด')}:</Text>
         <Text style={styles.infoValue}>
-          {formatDateForDisplay(passportData?.dateOfBirth)}
+          {formatDateForDisplay(passportData?.dateOfBirth as string | undefined)}
         </Text>
       </View>
 
@@ -112,7 +119,7 @@ return 'N/A';
           {getLabel('passportExpiry', 'วันหมดอายุหนังสือเดินทาง')}:
         </Text>
         <Text style={styles.infoValue}>
-          {formatDateForDisplay(passportData?.expiryDate)}
+          {formatDateForDisplay(passportData?.expiryDate as string | undefined)}
         </Text>
       </View>
     </View>

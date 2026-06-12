@@ -5,16 +5,64 @@
  * Requirements: 12.3, 12.4
  */
 
+interface ChangeItem {
+  field: string;
+  oldValue: unknown;
+  newValue: unknown;
+  changeType: string;
+  significance: string;
+  description: string;
+}
+
+interface CategoryResult {
+  hasChanges: boolean;
+  changes: ChangeItem[];
+  category: string;
+}
+
+export interface DiffResult {
+  hasChanges: boolean;
+  changedFields: string[];
+  addedFields: string[];
+  removedFields: string[];
+  categories: {
+    passport: CategoryResult;
+    personalInfo: CategoryResult;
+    funds: CategoryResult;
+    travel: CategoryResult;
+  };
+  summary: {
+    totalChanges: number;
+    significantChanges: number;
+    minorChanges: number;
+  };
+  error?: string;
+}
+
+interface ChangeSummaryCategory {
+  name: string;
+  changeCount: number;
+  significantChanges: number;
+  changes: string[];
+}
+
+interface ChangeSummary {
+  title: string;
+  message: string;
+  needsResubmission: boolean;
+  totalChanges?: number;
+  significantChanges?: number;
+  minorChanges?: number;
+  categories: ChangeSummaryCategory[];
+}
+
 class DataDiffCalculator {
   /**
    * Calculate differences between snapshot data and current data
-   * @param {Object} snapshotData - Data from snapshot
-   * @param {Object} currentData - Current user data
-   * @returns {Object} - Difference analysis
    */
-  static calculateDiff(snapshotData, currentData) {
+  static calculateDiff(snapshotData: Record<string, unknown>, currentData: Record<string, unknown>): DiffResult {
     try {
-      const changes = {
+      const changes: DiffResult = {
         hasChanges: false,
         changedFields: [],
         addedFields: [],
@@ -34,34 +82,34 @@ class DataDiffCalculator {
 
       // Compare passport data
       const passportChanges = this.comparePassportData(
-        snapshotData.passport || {},
-        currentData.passport || {}
+        snapshotData.passport as Record<string, unknown> | undefined || {},
+        currentData.passport as Record<string, unknown> | undefined || {}
       );
       changes.categories.passport = passportChanges;
 
       // Compare personal info data
       const personalInfoChanges = this.comparePersonalInfoData(
-        snapshotData.personalInfo || {},
-        currentData.personalInfo || {}
+        snapshotData.personalInfo as Record<string, unknown> | undefined || {},
+        currentData.personalInfo as Record<string, unknown> | undefined || {}
       );
       changes.categories.personalInfo = personalInfoChanges;
 
       // Compare funds data
       const fundsChanges = this.compareFundsData(
-        snapshotData.funds || [],
-        currentData.funds || []
+        snapshotData.funds as unknown[] | undefined || [],
+        currentData.funds as unknown[] | undefined || []
       );
       changes.categories.funds = fundsChanges;
 
       // Compare travel data
       const travelChanges = this.compareTravelData(
-        snapshotData.travel || {},
-        currentData.travel || {}
+        snapshotData.travel as Record<string, unknown> | undefined || {},
+        currentData.travel as Record<string, unknown> | undefined || {}
       );
       changes.categories.travel = travelChanges;
 
       // Aggregate results
-      const allCategories = [passportChanges, personalInfoChanges, fundsChanges, travelChanges];
+      const allCategories: CategoryResult[] = [passportChanges, personalInfoChanges, fundsChanges, travelChanges];
       changes.hasChanges = allCategories.some(cat => cat.hasChanges);
 
       // Collect all changed fields
@@ -94,23 +142,19 @@ class DataDiffCalculator {
           travel: { hasChanges: false, changes: [] }
         },
         summary: { totalChanges: 0, significantChanges: 0, minorChanges: 0 },
-        error: error.message
+        error: (error as Error).message
       };
     }
   }
 
   /**
    * Compare passport data
-   * @param {Object} snapshotPassport - Passport data from snapshot
-   * @param {Object} currentPassport - Current passport data
-   * @returns {Object} - Passport comparison result
    */
-  static comparePassportData(snapshotPassport, currentPassport) {
-    const changes = [];
+  static comparePassportData(snapshotPassport: Record<string, unknown>, currentPassport: Record<string, unknown>): CategoryResult {
+    const changes: ChangeItem[] = [];
     const significantFields = ['passportNumber', 'fullName', 'nationality', 'dateOfBirth', 'expiryDate'];
     const minorFields = ['gender', 'placeOfBirth', 'issuingCountry'];
 
-    // Check significant fields
     significantFields.forEach(field => {
       const change = this.compareField(
         field,
@@ -123,7 +167,6 @@ class DataDiffCalculator {
       }
     });
 
-    // Check minor fields
     minorFields.forEach(field => {
       const change = this.compareField(
         field,
@@ -145,16 +188,12 @@ class DataDiffCalculator {
 
   /**
    * Compare personal info data
-   * @param {Object} snapshotPersonalInfo - Personal info from snapshot
-   * @param {Object} currentPersonalInfo - Current personal info
-   * @returns {Object} - Personal info comparison result
    */
-  static comparePersonalInfoData(snapshotPersonalInfo, currentPersonalInfo) {
-    const changes = [];
+  static comparePersonalInfoData(snapshotPersonalInfo: Record<string, unknown>, currentPersonalInfo: Record<string, unknown>): CategoryResult {
+    const changes: ChangeItem[] = [];
     const significantFields = ['phoneNumber', 'email', 'occupation'];
     const minorFields = ['provinceCity', 'countryRegion', 'gender'];
 
-    // Check significant fields
     significantFields.forEach(field => {
       const change = this.compareField(
         field,
@@ -167,7 +206,6 @@ class DataDiffCalculator {
       }
     });
 
-    // Check minor fields
     minorFields.forEach(field => {
       const change = this.compareField(
         field,
@@ -189,12 +227,9 @@ class DataDiffCalculator {
 
   /**
    * Compare funds data
-   * @param {Array} snapshotFunds - Funds from snapshot
-   * @param {Array} currentFunds - Current funds
-   * @returns {Object} - Funds comparison result
    */
-  static compareFundsData(snapshotFunds, currentFunds) {
-    const changes = [];
+  static compareFundsData(snapshotFunds: unknown[], currentFunds: unknown[]): CategoryResult {
+    const changes: ChangeItem[] = [];
 
     // Compare fund count
     if (snapshotFunds.length !== currentFunds.length) {
@@ -212,11 +247,10 @@ class DataDiffCalculator {
     const maxLength = Math.max(snapshotFunds.length, currentFunds.length);
     
     for (let i = 0; i < maxLength; i++) {
-      const snapshotFund = snapshotFunds[i];
-      const currentFund = currentFunds[i];
+      const snapshotFund = snapshotFunds[i] as Record<string, unknown> | undefined;
+      const currentFund = currentFunds[i] as Record<string, unknown> | undefined;
 
       if (!snapshotFund && currentFund) {
-        // New fund added
         changes.push({
           field: `fund[${i}]`,
           oldValue: null,
@@ -226,7 +260,6 @@ class DataDiffCalculator {
           description: `New fund item added: ${this.getFundSummary(currentFund)}`
         });
       } else if (snapshotFund && !currentFund) {
-        // Fund removed
         changes.push({
           field: `fund[${i}]`,
           oldValue: this.getFundSummary(snapshotFund),
@@ -236,7 +269,6 @@ class DataDiffCalculator {
           description: `Fund item removed: ${this.getFundSummary(snapshotFund)}`
         });
       } else if (snapshotFund && currentFund) {
-        // Compare fund properties
         const fundChanges = this.compareFundItem(snapshotFund, currentFund, i);
         changes.push(...fundChanges);
       }
@@ -251,13 +283,9 @@ class DataDiffCalculator {
 
   /**
    * Compare individual fund item
-   * @param {Object} snapshotFund - Fund from snapshot
-   * @param {Object} currentFund - Current fund
-   * @param {number} index - Fund index
-   * @returns {Array} - Array of changes
    */
-  static compareFundItem(snapshotFund, currentFund, index) {
-    const changes = [];
+  static compareFundItem(snapshotFund: Record<string, unknown>, currentFund: Record<string, unknown>, index: number): ChangeItem[] {
+    const changes: ChangeItem[] = [];
     const significantFields = ['type', 'amount', 'currency'];
     const minorFields = ['description', 'photoUri'];
 
@@ -290,12 +318,9 @@ class DataDiffCalculator {
 
   /**
    * Compare travel data
-   * @param {Object} snapshotTravel - Travel data from snapshot
-   * @param {Object} currentTravel - Current travel data
-   * @returns {Object} - Travel comparison result
    */
-  static compareTravelData(snapshotTravel, currentTravel) {
-    const changes = [];
+  static compareTravelData(snapshotTravel: Record<string, unknown>, currentTravel: Record<string, unknown>): CategoryResult {
+    const changes: ChangeItem[] = [];
     const significantFields = [
       'travelPurpose', 
       'arrivalDate', 
@@ -309,7 +334,6 @@ class DataDiffCalculator {
       'accommodationPhone'
     ];
 
-    // Check significant fields
     significantFields.forEach(field => {
       const change = this.compareField(
         field,
@@ -322,7 +346,6 @@ class DataDiffCalculator {
       }
     });
 
-    // Check minor fields
     minorFields.forEach(field => {
       const change = this.compareField(
         field,
@@ -344,14 +367,8 @@ class DataDiffCalculator {
 
   /**
    * Compare individual field values
-   * @param {string} fieldName - Field name
-   * @param {*} oldValue - Value from snapshot
-   * @param {*} newValue - Current value
-   * @param {string} significance - 'significant' or 'minor'
-   * @returns {Object|null} - Change object or null if no change
    */
-  static compareField(fieldName, oldValue, newValue, significance = 'minor') {
-    // Normalize values for comparison
+  static compareField(fieldName: string, oldValue: unknown, newValue: unknown, significance = 'minor'): ChangeItem | null {
     const normalizedOld = this.normalizeValue(oldValue);
     const normalizedNew = this.normalizeValue(newValue);
 
@@ -371,10 +388,8 @@ class DataDiffCalculator {
 
   /**
    * Normalize value for comparison
-   * @param {*} value - Value to normalize
-   * @returns {string} - Normalized value
    */
-  static normalizeValue(value) {
+  static normalizeValue(value: unknown): string {
     if (value === null || value === undefined) {
       return '';
     }
@@ -400,13 +415,9 @@ class DataDiffCalculator {
 
   /**
    * Get human-readable change description
-   * @param {string} fieldName - Field name
-   * @param {*} oldValue - Old value
-   * @param {*} newValue - New value
-   * @returns {string} - Change description
    */
-  static getChangeDescription(fieldName, oldValue, newValue) {
-    const fieldDisplayNames = {
+  static getChangeDescription(fieldName: string, oldValue: unknown, newValue: unknown): string {
+    const fieldDisplayNames: Record<string, string> = {
       passportNumber: '护照号码',
       fullName: '姓名',
       nationality: '国籍',
@@ -432,16 +443,14 @@ class DataDiffCalculator {
 
   /**
    * Format value for display
-   * @param {*} value - Value to format
-   * @returns {string} - Formatted value
    */
-  static formatValueForDisplay(value) {
+  static formatValueForDisplay(value: unknown): string {
     if (value === null || value === undefined || value === '') {
       return '(空)';
     }
     
     if (typeof value === 'string' && value.length > 50) {
-      return `${value.substring(0, 50)  }...`;
+      return `${value.substring(0, 50)}...`;
     }
     
     return String(value);
@@ -449,27 +458,23 @@ class DataDiffCalculator {
 
   /**
    * Get fund summary for display
-   * @param {Object} fund - Fund object
-   * @returns {string} - Fund summary
    */
-  static getFundSummary(fund) {
+  static getFundSummary(fund: Record<string, unknown> | null | undefined): string {
     if (!fund) {
-return '(空)';
-}
+      return '(空)';
+    }
     
-    const type = fund.type || '未知类型';
-    const amount = fund.amount || '0';
-    const currency = fund.currency || '';
+    const type = (fund.type as string) || '未知类型';
+    const amount = (fund.amount as string) || '0';
+    const currency = (fund.currency as string) || '';
     
     return `${type} ${amount} ${currency}`.trim();
   }
 
   /**
    * Generate user-friendly change summary
-   * @param {Object} diffResult - Result from calculateDiff
-   * @returns {Object} - User-friendly summary
    */
-  static generateChangeSummary(diffResult) {
+  static generateChangeSummary(diffResult: DiffResult): ChangeSummary {
     if (!diffResult.hasChanges) {
       return {
         title: '没有检测到变更',
@@ -480,12 +485,11 @@ return '(空)';
     }
 
     const { summary, categories } = diffResult;
-    const changedCategories = [];
+    const changedCategories: ChangeSummaryCategory[] = [];
 
-    // Analyze each category
-    Object.entries(categories).forEach(([categoryName, categoryData]) => {
+    (Object.entries(categories) as [string, { hasChanges: boolean; changes: Array<{ significance: string; description: string }> }][]).forEach(([categoryName, categoryData]) => {
       if (categoryData.hasChanges) {
-        const categoryDisplayNames = {
+        const categoryDisplayNames: Record<string, string> = {
           passport: '护照信息',
           personalInfo: '个人信息',
           funds: '资金证明',
@@ -503,7 +507,8 @@ return '(空)';
 
     const needsResubmission = summary.significantChanges > 0;
     
-    let title, message;
+    let title: string;
+    let message: string;
     if (needsResubmission) {
       title = '检测到重要变更';
       message = `您的入境信息有${summary.significantChanges}项重要变更，需要重新提交入境卡。`;
@@ -525,15 +530,12 @@ return '(空)';
 
   /**
    * Check if changes require immediate resubmission
-   * @param {Object} diffResult - Result from calculateDiff
-   * @returns {boolean} - Whether immediate resubmission is required
    */
-  static requiresImmediateResubmission(diffResult) {
+  static requiresImmediateResubmission(diffResult: DiffResult): boolean {
     if (!diffResult.hasChanges) {
       return false;
     }
 
-    // Critical fields that always require resubmission
     const criticalFields = [
       'passportNumber',
       'fullName',
@@ -543,8 +545,8 @@ return '(空)';
       'arrivalFlightNumber'
     ];
 
-    return diffResult.changedFields.some(field => 
-      criticalFields.some(criticalField => field.includes(criticalField))
+    return diffResult.changedFields.some((field: string) => 
+      criticalFields.some((criticalField: string) => field.includes(criticalField))
     );
   }
 }

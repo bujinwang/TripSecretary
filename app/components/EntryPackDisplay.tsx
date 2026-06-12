@@ -16,7 +16,7 @@ const { width: screenWidth } = Dimensions.get('window');
 const QR_SIZE = Math.min(screenWidth * 0.6, 250);
 
 // Country-specific configurations
-const countryConfigs = {
+const countryConfigs: Record<string, any> = {
   th: {
     entryCardName: 'TDAC',
     entryCardTab: 'tdac',
@@ -269,7 +269,7 @@ const countryConfigs = {
 
 // Country aliases: maps ISO alpha-2 codes to translation keys
 // Since translation keys are now standardized to ISO alpha-2, this is mainly for backward compatibility
-const COUNTRY_ALIASES = {
+const COUNTRY_ALIASES: Record<string, string> = {
   my: 'my',
   sg: 'sg',
   th: 'th',
@@ -291,6 +291,16 @@ const COUNTRY_ALIASES = {
   korea: 'kr',
 };
 
+interface EntryPackDisplayProps {
+  entryPack?: Record<string, unknown> | null;
+  personalInfo?: Record<string, unknown>;
+  travelInfo?: Record<string, unknown>;
+  funds?: unknown[];
+  onClose?: () => void;
+  isModal?: boolean;
+  country?: string;
+}
+
 const EntryPackDisplay = ({
   entryPack: rawEntryPack,
   personalInfo,
@@ -299,7 +309,7 @@ const EntryPackDisplay = ({
   onClose,
   isModal = false,
   country: rawCountry = 'th'
-}) => {
+}: EntryPackDisplayProps) => {
   const country = COUNTRY_ALIASES[rawCountry] || rawCountry || 'th';
   const entryPack = useMemo(
     () =>
@@ -312,7 +322,7 @@ const EntryPackDisplay = ({
   const { t } = useLocale();
   const translationNamespace = `entryPackDisplay.${country}`;
   const translate = useCallback(
-    (path, fallback) =>
+    (path: string, fallback: string) =>
       t(`${translationNamespace}.${path}`, {
         defaultValue: fallback,
       }),
@@ -320,9 +330,9 @@ const EntryPackDisplay = ({
   );
   const [activeTab, setActiveTab] = useState(config.entryCardTab);
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
-  const [selectedPhotoUri, setSelectedPhotoUri] = useState(null);
-  const tdacSubmission = entryPack?.tdacSubmission || null;
-  const tdacPdfCandidate = tdacSubmission?.pdfUrl || tdacSubmission?.pdfPath || null;
+  const [selectedPhotoUri, setSelectedPhotoUri] = useState<string | null>(null);
+  const tdacSubmission = (entryPack as Record<string, unknown>)?.tdacSubmission || null;
+  const tdacPdfCandidate = (tdacSubmission as any)?.pdfUrl || (tdacSubmission as any)?.pdfPath || null;
   const [resolvedTdacPdfUri, setResolvedTdacPdfUri] = useState(tdacPdfCandidate || null);
 
   useEffect(() => {
@@ -337,7 +347,7 @@ const EntryPackDisplay = ({
       }
 
       try {
-        const result = await PDFManagementService.resolvePDFUri(tdacPdfCandidate);
+        const result = await (PDFManagementService as typeof PDFManagementService & { resolvePDFUri: (path: string) => Promise<{ uri: string }> }).resolvePDFUri(tdacPdfCandidate);
         if (isMounted) {
           setResolvedTdacPdfUri(result.uri || tdacPdfCandidate);
         }
@@ -359,7 +369,7 @@ const EntryPackDisplay = ({
   const {fallbackHotelText} = config;
 
   // Handle photo viewer
-  const handleOpenPhotoViewer = (photoUri) => {
+  const handleOpenPhotoViewer = (photoUri: string) => {
     setSelectedPhotoUri(photoUri);
     setPhotoViewerVisible(true);
   };
@@ -369,7 +379,7 @@ const EntryPackDisplay = ({
     setSelectedPhotoUri(null);
   };
 
-  const formatProvinceThaiEnglish = (value) => {
+  const formatProvinceThaiEnglish = (value: string) => {
     if (!value || typeof value !== 'string') {
 return '';
 }
@@ -396,7 +406,7 @@ return '';
     return `${thaiName} / ${englishName}`;
   };
 
-  const formatDistrictHongKongBilingual = (value) => {
+  const formatDistrictHongKongBilingual = (value: string) => {
     if (!value || typeof value !== 'string') {
 return '';
 }
@@ -410,13 +420,13 @@ return '';
 
     // Try to find by exact match (nameEn or nameZh)
     let district = allDistricts.find(
-      d => d.nameEn === raw || d.nameZh === raw || d.nameEn.toLowerCase() === raw.toLowerCase()
+      (d: { nameEn: string; nameZh: string; [key: string]: unknown }) => d.nameEn === raw || d.nameZh === raw || d.nameEn.toLowerCase() === raw.toLowerCase()
     );
 
     if (!district) {
       // Try partial match
       district = allDistricts.find(
-        d => d.nameEn.toLowerCase().includes(raw.toLowerCase()) ||
+        (d: { nameEn: string; nameZh: string; [key: string]: unknown }) => d.nameEn.toLowerCase().includes(raw.toLowerCase()) ||
              d.nameZh.includes(raw)
       );
     }
@@ -430,7 +440,7 @@ return raw;
   };
 
   // Country-aware location formatter
-  const formatLocationBilingual = (value) => {
+  const formatLocationBilingual = (value: string) => {
     if (country === 'hk') {
       return formatDistrictHongKongBilingual(value);
     } else if (country === 'th') {
@@ -475,7 +485,7 @@ return '';
     }
   };
 
-  const formatBilingualCurrency = (amount, currencyOverride = null) => {
+  const formatBilingualCurrency = (amount: number | string | null | undefined, currencyOverride: string | null = null) => {
     if (amount === null || amount === undefined) {
 return '';
 }
@@ -496,7 +506,7 @@ return '';
 return 0;
 }
     // Convert all fund amounts to the country's local currency before summing
-    return calculateTotalFundsForCountry(funds, country);
+    return calculateTotalFundsForCountry(funds as FundItem[], country);
   }, [funds, country]);
 
   const hotelProvinceDisplay = useMemo(() => {
@@ -511,7 +521,7 @@ return 0;
     ];
 
     for (const candidate of candidates) {
-      const display = formatLocationBilingual(candidate);
+      const display = formatLocationBilingual(candidate as string);
       if (display) {
 return display;
 }
@@ -546,8 +556,8 @@ return display;
     return fallbackHotelText;
   }, [hotelProvinceDisplay, travelInfo?.hotelAddress]);
 
-  const getFundTypeLabel = (type) => {
-    const fundLabels = {
+  const getFundTypeLabel = (type: string) => {
+    const fundLabels: Record<string, Record<string, string>> = {
       th: {
         cash: 'เงินสด / Cash',
         credit_card: 'บัตรเครดิต / Credit Card',
@@ -624,35 +634,35 @@ return display;
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>{config.labels.fullName}:</Text>
           <Text style={styles.infoValue}>
-            {entryPack?.passport?.fullName || personalInfo?.fullName || config.notProvided}
+            {(entryPack as Record<string, unknown>)?.passport && ((entryPack as Record<string, unknown>).passport as Record<string, string>).fullName || personalInfo?.fullName || config.notProvided}
           </Text>
         </View>
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>{config.labels.passportNumber}:</Text>
           <Text style={styles.infoValue}>
-            {entryPack?.passport?.passportNumber || personalInfo?.passportNumber || config.notProvided}
+            {(entryPack as Record<string, unknown>)?.passport && ((entryPack as Record<string, unknown>).passport as Record<string, string>).passportNumber || personalInfo?.passportNumber || config.notProvided}
           </Text>
         </View>
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>{config.labels.nationality}:</Text>
           <Text style={styles.infoValue}>
-            {entryPack?.passport?.nationality || personalInfo?.nationality || config.notProvided}
+            {(entryPack as Record<string, unknown>)?.passport && ((entryPack as Record<string, unknown>).passport as Record<string, string>).nationality || personalInfo?.nationality || config.notProvided}
           </Text>
         </View>
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>{config.labels.passportExpiryDate}:</Text>
           <Text style={styles.infoValue}>
-            {formatBilingualDate(entryPack?.passport?.expiryDate || personalInfo?.expiryDate) || config.notProvided}
+            {formatBilingualDate(((entryPack as Record<string, unknown>)?.passport as Record<string, string>)?.expiryDate || personalInfo?.expiryDate) || config.notProvided}
           </Text>
         </View>
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>{config.labels.dateOfBirth}:</Text>
           <Text style={styles.infoValue}>
-            {formatBilingualDate(entryPack?.passport?.dateOfBirth || personalInfo?.dateOfBirth)}
+            {formatBilingualDate(((entryPack as Record<string, unknown>)?.passport as Record<string, string>)?.dateOfBirth || personalInfo?.dateOfBirth)}
           </Text>
         </View>
       </View>
@@ -660,7 +670,7 @@ return display;
   );
 
   const renderTravelInfo = () => {
-    const formatDateWithFallback = (rawDate) => {
+    const formatDateWithFallback = (rawDate: string) => {
       if (!rawDate || (typeof rawDate === 'string' && rawDate.trim().length === 0)) {
         return config.notProvided;
       }
@@ -668,7 +678,7 @@ return display;
       return formatted || config.notProvided;
     };
 
-    const formatTextWithFallback = (value) => {
+    const formatTextWithFallback = (value: string | null | undefined) => {
       if (value === null || value === undefined) {
 return config.notProvided;
 }
@@ -680,24 +690,24 @@ return config.notProvided;
     };
 
     const arrivalDateValue = formatDateWithFallback(
-      travelInfo?.arrivalArrivalDate || travelInfo?.arrivalDate
+      (travelInfo?.arrivalArrivalDate || travelInfo?.arrivalDate) as string
     );
     const departureDateValue = formatDateWithFallback(
-      travelInfo?.departureDepartureDate || travelInfo?.departureDate
+      (travelInfo?.departureDepartureDate || travelInfo?.departureDate) as string
     );
     const arrivalFlightLabel = config.labels.arrivalFlightNumber || config.labels.flightNumber;
     const departureFlightLabel = config.labels.departureFlightNumber || config.labels.flightNumber;
     const arrivalFlightValue = formatTextWithFallback(
-      travelInfo?.arrivalFlightNumber || travelInfo?.flightNumber
+      (travelInfo?.arrivalFlightNumber || travelInfo?.flightNumber) as string | null | undefined
     );
     const departureFlightValue = formatTextWithFallback(
-      travelInfo?.departureFlightNumber ||
+      (travelInfo?.departureFlightNumber ||
       travelInfo?.returnFlightNumber ||
-      travelInfo?.departureFlight
+      travelInfo?.departureFlight) as string | null | undefined
     );
-    const stayLocationValue = formatTextWithFallback(travelInfo?.hotelAddress);
+    const stayLocationValue = formatTextWithFallback(travelInfo?.hotelAddress as string | null | undefined);
     const purposeValue = formatTextWithFallback(
-      travelInfo?.travelPurpose || travelInfo?.purposeOfVisit
+      (travelInfo?.travelPurpose || travelInfo?.purposeOfVisit) as string | null | undefined
     );
     const lengthOfStayRaw = travelInfo?.lengthOfStay;
     const hasLengthOfStay = typeof lengthOfStayRaw === 'string'
@@ -760,7 +770,7 @@ return config.notProvided;
   };
 
   const renderFundsInfo = () => {
-    const proofPhotoTexts = {
+    const proofPhotoTexts: Record<string, string> = {
       th: '📸 มีหลักฐานรูปภาพแล้ว',
       my: '📸 Proof photo uploaded',
       sg: '📸 Proof photo uploaded',
@@ -772,7 +782,7 @@ return config.notProvided;
     };
     const proofPhotoText = proofPhotoTexts[country] || proofPhotoTexts.th;
 
-    const noDataTexts = {
+    const noDataTexts: Record<string, string> = {
       th: 'ยังไม่มีข้อมูลเงินทุน',
       my: 'No funds information',
       sg: 'No funds information',
@@ -789,14 +799,14 @@ return config.notProvided;
         <Text style={styles.sectionTitle}>💰 {config.fundsTitle}</Text>
 
         {funds && funds.length > 0 ? (
-          funds.map((fund, index) => (
+          (funds as Record<string, unknown>[]).map((fund: Record<string, unknown>, index: number) => (
             <View key={index} style={styles.fundItem}>
               <View style={styles.fundHeader}>
                 <Text style={styles.fundType}>
-                  {getFundTypeLabel(fund.type)}
+                  {getFundTypeLabel(fund.type as string)}
                 </Text>
                 <Text style={styles.fundAmount}>
-                  {formatBilingualCurrency(fund.amount, fund.currency)}
+                  {formatBilingualCurrency(fund.amount as string | number, fund.currency as string)}
                 </Text>
               </View>
 
@@ -808,7 +818,7 @@ return config.notProvided;
 
               {(fund.photoUri || fund.proofPhoto) && (
                 <TouchableOpacity
-                  onPress={() => handleOpenPhotoViewer(fund.photoUri || fund.proofPhoto)}
+                  onPress={() => handleOpenPhotoViewer((fund.photoUri || fund.proofPhoto) as string)}
                   style={styles.fundProofContainer}
                 >
                   <Text style={styles.fundProof}>
@@ -841,7 +851,7 @@ return config.notProvided;
   };
 
   const renderTDACInfo = () => {
-    const placeholderTitles = {
+    const placeholderTitles: Record<string, string> = {
       th: 'ยังไม่ได้ส่ง TDAC',
       my: 'MDAC Not Submitted',
       sg: 'SGAC Not Submitted',
@@ -850,7 +860,7 @@ return config.notProvided;
       hk: '尚未提交入境資料'
     };
 
-    const placeholderDescriptions = {
+    const placeholderDescriptions: Record<string, string> = {
       th: 'กรุณาส่งแบบฟอร์ม TDAC ภายใน 72 ชั่วโมงก่อนเดินทางถึง',
       my: 'Please submit MDAC within 3 days before arrival',
       sg: 'Please submit SGAC within 3 days before arrival',
@@ -859,7 +869,7 @@ return config.notProvided;
       hk: '香港入境無需預先提交電子表格，到達時填寫即可'
     };
 
-    const placeholderNotes = {
+    const placeholderNotes: Record<string, string> = {
       th: 'หากยังไม่มี TDAC สามารถแสดงข้อมูลอื่นให้เจ้าหน้าที่ตรวจคนเข้าเมืองได้',
       my: 'You can still show other information to immigration officer',
       sg: 'You can still show other information to immigration officer',
@@ -883,7 +893,7 @@ return config.notProvided;
 
     return (
       <View style={styles.section}>
-        {tdacSubmission && tdacSubmission.arrCardNo ? (
+        {tdacSubmission && (tdacSubmission as any).arrCardNo ? (
           <>
             {/* PDF Viewer Section */}
             {resolvedTdacPdfUri && (
@@ -892,7 +902,7 @@ return config.notProvided;
                   source={{ uri: resolvedTdacPdfUri }}
                   style={styles.pdfViewer}
                   showPageIndicator={true}
-                  onError={(error) => {
+                  onError={(error: unknown) => {
                     console.error('PDF display error:', error);
                   }}
                 />
@@ -939,7 +949,7 @@ return config.notProvided;
                   showPageIndicator={true}
                   showWatermark={true}
                   watermarkText="ตัวอย่าง"
-                  onError={(error) => {
+                  onError={(error: unknown) => {
                     console.error('Sample PDF display error:', error);
                   }}
                 />
@@ -963,7 +973,7 @@ return config.notProvided;
   };
 
   const getTipsConfig = () => {
-    const tipsConfig = {
+    const tipsConfig: Record<string, any> = {
       thailand: {
         title: '💡 คำถามที่พบบ่อยจากเจ้าหน้าที่ตรวจคนเข้าเมือง / Immigration Officer FAQs',
         questions: [
@@ -1133,7 +1143,7 @@ return config.notProvided;
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>{tips.title}</Text>
         <View style={styles.tipsList}>
-          {tips.questions.map((tip, index) => (
+          {tips.questions.map((tip: { q: string; a: string }, index: number) => (
             <View key={index} style={styles.tipItem}>
               <Text style={styles.tipQuestion}>{tip.q}</Text>
               <Text style={styles.tipAnswer}>A: {tip.a}</Text>
@@ -1167,7 +1177,7 @@ return config.notProvided;
     }
   };
 
-  const tabsConfig = {
+  const tabsConfig: Record<string, any> = {
     thailand: [
       { key: 'tdac', label: 'บัตร TDAC', labelEn: 'TDAC' },
       { key: 'personal', label: 'ข้อมูลส่วนตัว', labelEn: 'Personal' },
@@ -1234,13 +1244,13 @@ return config.notProvided;
                         country === 'th' ? 'thailand' :
                         country;
   const tabs = tabsConfig[tabsConfigKey] || tabsConfig.thailand;
-  const localizedTabs = tabs.map((tab) => ({
+  const localizedTabs = tabs.map((tab: { key: string; label: string; labelEn?: string; [key: string]: unknown }) => ({
     ...tab,
     primaryLabel: translate(`tabs.${tab.key}.label`, tab.label),
     secondaryLabel: translate(`tabs.${tab.key}.labelSecondary`, tab.labelEn || ''),
   }));
 
-  const headerTitles = {
+  const headerTitles: Record<string, string> = {
     thailand: '🇹🇭 ชุดข้อมูลตรวจคนเข้าเมือง',
     malaysia: '🇲🇾 Entry Pack',
   singapore: '🇸🇬 Entry Pack',
@@ -1252,7 +1262,7 @@ return config.notProvided;
   vietnam: '🇻🇳 Gói thông tin nhập cảnh Việt Nam'
 };
 
-  const headerSubtitles = {
+  const headerSubtitles: Record<string, string> = {
     thailand: 'ข้อมูลสำคัญสำหรับเจ้าหน้าที่ตรวจคนเข้าเมือง',
     malaysia: 'Important information for immigration officer',
   singapore: 'Important information for immigration officer',
@@ -1293,7 +1303,7 @@ return config.notProvided;
         style={styles.tabContainer}
         contentContainerStyle={styles.tabContentContainer}
       >
-        {localizedTabs.map((tab, index) => (
+        {localizedTabs.map((tab: { key: string; label: string; labelEn?: string; primaryLabel: string; secondaryLabel: string; [key: string]: unknown }, index: number) => (
           <TouchableOpacity
             key={tab.key}
             style={[

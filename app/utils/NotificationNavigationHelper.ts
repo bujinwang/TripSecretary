@@ -12,115 +12,90 @@
 import { Alert } from 'react-native';
 import { getTranslationWithFallback } from '../i18n/locales';
 
-/**
- * Check if the current navigation came from a notification
- * @param {Object} route - React Navigation route object
- * @returns {boolean} Whether navigation came from notification
- */
-export function isFromNotification(route) {
+interface RouteParams {
+  fromNotification?: boolean;
+  notificationData?: Record<string, unknown>;
+  expandSection?: string;
+  entryPackId?: string;
+  userId?: string;
+  destinationId?: string;
+  [key: string]: unknown;
+}
+
+interface Route {
+  params?: RouteParams;
+}
+
+interface NavigationParams {
+  setParams: (params: Record<string, unknown>) => void;
+}
+
+interface NotificationContext {
+  action: string | null;
+  data: Record<string, unknown> | null;
+  entryPackId: string | null;
+  userId: string | null;
+  destinationId: string | null;
+  shouldAutoSubmit: boolean;
+  isResubmissionMode: boolean;
+  expandSection: string | null;
+  shouldShowGuide: boolean;
+}
+
+export function isFromNotification(route: Route): boolean {
   return route.params?.fromNotification === true;
 }
 
-/**
- * Get notification data from route parameters
- * @param {Object} route - React Navigation route object
- * @returns {Object|null} Notification data or null if not from notification
- */
-export function getNotificationData(route) {
+export function getNotificationData(route: Route): Record<string, unknown> | null {
   if (!isFromNotification(route)) {
     return null;
   }
   
-  return route.params?.notificationData || {};
+  return (route.params?.notificationData as Record<string, unknown>) || {};
 }
 
-/**
- * Get notification action from route parameters
- * @param {Object} route - React Navigation route object
- * @returns {string|null} Action identifier or null
- */
-export function getNotificationAction(route) {
+export function getNotificationAction(route: Route): string | null {
   const notificationData = getNotificationData(route);
-  return notificationData?.fromAction || null;
+  return (notificationData?.fromAction as string) || null;
 }
 
-/**
- * Check if navigation should auto-submit TDAC
- * @param {Object} route - React Navigation route object
- * @returns {boolean} Whether to auto-submit
- */
-export function shouldAutoSubmit(route) {
+export function shouldAutoSubmit(route: Route): boolean {
   const notificationData = getNotificationData(route);
   return notificationData?.autoSubmit === true;
 }
 
-/**
- * Check if navigation is in resubmission mode
- * @param {Object} route - React Navigation route object
- * @returns {boolean} Whether in resubmission mode
- */
-export function isResubmissionMode(route) {
+export function isResubmissionMode(route: Route): boolean {
   const notificationData = getNotificationData(route);
   return notificationData?.resubmissionMode === true;
 }
 
-/**
- * Get section to expand from notification data
- * @param {Object} route - React Navigation route object
- * @returns {string|null} Section to expand or null
- */
-export function getExpandSection(route) {
+export function getExpandSection(route: Route): string | null {
   const notificationData = getNotificationData(route);
-  return notificationData?.expandSection || route.params?.expandSection || null;
+  return (notificationData?.expandSection as string) || (route.params?.expandSection as string) || null;
 }
 
-/**
- * Check if should show immigration guide
- * @param {Object} route - React Navigation route object
- * @returns {boolean} Whether to show guide
- */
-export function shouldShowGuide(route) {
+export function shouldShowGuide(route: Route): boolean {
   const notificationData = getNotificationData(route);
   return notificationData?.showGuide === true;
 }
 
-/**
- * Get entry pack ID from notification data
- * @param {Object} route - React Navigation route object
- * @returns {string|null} Entry pack ID or null
- */
-export function getEntryPackId(route) {
+export function getEntryPackId(route: Route): string | null {
   const notificationData = getNotificationData(route);
-  return notificationData?.entryPackId || route.params?.entryPackId || null;
+  return (notificationData?.entryPackId as string) || (route.params?.entryPackId as string) || null;
 }
 
-/**
- * Get user ID from notification data
- * @param {Object} route - React Navigation route object
- * @returns {string|null} User ID or null
- */
-export function getUserId(route) {
+export function getUserId(route: Route): string | null {
   const notificationData = getNotificationData(route);
-  return notificationData?.userId || route.params?.userId || null;
+  return (notificationData?.userId as string) || (route.params?.userId as string) || null;
 }
 
-/**
- * Get destination ID from notification data
- * @param {Object} route - React Navigation route object
- * @returns {string|null} Destination ID or null
- */
-export function getDestinationId(route) {
+export function getDestinationId(route: Route): string | null {
   const notificationData = getNotificationData(route);
-  return notificationData?.destinationId || route.params?.destinationId || null;
+  return (notificationData?.destinationId as string) || (route.params?.destinationId as string) || null;
 }
 
-/**
- * Show notification action feedback to user
- * @param {string} action - The action that was performed
- * @param {string} locale - User's locale for translations
- */
-export function showNotificationActionFeedback(action, locale = 'en') {
-  const feedbackMessages = {
+export function showNotificationActionFeedback(action: string, locale = 'en'): void {
+  const feedbackMessages: Record<string, { title: string; message: string }> = {
     submit: {
       title: getTranslationWithFallback('progressiveEntryFlow.notifications.feedback.submitTitle', locale),
       message: getTranslationWithFallback('progressiveEntryFlow.notifications.feedback.submitMessage', locale)
@@ -150,12 +125,7 @@ export function showNotificationActionFeedback(action, locale = 'en') {
   }
 }
 
-/**
- * Handle notification-specific screen initialization
- * @param {Object} route - React Navigation route object
- * @param {Function} callback - Callback function to execute with notification context
- */
-export function handleNotificationScreenInit(route, callback) {
+export function handleNotificationScreenInit(route: Route, callback: ((context: NotificationContext) => void) | null): void {
   if (!isFromNotification(route)) {
     return;
   }
@@ -163,7 +133,6 @@ export function handleNotificationScreenInit(route, callback) {
   const notificationData = getNotificationData(route);
   const action = getNotificationAction(route);
 
-  // Execute callback with notification context
   if (typeof callback === 'function') {
     callback({
       action,
@@ -179,13 +148,7 @@ export function handleNotificationScreenInit(route, callback) {
   }
 }
 
-/**
- * Create notification-aware navigation params
- * @param {Object} baseParams - Base navigation parameters
- * @param {Object} notificationContext - Notification context
- * @returns {Object} Enhanced navigation parameters
- */
-export function createNotificationAwareParams(baseParams = {}, notificationContext = {}) {
+export function createNotificationAwareParams(baseParams: Record<string, unknown> = {}, notificationContext: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     ...baseParams,
     fromNotification: true,
@@ -196,12 +159,7 @@ export function createNotificationAwareParams(baseParams = {}, notificationConte
   };
 }
 
-/**
- * Log notification navigation event for analytics
- * @param {string} screenName - Screen name that was navigated to
- * @param {Object} route - React Navigation route object
- */
-export function logNotificationNavigation(screenName, route) {
+export function logNotificationNavigation(screenName: string, route: Route): void {
   if (!isFromNotification(route)) {
     return;
   }
@@ -216,42 +174,25 @@ export function logNotificationNavigation(screenName, route) {
     entryPackId: getEntryPackId(route),
     timestamp: new Date().toISOString()
   });
-
-  // Here you could integrate with analytics services like Firebase Analytics
-  // analytics().logEvent('notification_navigation', {
-  //   screen_name: screenName,
-  //   notification_type: notificationData?.type,
-  //   action: action
-  // });
 }
 
-/**
- * Clear notification parameters from route to prevent re-processing
- * @param {Object} navigation - React Navigation navigation object
- */
-export function clearNotificationParams(navigation) {
+export function clearNotificationParams(navigation: NavigationParams): void {
   navigation.setParams({
     fromNotification: undefined,
     notificationData: undefined
   });
 }
 
-/**
- * Check if notification is still relevant (not expired)
- * @param {Object} route - React Navigation route object
- * @param {number} maxAgeMinutes - Maximum age in minutes (default: 30)
- * @returns {boolean} Whether notification is still relevant
- */
-export function isNotificationRelevant(route, maxAgeMinutes = 30) {
+export function isNotificationRelevant(route: Route, maxAgeMinutes = 30): boolean {
   const notificationData = getNotificationData(route);
   
   if (!notificationData || !notificationData.timestamp) {
-    return true; // Assume relevant if no timestamp
+    return true;
   }
 
-  const notificationTime = new Date(notificationData.timestamp);
+  const notificationTime = new Date(notificationData.timestamp as string);
   const now = new Date();
-  const ageMinutes = (now - notificationTime) / (1000 * 60);
+  const ageMinutes = (now.getTime() - notificationTime.getTime()) / (1000 * 60);
 
   return ageMinutes <= maxAgeMinutes;
 }

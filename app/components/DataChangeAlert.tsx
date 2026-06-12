@@ -18,6 +18,29 @@ import {
 import { colors, typography, spacing } from '../theme';
 import { useLocale } from '../i18n/LocaleContext';
 
+interface DataChangeAlertProps {
+  warning: {
+    changeSummary: {
+      title: string;
+      message: string;
+      totalChanges: number;
+      significantChanges: number;
+      minorChanges: number;
+      categories: Array<{
+        name: string;
+        changeCount: number;
+        changes: string[];
+      }>;
+    };
+    requiresImmediateResubmission: boolean;
+  } | null;
+  onResubmit?: (warning: Record<string, unknown>) => void;
+  onIgnore?: (warning: Record<string, unknown>) => void;
+  onViewDetails?: (warning: Record<string, unknown>) => void;
+  visible?: boolean;
+  style?: Record<string, unknown>;
+}
+
 const DataChangeAlert = ({ 
   warning, 
   onResubmit, 
@@ -25,7 +48,7 @@ const DataChangeAlert = ({
   onViewDetails, 
   visible = true,
   style 
-}) => {
+}: DataChangeAlertProps) => {
   const { t } = useLocale();
   const [showDetails, setShowDetails] = useState(false);
 
@@ -159,13 +182,13 @@ const DataChangeAlert = ({
             </View>
           </View>
 
-          {changeSummary.categories.map((category, index) => (
+          {changeSummary.categories.map((category: { name: string; changeCount: number; changes: string[] }, index: number) => (
             <View key={index} style={styles.categorySection}>
               <Text style={styles.categoryTitle}>
                 {category.name} ({category.changeCount} 项变更)
               </Text>
               
-              {category.changes.map((change, changeIndex) => (
+              {category.changes.map((change: string, changeIndex: number) => (
                 <View key={changeIndex} style={styles.changeItem}>
                   <Text style={styles.changeText}>{change}</Text>
                 </View>

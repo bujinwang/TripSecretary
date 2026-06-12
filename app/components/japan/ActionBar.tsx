@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors, typography, spacing } from '../../theme';
 
-const ActionBar = ({ onEdit, onShare, onPrint, editLabel, shareLabel, printLabel }) => (
+const ActionBar = ({ onEdit, onShare, onPrint, editLabel, shareLabel, printLabel }: { onEdit?: () => void; onShare?: () => void; onPrint?: () => void; editLabel?: string; shareLabel?: string; printLabel?: string }) => (
     <View style={styles.container}>
       <TouchableOpacity
         style={[styles.actionButton, styles.actionButtonSecondary]}

@@ -26,7 +26,7 @@ class NetworkCapabilityDetector {
       
     } catch (error) {
       console.log('❌ Fetch API issue detected - may need WebView fallback');
-      console.log('   Error:', error.name, error.message);
+      console.log('   Error:', (error as Error).name, (error as Error).message);
       return false;
     }
   }

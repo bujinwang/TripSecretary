@@ -10,6 +10,19 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { designTokens, spacing, borderRadius, shadows, typography } from '../../theme/designTokens';
 import { createAnimationValue } from '../../utils/animations';
 
+interface ActionButtonProps {
+  title: string;
+  variant?: 'primary' | 'secondary' | 'success' | 'warning';
+  size?: 'small' | 'medium' | 'large';
+  icon?: string;
+  disabled?: boolean;
+  loading?: boolean;
+  onPress?: () => void;
+  gradient?: boolean;
+  fullWidth?: boolean;
+  style?: Record<string, unknown>;
+}
+
 const ActionButton = ({
   title,
   variant = 'primary',    // 'primary' | 'secondary' | 'success' | 'warning'
@@ -21,7 +34,7 @@ const ActionButton = ({
   gradient = false,       // use gradient background
   fullWidth = false,      // stretch to full width
   style,
-}) => {
+}: ActionButtonProps) => {
   const scaleAnim = useRef(createAnimationValue(1)).current;
   const opacityAnim = useRef(createAnimationValue(1)).current;
 

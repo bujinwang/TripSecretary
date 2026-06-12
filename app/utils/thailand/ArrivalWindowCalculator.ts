@@ -238,6 +238,25 @@ class ArrivalWindowCalculator {
       day: 'numeric',
     });
   }
+
+  static getSubmissionWindow(arrivalDate: string | Date | null, _locale?: string): ArrivalWindow {
+    return this.calculateWindow(arrivalDate);
+  }
+
+  static getUIState(window: ArrivalWindow): { urgencyColor: string; canSubmitNow: boolean; urgencyLevel: string } {
+    const urgencyLevel = this.getUrgencyLevel(window);
+    const colorMap: Record<string, string> = {
+      urgent: 'red',
+      warning: 'yellow',
+      normal: 'green',
+      none: 'gray',
+    };
+    return {
+      urgencyColor: colorMap[urgencyLevel] || 'gray',
+      canSubmitNow: this.canSubmitNow(window.arrivalDate),
+      urgencyLevel,
+    };
+  }
 }
 
 export default ArrivalWindowCalculator;

@@ -431,8 +431,8 @@ class ThailandTravelerContextBuilder {
       gender: ThailandTravelerContextBuilder.transformGender(passport?.gender || ''), // Normalize before submission
       countryResidence: ThailandTravelerContextBuilder.getCountryFromNationality(passport?.nationality),
       cityResidence: personalInfo?.provinceCity || personalInfo?.countryRegion || '',
-      phoneCode: ThailandTravelerContextBuilder.getPhoneCode(personalInfo),
-      phoneNo: ThailandTravelerContextBuilder.getPhoneNumber(personalInfo),
+      phoneCode: ThailandTravelerContextBuilder.getPhoneCode(personalInfo ?? undefined),
+      phoneNo: ThailandTravelerContextBuilder.getPhoneNumber(personalInfo ?? undefined),
       
       // Contact (from user's personal info)
       email: personalInfo?.email || '',
@@ -440,10 +440,10 @@ class ThailandTravelerContextBuilder {
       // Trip Information (from user's travel info)
       arrivalDate: ThailandTravelerContextBuilder.formatDateForTDAC(travelInfo?.arrivalArrivalDate),
       departureDate: travelInfo?.departureDepartureDate ? ThailandTravelerContextBuilder.formatDateForTDAC(travelInfo.departureDepartureDate) : null,
-      countryBoarded: ThailandTravelerContextBuilder.getCountryBoarded(travelInfo, passport),
+      countryBoarded: ThailandTravelerContextBuilder.getCountryBoarded(travelInfo ?? undefined, passport),
       recentStayCountry: travelInfo?.recentStayCountry || passport?.nationality || '',
-      purpose: ThailandTravelerContextBuilder.getPurposeId(travelInfo?.travelPurpose),
-      travelMode: ThailandTravelerContextBuilder.getTravelMode(travelInfo),
+      purpose: ThailandTravelerContextBuilder.getPurposeId(travelInfo?.travelPurpose ?? undefined),
+      travelMode: ThailandTravelerContextBuilder.getTravelMode(travelInfo ?? undefined),
       flightNo: travelInfo?.arrivalFlightNumber || '',
       tranModeId: ThailandTravelerContextBuilder.getTransportModeId(travelInfo || {}), // Add transport mode ID
       
@@ -451,7 +451,7 @@ class ThailandTravelerContextBuilder {
       // Map to the fields that TDACAPIService expects
       departureFlightNo: travelInfo?.departureFlightNumber || '',
       departureFlightNumber: travelInfo?.departureFlightNumber || '', // Alternative field name
-      departureTravelMode: ThailandTravelerContextBuilder.getTravelMode(travelInfo),
+      departureTravelMode: ThailandTravelerContextBuilder.getTravelMode(travelInfo ?? undefined),
       departureTransportModeId: ThailandTravelerContextBuilder.getTransportModeId(travelInfo || {}),
       
       // Accommodation (from user's travel info)
@@ -463,15 +463,15 @@ class ThailandTravelerContextBuilder {
       provinceDisplay: ThailandTravelerContextBuilder.getProvinceDisplayName(travelInfo?.province),
       // For HOTEL accommodation, district/subDistrict/postCode are not required and should be empty
       // Use requiresDetailedAddress() helper to determine if detailed address is needed
-      district: requiresDetailedAddress(travelInfo?.accommodationType) ? (travelInfo?.district || '') : '',
-      districtDisplay: requiresDetailedAddress(travelInfo?.accommodationType) ? formatLocationCode(
-        travelInfo?.districtDisplay || travelInfo?.district
+      district: requiresDetailedAddress((travelInfo?.accommodationType ?? '') as string) ? (travelInfo?.district || '') : '',
+      districtDisplay: requiresDetailedAddress((travelInfo?.accommodationType ?? '') as string) ? formatLocationCode(
+        (travelInfo?.districtDisplay || travelInfo?.district) as string
       ) : '',
-      subDistrict: requiresDetailedAddress(travelInfo?.accommodationType) ? (travelInfo?.subDistrict || '') : '',
-      subDistrictDisplay: requiresDetailedAddress(travelInfo?.accommodationType) ? formatLocationCode(
-        travelInfo?.subDistrictDisplay || travelInfo?.subDistrict
+      subDistrict: requiresDetailedAddress((travelInfo?.accommodationType ?? '') as string) ? (travelInfo?.subDistrict || '') : '',
+      subDistrictDisplay: requiresDetailedAddress((travelInfo?.accommodationType ?? '') as string) ? formatLocationCode(
+        (travelInfo?.subDistrictDisplay || travelInfo?.subDistrict) as string
       ) : '',
-      postCode: requiresDetailedAddress(travelInfo?.accommodationType) ? (travelInfo?.postalCode || '') : '',
+      postCode: requiresDetailedAddress((travelInfo?.accommodationType ?? '') as string) ? (travelInfo?.postalCode || '') : '',
       address: travelInfo?.hotelAddress || travelInfo?.address || '',
       
       // Visa (optional, from user's travel info)

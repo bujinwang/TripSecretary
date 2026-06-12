@@ -12,7 +12,7 @@ class ArrivalWindowCalculator {
    * @param {string|Date} arrivalDate - Arrival date (YYYY-MM-DD or Date object)
    * @returns {Object} - Arrival window information
    */
-  static calculateWindow(arrivalDate) {
+  static calculateWindow(arrivalDate: string | Date) {
     if (!arrivalDate) {
       return {
         isWithin72Hours: false,
@@ -69,7 +69,7 @@ class ArrivalWindowCalculator {
    * @param {string} locale - Locale code ('zh', 'en', etc.)
    * @returns {Object} - Submission window information
    */
-  static getSubmissionWindow(arrivalDate, locale = 'zh') {
+  static getSubmissionWindow(arrivalDate: string | Date, locale: string = 'zh') {
     if (!arrivalDate) {
       return {
         state: 'no-date',
@@ -141,7 +141,7 @@ class ArrivalWindowCalculator {
    * @param {Object} params - Parameters for interpolation
    * @returns {string} - Localized message
    */
-  static getProgressiveTranslation(key, locale, params = {}) {
+  static getProgressiveTranslation(key: string, locale: string, params: Record<string, number> = {}) {
     const translations = {
       zh: {
         no_date: '未设置新加坡入境日期，无法提交入境卡',
@@ -189,7 +189,7 @@ class ArrivalWindowCalculator {
    * @param {string|Date} arrivalDate - Arrival date
    * @returns {boolean} - Can submit now
    */
-  static canSubmitNow(arrivalDate) {
+  static canSubmitNow(arrivalDate: string | Date) {
     const window = this.calculateWindow(arrivalDate);
     return window.canSubmit;
   }
@@ -199,7 +199,7 @@ class ArrivalWindowCalculator {
    * @param {string|Date} arrivalDate - Arrival date
    * @returns {Object} - Validation result
    */
-  static validateArrivalDate(arrivalDate) {
+  static validateArrivalDate(arrivalDate: string | Date) {
     if (!arrivalDate) {
       return {
         isValid: false,
@@ -235,7 +235,7 @@ class ArrivalWindowCalculator {
    * @param {Object} window - Window object from getSubmissionWindow()
    * @returns {Object} - UI state information
    */
-  static getUIState(window) {
+  static getUIState(window: Record<string, unknown>) {
     const stateMap = {
       'no-date': {
         color: 'gray',
@@ -283,7 +283,7 @@ class ArrivalWindowCalculator {
    * @param {string} locale - Locale code
    * @returns {Object} - Formatted countdown
    */
-  static formatTimeRemaining(milliseconds, locale = 'zh') {
+  static formatTimeRemaining(milliseconds: number, locale: string = 'zh') {
     if (!milliseconds || milliseconds <= 0) {
       return {
         display: locale === 'zh' ? '已过期' : 'Expired',

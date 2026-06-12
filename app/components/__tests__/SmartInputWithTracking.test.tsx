@@ -17,10 +17,32 @@ jest.mock('../../utils/SuggestionProviders', () => ({
 
 import SuggestionProviders from '../../utils/SuggestionProviders';
 
+const mockGetSuggestions = SuggestionProviders.getSuggestions as jest.Mock;
+const mockGetSuggestionPlaceholder = SuggestionProviders.getSuggestionPlaceholder as jest.Mock;
+const mockUpdateContextWithSelection = SuggestionProviders.updateContextWithSelection as jest.Mock;
+
 describe('SmartInputWithTracking', () => {
   // Mock the component's core functionality
+  interface MockProps {
+    fieldName?: string;
+    fieldType?: string;
+    value?: string;
+    onChangeText?: (text: string) => void;
+    onUserInteraction?: (fieldName: string, value: string) => void;
+    label?: string;
+    placeholder?: string;
+    showSuggestions?: boolean;
+    context?: Record<string, unknown>;
+    maxSuggestions?: number;
+    suggestions?: string[];
+  }
+
   class MockSmartInputWithTracking {
-    constructor(props) {
+    props: MockProps;
+    suggestions: string[];
+    suggestionPlaceholder: string;
+
+    constructor(props: MockProps) {
       this.props = props;
       // Initialize suggestions and placeholder by calling the actual methods
       this.suggestions = this.getSuggestions();
@@ -93,17 +115,17 @@ describe('SmartInputWithTracking', () => {
     jest.clearAllMocks();
     
     // Setup default mock implementations
-    SuggestionProviders.getSuggestions.mockReturnValue([
+    mockGetSuggestions.mockReturnValue([
       'Holiday/Tourism',
       'Business',
       'Visiting Friends/Family'
     ]);
     
-    SuggestionProviders.getSuggestionPlaceholder.mockReturnValue(
+    mockGetSuggestionPlaceholder.mockReturnValue(
       'Tap to see 3 travel purposes...'
     );
     
-    SuggestionProviders.updateContextWithSelection.mockReturnValue({
+    mockUpdateContextWithSelection.mockReturnValue({
       previousPurposes: ['Business']
     });
   });
@@ -154,7 +176,7 @@ describe('SmartInputWithTracking', () => {
 
       new MockSmartInputWithTracking(props);
 
-      expect(SuggestionProviders.getSuggestions).toHaveBeenCalledWith(
+      expect(mockGetSuggestions).toHaveBeenCalledWith(
         'travelPurpose',
         {}
       );
@@ -173,14 +195,14 @@ describe('SmartInputWithTracking', () => {
 
       new MockSmartInputWithTracking(props);
 
-      expect(SuggestionProviders.getSuggestions).toHaveBeenCalledWith(
+      expect(mockGetSuggestions).toHaveBeenCalledWith(
         'travelPurpose',
         context
       );
     });
 
     it('limits suggestions based on maxSuggestions prop', () => {
-      SuggestionProviders.getSuggestions.mockReturnValue([
+      mockGetSuggestions.mockReturnValue([
         'Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5'
       ]);
 
@@ -229,7 +251,7 @@ describe('SmartInputWithTracking', () => {
     });
 
     it('handles empty suggestions gracefully', () => {
-      SuggestionProviders.getSuggestions.mockReturnValue([]);
+      mockGetSuggestions.mockReturnValue([]);
 
       const props = {
         fieldName: 'testField',
@@ -257,7 +279,7 @@ describe('SmartInputWithTracking', () => {
 
       const component = new MockSmartInputWithTracking(props);
 
-      expect(SuggestionProviders.getSuggestionPlaceholder).toHaveBeenCalledWith(
+      expect(mockGetSuggestionPlaceholder).toHaveBeenCalledWith(
         'travelPurpose',
         {}
       );
@@ -290,7 +312,7 @@ describe('SmartInputWithTracking', () => {
         placeholder: 'Regular placeholder'
       };
 
-      const component = new MockSmartInputWithTracking(props);
+      const component = new MockSmartInputWithTracking(props as unknown as MockProps);
 
       expect(component.suggestionPlaceholder).toBe('Regular placeholder');
     });
@@ -311,7 +333,7 @@ describe('SmartInputWithTracking', () => {
       const component = new MockSmartInputWithTracking(props);
       component.handleUserInteraction('testField', 'Holiday/Tourism');
 
-      expect(SuggestionProviders.updateContextWithSelection).toHaveBeenCalledWith(
+      expect(mockUpdateContextWithSelection).toHaveBeenCalledWith(
         'travelPurpose',
         'Holiday/Tourism',
         context
@@ -344,7 +366,7 @@ describe('SmartInputWithTracking', () => {
         context: null
       };
 
-      const component = new MockSmartInputWithTracking(props);
+      const component = new MockSmartInputWithTracking(props as unknown as MockProps);
 
       expect(() => component.handleUserInteraction('testField', 'Holiday/Tourism')).not.toThrow();
     });
@@ -358,7 +380,7 @@ describe('SmartInputWithTracking', () => {
         onUserInteraction: null
       };
 
-      const component = new MockSmartInputWithTracking(props);
+      const component = new MockSmartInputWithTracking(props as unknown as MockProps);
 
       expect(() => component.handleUserInteraction('testField', 'Holiday/Tourism')).not.toThrow();
     });
@@ -383,7 +405,7 @@ describe('SmartInputWithTracking', () => {
     });
 
     it('provides accessibility label without suggestions', () => {
-      SuggestionProviders.getSuggestions.mockReturnValue([]);
+      mockGetSuggestions.mockReturnValue([]);
 
       const props = {
         fieldName: 'testField',
@@ -401,7 +423,7 @@ describe('SmartInputWithTracking', () => {
     });
 
     it('uses fieldName as fallback for accessibility label', () => {
-      SuggestionProviders.getSuggestions.mockReturnValue([]);
+      mockGetSuggestions.mockReturnValue([]);
 
       const props = {
         fieldName: 'testField',
@@ -433,7 +455,7 @@ describe('SmartInputWithTracking', () => {
     });
 
     it('provides basic accessibility hint without suggestions', () => {
-      SuggestionProviders.getSuggestions.mockReturnValue([]);
+      mockGetSuggestions.mockReturnValue([]);
 
       const props = {
         fieldName: 'testField',
@@ -452,7 +474,7 @@ describe('SmartInputWithTracking', () => {
 
   describe('Different Field Types', () => {
     it('handles accommodation type field', () => {
-      SuggestionProviders.getSuggestions.mockReturnValue([
+      mockGetSuggestions.mockReturnValue([
         'Hotel', 'Apartment/Condo', 'Resort'
       ]);
 
@@ -466,14 +488,14 @@ describe('SmartInputWithTracking', () => {
 
       new MockSmartInputWithTracking(props);
 
-      expect(SuggestionProviders.getSuggestions).toHaveBeenCalledWith(
+      expect(mockGetSuggestions).toHaveBeenCalledWith(
         'accommodationType',
         {}
       );
     });
 
     it('handles boarding country field', () => {
-      SuggestionProviders.getSuggestions.mockReturnValue([
+      mockGetSuggestions.mockReturnValue([
         'China', 'Singapore', 'Malaysia'
       ]);
 
@@ -487,14 +509,14 @@ describe('SmartInputWithTracking', () => {
 
       new MockSmartInputWithTracking(props);
 
-      expect(SuggestionProviders.getSuggestions).toHaveBeenCalledWith(
+      expect(mockGetSuggestions).toHaveBeenCalledWith(
         'boardingCountry',
         {}
       );
     });
 
     it('handles unknown field type gracefully', () => {
-      SuggestionProviders.getSuggestions.mockReturnValue([]);
+      mockGetSuggestions.mockReturnValue([]);
 
       const props = {
         fieldName: 'testField',

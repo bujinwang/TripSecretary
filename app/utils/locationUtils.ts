@@ -45,7 +45,7 @@
  * formatLocationCode("SAN_FRANCISCO")
  * // → "San Francisco"
  */
-export const formatLocationCode = (value, options = {}) => {
+export const formatLocationCode = (value: unknown, options: Record<string, boolean | string> = {}) => {
   const { titleCase = true, separator = ' ' } = options;
 
   if (!value) {
@@ -67,10 +67,10 @@ return '';
     if (titleCase) {
       return parts
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join(separator);
+        .join(separator as string);
     }
 
-    return parts.join(separator);
+    return parts.join(separator as string);
   }
 
   // If not a code, return as-is
@@ -100,7 +100,7 @@ return '';
  * formatLocationWithTranslations({ name: 'Bangkok', nameZh: '曼谷' }, { format: 'en-zh' })
  * // → "Bangkok - 曼谷"
  */
-export const formatLocationWithTranslations = (location, options = {}) => {
+export const formatLocationWithTranslations = (location: Record<string, unknown> | null, options: Record<string, unknown> = {}) => {
   const { format = 'full', separator = ' - ' } = options;
 
   if (!location || !location.name) {
@@ -121,7 +121,7 @@ return '';
     parts.push(location.nameLocal);
   }
 
-  return parts.join(separator);
+  return parts.join(separator as string);
 };
 
 /**
@@ -147,7 +147,7 @@ return '';
  * getDisplayValue({ code: 'BANGKOK', name: 'Bangkok' }, { includeCode: true })
  * // → "Bangkok (BANGKOK)"
  */
-export const getDisplayValue = (location, options = {}) => {
+export const getDisplayValue = (location: string | Record<string, unknown>, options: Record<string, unknown> = {}) => {
   const { includeCode = false, locale = 'en' } = options;
 
   // Handle string (code)
@@ -210,7 +210,7 @@ export const getDisplayValue = (location, options = {}) => {
  * })
  * // → "123 Sukhumvit Road, Khlong Toei, Bangkok 10110"
  */
-export const formatAddress = (address, options = {}) => {
+export const formatAddress = (address: Record<string, unknown> | null, options: Record<string, unknown> = {}) => {
   const {
     countryCode = 'TH',
     separator = ', ',
@@ -285,7 +285,7 @@ parts.push(address.postalCode);
     parts.push(address.country);
   }
 
-  return parts.filter(Boolean).join(separator);
+  return parts.filter(Boolean).join(separator as string);
 };
 
 /**
@@ -334,7 +334,7 @@ return '';
  * validateLocationCode("123")
  * // → { isValid: false, errors: ['Location code contains numbers'] }
  */
-export const validateLocationCode = (code, rules = {}) => {
+export const validateLocationCode = (code: string, rules: Record<string, unknown> = {}) => {
   const {
     minLength = 2,
     maxLength = 50,

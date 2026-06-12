@@ -161,8 +161,8 @@ const normalizeDigitalArrivalCard = (value: unknown): DigitalArrivalCardView | n
   }
   const cardType = pickString(record, ['cardType', 'card_type']) ?? 'TDAC';
   return {
-    id: pickString(record, ['id']),
-    entryInfoId: pickString(record, ['entryInfoId', 'entry_info_id']),
+    id: pickString(record, ['id']) ?? undefined,
+    entryInfoId: pickString(record, ['entryInfoId', 'entry_info_id']) ?? undefined,
     cardType,
     arrCardNo: pickString(record, ['arrCardNo', 'arr_card_no']),
     qrUri: pickString(record, ['qrUri', 'qr_uri']),
@@ -784,8 +784,8 @@ const EntryInfoDetailScreen: React.FC<EntryInfoDetailScreenProps> = ({ route, na
         entryPack: entryPackForPresentation,
         entryInfo: viewModel.entryInfo,
         passportData,
-        travelData: viewModel.travel,
-        fundData: viewModel.funds,
+        travelData: viewModel.travel ?? undefined,
+        fundData: viewModel.funds as any,
         cardType: viewModel.digitalCard.cardType,
       });
     } catch (err) {

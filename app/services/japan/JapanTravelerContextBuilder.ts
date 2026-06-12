@@ -509,11 +509,11 @@ class JapanTravelerContextBuilder {
 
     return {
       ...info,
-      arrivalDate,
-      arrivalFlightNumber,
-      lengthOfStay,
-      accommodationAddress,
-      accommodationPhone,
+      arrivalDate: arrivalDate ?? undefined,
+      arrivalFlightNumber: arrivalFlightNumber ?? undefined,
+      lengthOfStay: lengthOfStay ?? undefined,
+      accommodationAddress: accommodationAddress ?? undefined,
+      accommodationPhone: accommodationPhone ?? undefined,
     };
   }
 

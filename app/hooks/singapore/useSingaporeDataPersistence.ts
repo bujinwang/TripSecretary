@@ -14,12 +14,75 @@ import {
   PREDEFINED_TRAVEL_PURPOSES,
   PREDEFINED_ACCOMMODATION_TYPES,
 } from '../../screens/singapore/constants';
+import { SingaporeFormStateType } from './useSingaporeFormState';
+
+/**
+ * Wider form state type for persistence hooks: getters keep their inferred types,
+ * but setters accept any value to avoid strict SetStateAction type mismatches.
+ */
+type SingaporePersistenceFormState = {
+  [K in keyof SingaporeFormStateType]: K extends `set${string}`
+    ? (...args: unknown[]) => void
+    : SingaporeFormStateType[K];
+};
+
+/**
+ * Interface for the travel info form (useTravelInfoForm result) methods
+ * used by persistence hooks.
+ */
+interface TravelInfoFormRef {
+  isInitialized: boolean;
+  initializeWithExistingData: (userData: Record<string, unknown>) => Promise<void>;
+  filterFieldsForSave: (allFields: Record<string, unknown>) => Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+interface SaveableFields {
+  passportNo?: string;
+  fullName?: string;
+  nationality?: string;
+  dob?: string;
+  expiryDate?: string;
+  sex?: string;
+  phoneCode?: string;
+  phoneNumber?: string;
+  email?: string;
+  occupation?: string;
+  cityOfResidence?: string;
+  residentCountry?: string;
+  travelPurpose?: string;
+  customTravelPurpose?: string;
+  boardingCountry?: string;
+  visaNumber?: string;
+  arrivalFlightNumber?: string;
+  arrivalArrivalDate?: string;
+  departureFlightNumber?: string;
+  departureDepartureDate?: string;
+  isTransitPassenger?: boolean;
+  accommodationType?: string;
+  customAccommodationType?: string;
+  province?: string;
+  district?: string;
+  subDistrict?: string;
+  postalCode?: string;
+  hotelAddress?: string;
+  [key: string]: unknown;
+}
 
 /**
  * Custom hook to handle Singapore travel info data persistence
  * @param {Object} params - Hook parameters
  * @returns {Object} Data persistence functions
  */
+interface SingaporePersistenceParams {
+  passport: Record<string, unknown>;
+  destination: Record<string, unknown>;
+  userId: string;
+  formState: SingaporePersistenceFormState;
+  travelInfoForm: TravelInfoFormRef;
+  navigation: { addListener: (event: string, callback: () => void) => void };
+}
+
 export const useSingaporeDataPersistence = ({
   passport,
   destination,
@@ -27,7 +90,7 @@ export const useSingaporeDataPersistence = ({
   formState,
   travelInfoForm,
   navigation,
-}) => {
+}: SingaporePersistenceParams) => {
   // Refs for scroll position management
   const scrollViewRef = useRef(null);
   const shouldRestoreScrollPosition = useRef(false);
@@ -102,7 +165,7 @@ export const useSingaporeDataPersistence = ({
 
   // ========== Migration Logic ==========
 
-  const migrateExistingDataToInteractionState = useCallback(async (userData) => {
+  const migrateExistingDataToInteractionState = useCallback(async (userData: Record<string, unknown>) => {
     const currentForm = travelInfoFormRef.current;
     if (!userData || !currentForm?.isInitialized) {
       return;
@@ -114,7 +177,7 @@ export const useSingaporeDataPersistence = ({
 
   // ========== Fund Items Management ==========
 
-  const normalizeFundItem = useCallback((item) => ({
+  const normalizeFundItem = useCallback((item: Record<string, unknown>) => ({
     id: item.id,
     type: item.type || item.itemType || 'cash',
     amount: item.amount,
@@ -127,16 +190,17 @@ export const useSingaporeDataPersistence = ({
   const refreshFundItems = useCallback(async (options = {}) => {
     try {
       const fundItems = await UserDataService.getFundItems(userId, options);
-      const normalized = fundItems.map(normalizeFundItem);
+      const normalized = (fundItems as Record<string, unknown>[]).map(normalizeFundItem);
       formStateRef.current?.setFunds(normalized);
     } catch (error) {
       console.error('Failed to refresh fund items:', error);
     }
   }, [userId, normalizeFundItem]);
 
-  const saveFundItems = useCallback(async (fundItems) => {
+  const saveFundItems = useCallback(async (fundItems: Array<Record<string, unknown>>) => {
     try {
-      await UserDataService.updateFundItems(userId, fundItems);
+      // Use type assertion: updateFundItems is dynamically provided at runtime
+      await (UserDataService as unknown as Record<string, (...args: unknown[]) => unknown>).updateFundItems(userId, fundItems);
       formStateRef.current?.setFunds(fundItems);
       return { success: true };
     } catch (error) {
@@ -160,7 +224,7 @@ export const useSingaporeDataPersistence = ({
       console.log('fieldOverrides:', fieldOverrides);
 
       // Get current values with overrides applied
-      const getCurrentValue = (fieldName, currentValue) => fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
+      const getCurrentValue = (fieldName: string, currentValue: unknown) => fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
 
       // Build all fields object for filtering
       const allFields = {
@@ -198,14 +262,14 @@ export const useSingaporeDataPersistence = ({
       };
 
       // Filter fields based on user interaction
-      const fieldsToSave = interactionForm.filterFieldsForSave(allFields);
+      const fieldsToSave = interactionForm.filterFieldsForSave(allFields) as SaveableFields;
       console.log('Fields to save after filtering:', Object.keys(fieldsToSave).length, 'fields');
 
       // Get existing passport first
       const existingPassport = await UserDataService.getPassport(userId);
 
       // Save passport data - only user-modified fields
-      const passportUpdates = {};
+      const passportUpdates: Record<string, unknown> = {};
       if (fieldsToSave.passportNo?.trim()) {
 passportUpdates.passportNumber = fieldsToSave.passportNo;
 }
@@ -237,7 +301,7 @@ passportUpdates.gender = fieldsToSave.sex;
       }
 
       // Save personal info data - only user-modified fields
-      const personalInfoUpdates = {};
+      const personalInfoUpdates: Record<string, unknown> = {};
       if (fieldsToSave.phoneCode?.trim()) {
 personalInfoUpdates.phoneCode = fieldsToSave.phoneCode;
 }
@@ -267,7 +331,7 @@ personalInfoUpdates.gender = fieldsToSave.sex;
       }
 
       // Save travel info data - only user-modified fields
-      const travelInfoUpdates = {};
+      const travelInfoUpdates: Record<string, unknown> = {};
 
       // Handle travel purpose (with custom option)
       const finalTravelPurpose = fieldsToSave.travelPurpose === 'OTHER' && fieldsToSave.customTravelPurpose?.trim()
@@ -328,7 +392,7 @@ travelInfoUpdates.hotelAddress = fieldsToSave.hotelAddress;
       if (Object.keys(travelInfoUpdates).length > 0) {
         console.log('Saving travel info updates:', Object.keys(travelInfoUpdates));
         try {
-          const destinationId = destination?.id || 'singapore';
+          const destinationId = (destination?.id as string) || 'singapore';
           await UserDataService.updateTravelInfo(userId, destinationId, travelInfoUpdates);
 
           // Handle arrival date change notifications
@@ -381,7 +445,7 @@ travelInfoUpdates.hotelAddress = fieldsToSave.hotelAddress;
 
       // Load travel info and add to userData for migration
       try {
-        const destinationId = destination?.id || 'singapore';
+        const destinationId = (destination?.id as string) || 'singapore';
         const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
         if (travelInfo) {
           userData.travelInfo = travelInfo;
@@ -411,10 +475,10 @@ travelInfoUpdates.hotelAddress = fieldsToSave.hotelAddress;
         // Smart full name loading with fallbacks
         if (passportInfo.fullName?.trim()) {
           state.setFullName(passportInfo.fullName);
-        } else if (passport?.nameEn?.trim()) {
-          state.setFullName(passport.nameEn);
-        } else if (passport?.name?.trim()) {
-          state.setFullName(passport.name);
+        } else if ((passport?.nameEn as string)?.trim()) {
+          state.setFullName(passport?.nameEn as string);
+        } else if ((passport?.name as string)?.trim()) {
+          state.setFullName(passport?.name as string);
         }
 
         state.setNationality(passportInfo.nationality || passport?.nationality || '');
@@ -454,13 +518,13 @@ travelInfoUpdates.hotelAddress = fieldsToSave.hotelAddress;
 
       // Load travel info
       try {
-        const destinationId = destination?.id || 'singapore';
+        const destinationId = (destination?.id as string) || 'singapore';
         console.log('Loading travel info for destination:', destinationId);
         let travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
 
         // Fallback for legacy data
         if (!travelInfo && destination?.name) {
-          travelInfo = await UserDataService.getTravelInfo(userId, destination.name);
+          travelInfo = await UserDataService.getTravelInfo(userId, destination.name as string);
         }
 
         if (travelInfo) {
@@ -538,7 +602,7 @@ travelInfoUpdates.hotelAddress = fieldsToSave.hotelAddress;
         if (userData) {
           // Reload and migrate data
           try {
-            const destinationId = destination?.id || 'singapore';
+            const destinationId = (destination?.id as string) || 'singapore';
             const travelInfo = await UserDataService.getTravelInfo(userId, destinationId);
             if (travelInfo) {
               userData.travelInfo = travelInfo;

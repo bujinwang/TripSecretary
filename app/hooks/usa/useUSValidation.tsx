@@ -12,13 +12,24 @@ import { useCallback, useMemo } from 'react';
  * @param {Function} params.t - Translation function
  * @returns {Object} Validation functions and completion metrics
  */
+interface UseUSValidationParams {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  formState: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  userInteractionTracker: any;
+  saveDataToSecureStorageWithOverride: (overrides?: Record<string, unknown>) => Promise<void>;
+  debouncedSaveData: (data?: Record<string, unknown>) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: any;
+}
+
 export const useUSValidation = ({
   formState,
   userInteractionTracker,
   saveDataToSecureStorageWithOverride,
   debouncedSaveData,
   t,
-}) => {
+}: UseUSValidationParams) => {
 
   // ============================================================
   // FIELD VALIDATION
@@ -30,7 +41,7 @@ export const useUSValidation = ({
    * @param {any} value - Value to validate
    * @returns {Object} { isValid, isWarning, errorMessage }
    */
-  const validateField = useCallback((fieldName, value) => {
+  const validateField = useCallback((fieldName: string, value: string) => {
     // Empty values are allowed (progressive entry)
     if (!value || value.toString().trim() === '') {
       return { isValid: true, isWarning: false, errorMessage: '' };
@@ -167,7 +178,7 @@ export const useUSValidation = ({
    * @param {string} fieldName - Name of the field
    * @param {any} fieldValue - Value of the field
    */
-  const handleFieldBlur = useCallback(async (fieldName, fieldValue) => {
+  const handleFieldBlur = useCallback(async (fieldName: string, fieldValue: string) => {
     try {
       // Mark field as user-modified for interaction tracking
       if (userInteractionTracker) {
@@ -186,12 +197,12 @@ export const useUSValidation = ({
       const { isValid, isWarning, errorMessage } = validateField(fieldName, fieldValue);
 
       // Update errors and warnings state
-      formState.setErrors(prev => ({
+      formState.setErrors((prev: Record<string, string>) => ({
         ...prev,
         [fieldName]: isValid ? '' : (isWarning ? '' : errorMessage)
       }));
 
-      formState.setWarnings(prev => ({
+      formState.setWarnings((prev: Record<string, string>) => ({
         ...prev,
         [fieldName]: isWarning ? errorMessage : ''
       }));
@@ -231,7 +242,7 @@ export const useUSValidation = ({
    * Handle user interaction for fields that don't blur
    * @param {string} fieldName - Name of the field
    */
-  const handleUserInteraction = useCallback((fieldName) => {
+  const handleUserInteraction = useCallback((fieldName: string) => {
     if (userInteractionTracker) {
       userInteractionTracker.markFieldAsModified(fieldName, formState[fieldName]);
     }
@@ -247,7 +258,7 @@ export const useUSValidation = ({
    * @param {string} section - Section name ('passport', 'personal', 'travel', 'funds')
    * @returns {Object} { total, filled }
    */
-  const getFieldCount = useCallback((section) => {
+  const getFieldCount = useCallback((section: string) => {
     const fieldMapping = {
       passport: ['passportNo', 'fullName', 'nationality', 'dob', 'expiryDate', 'gender'],
       personal: ['occupation', 'cityOfResidence', 'residentCountry', 'phoneCode', 'phoneNumber', 'email'],
@@ -264,7 +275,7 @@ export const useUSValidation = ({
 
     const fields = fieldMapping[section] || [];
 
-    const filledCount = fields.filter(field => {
+    const filledCount = fields.filter((field: string) => {
       const value = formState[field];
 
       // Special handling for custom travel purpose

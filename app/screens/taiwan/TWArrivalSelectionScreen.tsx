@@ -17,8 +17,7 @@ const TWArrivalSelectionScreen = ({ navigation, route }: any) => {
   const params = route.params || {};
   const { passport: rawPassport, destination, travelInfo } = params;
   const passport = UserDataService.toSerializablePassport(rawPassport);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { t } = useLocale() as any;
+  const { t } = useLocale();
 
   const goToGuide = () => {
     navigation.navigate('TWArrivalGuide', { passport, destination, travelInfo });
@@ -50,7 +49,7 @@ const TWArrivalSelectionScreen = ({ navigation, route }: any) => {
         <Text style={styles.cardTitle}>{t('taiwan.selection.smartFlow.title')}</Text>
         <Text style={styles.cardSubtitle}>{t('taiwan.selection.smartFlow.subtitle')}</Text>
         <View style={styles.statsRow}>
-          {t('taiwan.selection.smartFlow.highlights', { returnObjects: true, defaultValue: [] }).map((item, index) => (
+          {(t('taiwan.selection.smartFlow.highlights', { returnObjects: true, defaultValue: [] }) as unknown[]).map((item: Record<string, unknown>, index: number) => (
             <View key={`tw-smart-${index}`} style={styles.stat}>
               <Text style={styles.statValue}>{item.value}</Text>
               <Text style={styles.statLabel}>{item.title}</Text>
@@ -58,7 +57,7 @@ const TWArrivalSelectionScreen = ({ navigation, route }: any) => {
           ))}
         </View>
         <View style={styles.features}>
-          {t('taiwan.selection.smartFlow.features', { returnObjects: true, defaultValue: [] }).map((feature, index) => (
+          {(t('taiwan.selection.smartFlow.features', { returnObjects: true, defaultValue: [] }) as unknown[]).map((feature: string, index: number) => (
             <Text key={`tw-feature-${index}`} style={styles.feature}>
               {feature}
             </Text>
@@ -73,7 +72,7 @@ const TWArrivalSelectionScreen = ({ navigation, route }: any) => {
         <Text style={styles.cardTitle}>{t('taiwan.selection.webFlow.title')}</Text>
         <Text style={styles.cardSubtitle}>{t('taiwan.selection.webFlow.subtitle')}</Text>
         <View style={styles.features}>
-          {t('taiwan.selection.webFlow.features', { returnObjects: true, defaultValue: [] }).map((feature, index) => (
+          {t('taiwan.selection.webFlow.features', { returnObjects: true, defaultValue: [] }).map((feature: string, index: number) => (
             <Text key={`tw-web-${index}`} style={styles.feature}>
               {feature}
             </Text>
@@ -88,7 +87,7 @@ const TWArrivalSelectionScreen = ({ navigation, route }: any) => {
 
       <View style={styles.notesCard}>
         <Text style={styles.notesTitle}>{t('taiwan.selection.notes.title')}</Text>
-        {t('taiwan.selection.notes.items', { returnObjects: true, defaultValue: [] }).map((note, index) => (
+        {t('taiwan.selection.notes.items', { returnObjects: true, defaultValue: [] }).map((note: string, index: number) => (
           <Text key={`tw-note-${index}`} style={styles.note}>
             • {note}
           </Text>

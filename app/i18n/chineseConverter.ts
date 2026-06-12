@@ -1,30 +1,42 @@
-// @ts-nocheck
-
 /**
  * Chinese Language Converter
  * Converts Simplified Chinese (zh-CN) to Traditional Chinese variants (zh-TW, zh-HK)
  * Uses OpenCC for accurate character and phrase conversion
  */
 
+// OpenCC converter function type
+type OpenCCConverter = (text: string) => string;
+
+interface OpenCCModule {
+  Converter: (options: { from: string; to: string }) => OpenCCConverter;
+}
+
+interface Converters {
+  'zh-TW': OpenCCConverter;
+  'zh-HK': OpenCCConverter;
+}
+
 // Lazy-load OpenCC to prevent initialization issues
-let OpenCC = null;
-const getOpenCC = () => {
-  if (!OpenCC) {
+let OpenCCModule: OpenCCModule | null = null;
+const getOpenCC = (): OpenCCModule => {
+  if (!OpenCCModule) {
     try {
-      OpenCC = require('opencc-js');
-    } catch (error) {
-      console.error('Failed to load opencc-js:', error);
-      throw error;
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      OpenCCModule = require('opencc-js') as OpenCCModule;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('Failed to load opencc-js:', message);
+      throw err;
     }
   }
-  return OpenCC;
+  return OpenCCModule;
 };
 
 // Lazy-load converters to avoid initialization overhead
-let converters = null;
-let convertersError = null;
+let converters: Converters | null = null;
+let convertersError: unknown = null;
 
-const initConverters = () => {
+const initConverters = (): Converters => {
   if (convertersError) {
     throw convertersError;
   }
@@ -35,10 +47,11 @@ const initConverters = () => {
         'zh-TW': OpenCCLib.Converter({ from: 'cn', to: 'tw' }),
         'zh-HK': OpenCCLib.Converter({ from: 'cn', to: 'hk' }),
       };
-    } catch (error) {
-      convertersError = error;
-      console.error('Failed to initialize OpenCC converters:', error);
-      throw error;
+    } catch (err: unknown) {
+      convertersError = err;
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('Failed to initialize OpenCC converters:', message);
+      throw err;
     }
   }
   return converters;
@@ -46,20 +59,18 @@ const initConverters = () => {
 
 /**
  * Deep convert an object/array structure from Simplified to Traditional Chinese
- * @param {any} obj - The object to convert (can be string, object, array, or primitive)
- * @param {string} variant - Target variant: 'zh-TW' or 'zh-HK'
- * @returns {any} Converted object with same structure
  */
-const deepConvert = (obj, variant) => {
-  let converters;
+const deepConvert = <T>(obj: T, variant: string): T => {
+  let converterMap: Converters;
   try {
-    converters = initConverters();
-  } catch (error) {
-    console.warn(`OpenCC not available, returning original for ${variant}:`, error.message);
+    converterMap = initConverters();
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn(`OpenCC not available, returning original for ${variant}:`, message);
     return obj;
   }
   
-  const converter = converters[variant];
+  const converter = converterMap[variant as keyof Converters];
 
   if (!converter) {
     console.warn(`Unknown Chinese variant: ${variant}, returning original`);
@@ -73,23 +84,23 @@ const deepConvert = (obj, variant) => {
 
   // Convert strings
   if (typeof obj === 'string') {
-    return converter(obj);
+    return converter(obj) as unknown as T;
   }
 
   // Convert arrays
   if (Array.isArray(obj)) {
-    return obj.map(item => deepConvert(item, variant));
+    return obj.map(item => deepConvert(item, variant)) as unknown as T;
   }
 
   // Convert objects
   if (typeof obj === 'object') {
-    const converted = {};
-    for (const [key, value] of Object.entries(obj)) {
+    const converted: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
       // Convert both keys and values for completeness
       const convertedKey = converter(key);
       converted[convertedKey] = deepConvert(value, variant);
     }
-    return converted;
+    return converted as unknown as T;
   }
 
   // Return other types as-is (numbers, booleans, etc.)
@@ -100,13 +111,13 @@ const deepConvert = (obj, variant) => {
  * Convert a Simplified Chinese translation object to Traditional Chinese variant
  * Uses memoization to cache converted objects for performance
  */
-const cache = new Map();
+const cache = new Map<string, unknown>();
 
-const convertToTraditional = (simplifiedObj, variant) => {
+const convertToTraditional = <T>(simplifiedObj: T, variant: string): T => {
   const cacheKey = `${variant}-${JSON.stringify(simplifiedObj).substring(0, 100)}`;
   
   if (cache.has(cacheKey)) {
-    return cache.get(cacheKey);
+    return cache.get(cacheKey) as T;
   }
 
   const converted = deepConvert(simplifiedObj, variant);
@@ -118,11 +129,11 @@ const convertToTraditional = (simplifiedObj, variant) => {
 /**
  * Clear the conversion cache (useful for testing or memory management)
  */
-const clearCache = () => {
+const clearCache = (): void => {
   cache.clear();
 };
 
-module.exports = {
+export {
   convertToTraditional,
   deepConvert,
   clearCache,

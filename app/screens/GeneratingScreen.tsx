@@ -83,10 +83,10 @@ const GeneratingScreen = ({ navigation, route }) => {
       }, 500);
     } catch (error) {
       console.error('Generation error:', error);
-      setError(error.message);
+      setError((error as Error).message);
       Alert.alert(
         '生成失败',
-        error.message || '请稍后重试',
+        (error as Error).message || '请稍后重试',
         [
           {
             text: '重试',

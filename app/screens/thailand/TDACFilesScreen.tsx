@@ -24,8 +24,8 @@ import { useTranslation } from '../../i18n/LocaleContext';
 
 const TDACFilesScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const [pdfs, setPdfs] = useState([]);
-  const [qrImages, setQrImages] = useState([]);
+  const [pdfs, setPdfs] = useState<Record<string, unknown>[]>([]);
+  const [qrImages, setQrImages] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('pdfs'); // 'pdfs' or 'qr'
@@ -61,13 +61,13 @@ const TDACFilesScreen = ({ navigation }) => {
     loadFiles();
   };
 
-  const handleSharePDF = async (pdf) => {
+  const handleSharePDF = async (pdf: Record<string, unknown>) => {
     try {
-      const result = await PDFManagementService.sharePDF(pdf.filepath);
+      const result = await PDFManagementService.sharePDF(pdf.filepath as string);
       if (!result.success) {
         Alert.alert(
           t('common.error') || 'Error',
-          result.error || 'Failed to share PDF'
+          (result.error as string) || 'Failed to share PDF'
         );
       }
     } catch (error) {
@@ -79,13 +79,13 @@ const TDACFilesScreen = ({ navigation }) => {
     }
   };
 
-  const handleShareQR = async (qr) => {
+  const handleShareQR = async (qr: Record<string, unknown>) => {
     try {
-      const result = await PDFManagementService.shareQRImage(qr.filepath);
+      const result = await PDFManagementService.shareQRImage(qr.filepath as string);
       if (!result.success) {
         Alert.alert(
           t('common.error') || 'Error',
-          result.error || 'Failed to share QR code'
+          (result.error as string) || 'Failed to share QR code'
         );
       }
     } catch (error) {
@@ -97,7 +97,7 @@ const TDACFilesScreen = ({ navigation }) => {
     }
   };
 
-  const handleDeletePDF = async (pdf) => {
+  const handleDeletePDF = async (pdf: Record<string, unknown>) => {
     Alert.alert(
       t('common.confirm') || 'Confirm',
       `Delete TDAC PDF for ${pdf.arrCardNo}?`,
@@ -108,7 +108,7 @@ const TDACFilesScreen = ({ navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await PDFManagementService.deletePDF(pdf.filepath);
+              await PDFManagementService.deletePDF(pdf.filepath as string);
               loadFiles(); // Refresh list
             } catch (error) {
               Alert.alert(
@@ -122,7 +122,7 @@ const TDACFilesScreen = ({ navigation }) => {
     );
   };
 
-  const handleDeleteQR = async (qr) => {
+  const handleDeleteQR = async (qr: Record<string, unknown>) => {
     Alert.alert(
       t('common.confirm') || 'Confirm',
       `Delete QR code for ${qr.arrCardNo}?`,
@@ -133,7 +133,7 @@ const TDACFilesScreen = ({ navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await PDFManagementService.deletePDF(qr.filepath);
+              await PDFManagementService.deletePDF(qr.filepath as string);
               loadFiles(); // Refresh list
             } catch (error) {
               Alert.alert(
@@ -147,12 +147,12 @@ const TDACFilesScreen = ({ navigation }) => {
     );
   };
 
-  const formatDate = (isoString) => {
+  const formatDate = (isoString: string) => {
     const date = new Date(isoString);
     return `${date.toLocaleDateString()  } ${  date.toLocaleTimeString()}`;
   };
 
-  const formatFileSize = (bytes) => {
+  const formatFileSize = (bytes: number) => {
     if (bytes < 1024) {
 return `${bytes  } B`;
 }

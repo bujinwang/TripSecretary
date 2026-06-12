@@ -287,13 +287,16 @@ export const ProgressiveEntryFlowTypes = {
 /**
  * Type validation helpers
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ValidatorInput = Record<string, any>;
+
 export const TypeValidators = {
   /**
    * Validate completion metric structure
    * @param {*} obj - Object to validate
    * @returns {boolean} - Is valid CompletionMetric
    */
-  isCompletionMetric(obj) {
+  isCompletionMetric(obj: ValidatorInput) {
     return obj && 
            typeof obj.complete === 'number' &&
            typeof obj.total === 'number' &&
@@ -305,7 +308,7 @@ export const TypeValidators = {
    * @param {*} obj - Object to validate
    * @returns {boolean} - Is valid CompletionMetrics
    */
-  isCompletionMetrics(obj) {
+  isCompletionMetrics(obj: ValidatorInput) {
     return obj &&
            this.isCompletionMetric(obj.passport) &&
            this.isCompletionMetric(obj.personalInfo) &&
@@ -318,7 +321,7 @@ export const TypeValidators = {
    * @param {*} obj - Object to validate
    * @returns {boolean} - Is valid TDACSubmission
    */
-  isTDACSubmission(obj) {
+  isTDACSubmission(obj: ValidatorInput) {
     return obj &&
            typeof obj.arrCardNo === 'string' &&
            typeof obj.qrUri === 'string' &&
@@ -331,7 +334,7 @@ export const TypeValidators = {
    * @param {*} obj - Object to validate
    * @returns {boolean} - Is valid EntryPack
    */
-  isEntryPack(obj) {
+  isEntryPack(obj: ValidatorInput) {
     return obj &&
            typeof obj.id === 'string' &&
            typeof obj.entryInfoId === 'string' &&
@@ -345,7 +348,7 @@ export const TypeValidators = {
    * @param {*} obj - Object to validate
    * @returns {boolean} - Is valid EntryPackSnapshot
    */
-  isEntryPackSnapshot(obj) {
+  isEntryPackSnapshot(obj: ValidatorInput) {
     return obj &&
            typeof obj.snapshotId === 'string' &&
            typeof obj.entryInfoId === 'string' &&
@@ -360,7 +363,7 @@ export const TypeValidators = {
    * @param {*} obj - Object to validate
    * @returns {boolean} - Is valid ArrivalWindow
    */
-  isArrivalWindow(obj) {
+  isArrivalWindow(obj: ValidatorInput) {
     return obj &&
            ['no-date', 'pre-window', 'within-window', 'urgent', 'past-deadline'].includes(obj.state) &&
            typeof obj.message === 'string' &&

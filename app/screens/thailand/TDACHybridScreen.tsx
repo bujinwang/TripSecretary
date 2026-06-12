@@ -52,14 +52,14 @@ const TDACHybridScreen = ({ navigation, route }) => {
   const [progress, setProgress] = useState('正在初始化...');
   const [cloudflareToken, setCloudflareToken] = useState(null);
   const [startTime] = useState(Date.now());
-  const [qrCodeUri, setQrCodeUri] = useState(null);
-  const [arrCardNo, setArrCardNo] = useState(null);
+  const [qrCodeUri, setQrCodeUri] = useState<string | null>(null);
+  const [arrCardNo, setArrCardNo] = useState<string | null>(null);
   const [showCloudflare, setShowCloudflare] = useState(false);
 
   /**
    * Handle WebView messages
    */
-  const handleWebViewMessage = async (event) => {
+  const handleWebViewMessage = async (event: { nativeEvent: { data: string } }) => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
 
@@ -79,7 +79,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
           setProgress('Token获取成功，正在提交...');
 
           if (webViewRef.current) {
-            webViewRef.current.stopLoading();
+            (webViewRef.current as any).stopLoading();
           }
 
           await submitWithAPI(message.token);
@@ -123,7 +123,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
   /**
    * Submit arrival card via API with detailed logging and manual confirmation
    */
-  const submitWithAPI = async (token) => {
+  const submitWithAPI = async (token: string) => {
     try {
       // Validate token
       if (!token || token.length < 100) {
@@ -203,7 +203,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
       }
 
       // Submit with progress updates
-      const updateProgress = (step, total, message) => {
+      const updateProgress = (step: number, total: number, message: string) => {
         setProgress(`步骤 ${step}/${total}: ${message}`);
       };
 
@@ -215,10 +215,10 @@ const TDACHybridScreen = ({ navigation, route }) => {
         console.log(`✅ Success! Total time: ${totalTime}s`);
 
         // Save QR code, PDF, and comprehensive entry data
-        await saveQRCode(result.arrCardNo, result.pdfBlob, result);
+        await saveQRCode(result.arrCardNo as string, result.pdfBlob as unknown as string, result);
 
         // Show success
-        setArrCardNo(result.arrCardNo);
+        setArrCardNo(result.arrCardNo as string);
         setStage('success');
         setProgress(`✅ 完成！用时 ${totalTime}秒`);
 
@@ -251,7 +251,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
       setProgress('提交失败');
       
       // Enhanced error handling with user-friendly messages and recovery options
-      const errorResult = await TDACErrorHandler.handleSubmissionError(error, {
+      const errorResult = await TDACErrorHandler.handleSubmissionError(error as Error, {
         operation: 'tdac_hybrid_submission',
         submissionMethod: 'hybrid',
         travelerData: {
@@ -329,7 +329,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
   /**
    * Save QR code and entry data to gallery, app storage, and history
    */
-  const saveQRCode = async (cardNo, pdfBlob, result) => {
+  const saveQRCode = async (cardNo: string, pdfBlob: string, result: Record<string, unknown>) => {
     try {
       // Request media library permissions
       const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -341,16 +341,17 @@ const TDACHybridScreen = ({ navigation, route }) => {
       // Save PDF using PDFManagementService (standardized naming)
       const pdfSaveResult = await PDFManagementService.savePDF(
         cardNo,
-        pdfBlob,
+        pdfBlob as unknown as Blob,
         { submissionMethod: 'hybrid' }
       );
 
-      console.log('✅ PDF saved to app storage:', pdfSaveResult.filepath);
+      const pdfPath = (pdfSaveResult as { filepath: string }).filepath;
+      console.log('✅ PDF saved to app storage:', pdfPath);
 
       // Save comprehensive data to AsyncStorage for history with submission flag
       const entryData = {
         cardNo,
-        fileUri: pdfSaveResult.filepath,
+        fileUri: pdfPath,
         timestamp: Date.now(),
         submittedAt: result.submittedAt,
         travelerName: `${travelerInfo.firstName} ${travelerInfo.familyName}`,
@@ -364,8 +365,8 @@ const TDACHybridScreen = ({ navigation, route }) => {
         submissionMethod: 'hybrid', // Mark that this was submitted via Hybrid method
         // TDAC submission metadata for EntryPackService
         arrCardNo: result.arrCardNo,
-        qrUri: pdfSaveResult.filepath,
-        pdfPath: pdfSaveResult.filepath
+        qrUri: pdfPath,
+        pdfPath: pdfPath
       };
 
       await AsyncStorage.setItem(`tdac_qr_${cardNo}`, JSON.stringify(entryData));
@@ -378,15 +379,15 @@ const TDACHybridScreen = ({ navigation, route }) => {
         // Use TDACSubmissionService for centralized submission handling
         try {
           const submissionData = {
-            arrCardNo: result.arrCardNo,
-            qrUri: pdfSaveResult.filepath,
-            pdfPath: pdfSaveResult.filepath,
-            submittedAt: result.submittedAt,
+            arrCardNo: result.arrCardNo as string,
+            qrUri: pdfPath,
+            pdfPath: pdfPath,
+            submittedAt: result.submittedAt as string,
             submissionMethod: 'hybrid',
-            duration: result.duration,
+            duration: result.duration as number | null,
             travelerName: `${travelerInfo.firstName} ${travelerInfo.familyName}`,
-            passportNo: travelerInfo.passportNo,
-            arrivalDate: travelerInfo.arrivalDate
+            passportNo: travelerInfo.passportNo as string,
+            arrivalDate: travelerInfo.arrivalDate as string
           };
 
           const serviceResult = await TDACSubmissionService.handleTDACSubmissionSuccess(
@@ -396,7 +397,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
 
           if (serviceResult.success) {
             console.log('✅ TDAC submission handled successfully by service:', {
-              digitalArrivalCardId: serviceResult.digitalArrivalCard?.id,
+              digitalArrivalCardId: (serviceResult.digitalArrivalCard as any)?.id,
               entryInfoId: serviceResult.entryInfoId
             });
           } else {
@@ -424,7 +425,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
       await AsyncStorage.setItem(historyKey, JSON.stringify(history));
       console.log('✅ Added to history list');
 
-      setQrCodeUri(pdfSaveResult.filepath);
+      setQrCodeUri(pdfPath);
 
     } catch (error) {
       console.error('❌ Failed to save QR code:', error);
@@ -443,7 +444,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
       error: { emoji: '❌', color: '#f44336' }
     };
 
-    const info = stageInfo[stage] || stageInfo.loading;
+    const info = stageInfo[stage as keyof typeof stageInfo] || stageInfo.loading;
 
     return (
       <View style={styles.progressContainer}>
@@ -595,7 +596,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
               setTimeout(() => {
                 if (webViewRef.current && stage === 'extracting') {
                   console.log('💉 Injecting token extraction script...');
-                  webViewRef.current.injectJavaScript(
+                  (webViewRef.current as any).injectJavaScript(
                     CloudflareTokenExtractor.getExtractionScript()
                   );
                 }
@@ -605,7 +606,7 @@ const TDACHybridScreen = ({ navigation, route }) => {
               setTimeout(() => {
                 if (webViewRef.current && stage === 'extracting') {
                   console.log('💉 Re-injecting extraction script...');
-                  webViewRef.current.injectJavaScript(
+                  (webViewRef.current as any).injectJavaScript(
                     CloudflareTokenExtractor.getExtractionScript()
                   );
                 }
@@ -920,7 +921,7 @@ const styles = StyleSheet.create({
  * This is a debugging tool - only shown in development mode (__DEV__ = true)
  * In production, submission proceeds automatically without user confirmation
  */
-const showSubmissionConfirmation = (travelerData) => new Promise((resolve) => {
+const showSubmissionConfirmation = (travelerData: Record<string, unknown>) => new Promise<boolean>((resolve) => {
     // 创建详细的确认信息
     const confirmationDetails = `
 🔍 即将提交的信息：
@@ -995,10 +996,10 @@ const showSubmissionConfirmation = (travelerData) => new Promise((resolve) => {
  * 显示更详细的日志信息 (DEV MODE ONLY)
  * Show detailed JSON payload preview for debugging
  */
-const showDetailedLog = (travelerData, resolve) => {
+const showDetailedLog = (travelerData: Record<string, unknown>, resolve: (value: boolean) => void) => {
   // Create JSON payload for verification
   const jsonPayload = {
-    cloudflareToken: travelerData.cloudflareToken ? `已获取 (${travelerData.cloudflareToken.length} 字符)` : "未获取",
+    cloudflareToken: travelerData.cloudflareToken ? `已获取 (${(travelerData.cloudflareToken as string).length} 字符)` : "未获取",
     email: travelerData.email || "",
     
     familyName: travelerData.familyName || "",
@@ -1025,7 +1026,7 @@ const showDetailedLog = (travelerData, resolve) => {
     tranModeId: (() => {
       console.log('🚨 FINAL CHECK - travelerData.tranModeId:', travelerData.tranModeId);
       console.log('🚨 FINAL CHECK - typeof:', typeof travelerData.tranModeId);
-      console.log('🚨 FINAL CHECK - length:', travelerData.tranModeId?.length);
+      console.log('🚨 FINAL CHECK - length:', (travelerData.tranModeId as string)?.length);
       const result = travelerData.tranModeId || "";
       console.log('🚨 FINAL CHECK - result:', result);
       return result;

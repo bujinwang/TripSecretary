@@ -67,10 +67,10 @@ const EntryPackPreviewTemplate = ({
     [rawPassport]
   );
 
-  const [loadedTravelData, setLoadedTravelData] = useState(null);
-  const [loadedFundsData, setLoadedFundsData] = useState(null);
+  const [loadedTravelData, setLoadedTravelData] = useState<unknown>(null);
+  const [loadedFundsData, setLoadedFundsData] = useState<unknown>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState(null);
+  const [loadError, setLoadError] = useState<unknown>(null);
 
   const destinationId =
     destination?.id || config?.destinationId || config?.countryCode || 'vietnam';
@@ -197,7 +197,7 @@ const EntryPackPreviewTemplate = ({
   }, [config?.i18n?.namespace, config?.countryCode]);
 
   const resolveTranslationKey = useCallback(
-    (key) => {
+    (key: string) => {
       if (!key) {
         return key;
       }
@@ -210,12 +210,12 @@ const EntryPackPreviewTemplate = ({
   );
 
   const resolveText = useCallback(
-    (value, { preserveArray = false } = {}) => {
+    (value: unknown, { preserveArray = false }: { preserveArray?: boolean } = {}) => {
       if (value === null || value === undefined) {
         return preserveArray ? [] : null;
       }
 
-      const resolveSingle = (input) => {
+      const resolveSingle = (input: unknown): string | string[] | null => {
         if (input === null || input === undefined) {
           return null;
         }
@@ -242,7 +242,7 @@ const EntryPackPreviewTemplate = ({
         }
 
         if (typeof input === 'object') {
-          const { key: providedKey, defaultValue, params, values, ...languageMap } = input;
+          const { key: providedKey, defaultValue, params, values, ...languageMap } = input as Record<string, unknown>;
 
           if (providedKey) {
             const translationKey = resolveTranslationKey(providedKey);
@@ -280,8 +280,8 @@ const EntryPackPreviewTemplate = ({
           ].filter(Boolean);
 
           for (const langKey of languageCandidates) {
-            if (typeof languageMap[langKey] === 'string') {
-              return languageMap[langKey];
+            if (typeof (languageMap as Record<string, unknown>)[langKey as string] === 'string') {
+              return (languageMap as Record<string, unknown>)[langKey as string];
             }
           }
 
@@ -308,7 +308,7 @@ const EntryPackPreviewTemplate = ({
     [fallbackLanguage, language, resolveTranslationKey, t]
   );
 
-  const scrollViewRef = useRef(null);
+  const scrollViewRef = useRef<ScrollView | null>(null);
 
   const helpers = useMemo(
     () => ({
@@ -328,7 +328,7 @@ const EntryPackPreviewTemplate = ({
   );
 
   const handleActionPress = useCallback(
-    (action) => {
+    (action: Record<string, unknown>) => {
       if (!action) {
         return;
       }
@@ -437,7 +437,7 @@ const EntryPackPreviewTemplate = ({
   }, [baseContext]);
 
   const renderComponent = useCallback(
-    (slot, defaultRenderer) => {
+    (slot: string, defaultRenderer: () => React.ReactNode) => {
       const OverrideComponent = config?.components?.[slot];
       const templateProps = buildTemplateProps();
 
@@ -460,7 +460,7 @@ const EntryPackPreviewTemplate = ({
   );
 
   const renderSlot = useCallback(
-    (slot) => {
+    (slot: string) => {
       const renderer = config?.slots?.[slot];
       if (typeof renderer === 'function') {
         try {
@@ -475,12 +475,12 @@ const EntryPackPreviewTemplate = ({
     [buildTemplateProps, config]
   );
 
-  const runHook = useCallback((hookName, extraPayload = {}) => {
+  const runHook = useCallback((hookName: string, extraPayload: Record<string, unknown> = {}) => {
     const ctx = contextRef.current;
     if (!ctx) {
       return;
     }
-    const hook = ctx.config?.hooks?.[hookName];
+    const hook = (ctx as any).config?.hooks?.[hookName];
     if (typeof hook === 'function') {
       try {
         hook({ ...ctx, ...extraPayload });
@@ -606,7 +606,7 @@ const EntryPackPreviewTemplatePreviewBanner = () => {
   );
 };
 
-const EntryPackPreviewTemplateEntryPack = (props) => {
+const EntryPackPreviewTemplateEntryPack = (props: Record<string, unknown>) => {
   const { entryPack } = useEntryPackPreviewTemplate();
 
   return (
@@ -689,7 +689,7 @@ const EntryPackPreviewTemplateInfoSection = () => {
   return (
     <View style={styles.infoSection}>
       <Text style={styles.infoIcon}>{resolvedIcon}</Text>
-      {lines.map((line, index) => (
+      {lines.map((line: string, index: number) => (
         <Text
           key={`info-line-${index}`}
           style={styles.infoText}

@@ -32,6 +32,13 @@ import PassportInfoSection from './components/PassportInfoSection';
 import FundsInfoSection from './components/FundsInfoSection';
 import TravelInfoSection from './components/TravelInfoSection';
 import ContactInfoSection from './components/ContactInfoSection';
+
+const AnyQRCodeSection = QRCodeSection as any;
+const AnyPassportInfoSection = PassportInfoSection as any;
+const AnyFundsInfoSection = FundsInfoSection as any;
+const AnyTravelInfoSection = TravelInfoSection as any;
+const AnyContactInfoSection = ContactInfoSection as any;
+
 import type { RootStackScreenProps } from '../../types/navigation';
 import type {
   EntryPackPresentation,
@@ -648,7 +655,7 @@ const ImmigrationOfficerViewScreen: React.FC<ImmigrationOfficerViewScreenProps> 
   };
 
   const renderQRSection = () => (
-    <QRCodeSection
+    <AnyQRCodeSection
       entryPack={entryPack}
       language={language}
       qrZoom={qrZoom}
@@ -662,7 +669,7 @@ const ImmigrationOfficerViewScreen: React.FC<ImmigrationOfficerViewScreenProps> 
   );
 
   const renderPassportSection = () => (
-    <PassportInfoSection
+    <AnyPassportInfoSection
       passportData={passportData}
       language={language}
       formatDateForDisplay={formatDateForDisplay}
@@ -671,7 +678,7 @@ const ImmigrationOfficerViewScreen: React.FC<ImmigrationOfficerViewScreenProps> 
   );
 
   const renderFundsSection = () => (
-    <FundsInfoSection
+    <AnyFundsInfoSection
       fundData={fundData}
       language={language}
       t={t}
@@ -679,7 +686,7 @@ const ImmigrationOfficerViewScreen: React.FC<ImmigrationOfficerViewScreenProps> 
   );
 
   const renderTravelSection = () => (
-    <TravelInfoSection
+    <AnyTravelInfoSection
       travelData={travelData}
       language={language}
       formatDateForDisplay={formatDateForDisplay}
@@ -688,7 +695,7 @@ const ImmigrationOfficerViewScreen: React.FC<ImmigrationOfficerViewScreenProps> 
   );
 
   const renderContactSection = () => (
-    <ContactInfoSection
+    <AnyContactInfoSection
       passportData={passportData}
       travelData={travelData}
       language={language}

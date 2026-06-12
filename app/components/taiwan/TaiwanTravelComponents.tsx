@@ -10,7 +10,7 @@ import Input from '../Input';
 /**
  * FieldWarningIcon - Shows warning/error icon for form fields
  */
-export const FieldWarningIcon = ({ hasWarning, hasError }) => {
+export const FieldWarningIcon = ({ hasWarning, hasError }: { hasWarning: boolean; hasError: boolean }) => {
   if (hasError) {
     return <Text style={styles.fieldErrorIcon}>❌</Text>;
   }
@@ -38,6 +38,21 @@ export const InputWithValidation = ({
   optional = false,
   t,
   ...props
+}: {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  onBlur?: () => void;
+  error?: boolean;
+  errorMessage?: string;
+  warning?: boolean;
+  warningMessage?: string;
+  fieldName?: string;
+  lastEditedField?: string;
+  required?: boolean;
+  optional?: boolean;
+  t?: (key: string) => string;
+  [key: string]: unknown;
 }) => {
   const hasError = error && errorMessage;
   const hasWarning = warning && warningMessage && !hasError;
@@ -96,7 +111,15 @@ return <Text style={styles.optionalText}>（可选）</Text>;
 /**
  * CollapsibleSection - Expandable section with field count badge
  */
-export const CollapsibleSection = ({ title, subtitle, children, onScan, isExpanded, onToggle, fieldCount }) => {
+export const CollapsibleSection = ({ title, subtitle, children, onScan, isExpanded, onToggle, fieldCount }: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+  onScan?: () => void;
+  isExpanded: boolean;
+  onToggle: () => void;
+  fieldCount?: { filled: number; total: number };
+}) => {
   const handleToggle = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     onToggle();

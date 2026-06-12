@@ -10,7 +10,7 @@
 import { useState, useCallback } from 'react';
 import { getPhoneCode } from '../../data/phoneCodes';
 
-export const useHongKongFormState = (passport) => {
+export const useHongKongFormState = (passport: Record<string, unknown>) => {
   // Smart defaults for common scenarios
   const getSmartDefaults = () => {
     const today = new Date();
@@ -264,3 +264,5 @@ export const useHongKongFormState = (passport) => {
     resetForm,
   };
 };
+
+export type HongKongFormStateType = ReturnType<typeof useHongKongFormState>;

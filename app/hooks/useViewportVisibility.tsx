@@ -37,7 +37,14 @@ import { useState, useEffect, useRef, useCallback } from 'react';
  * @param {Function} options.onVisibilityChange - Callback when visibility changes
  * @returns {[Function, boolean]} [ref function to attach to element, isVisible boolean]
  */
-export const useViewportVisibility = (options = {}) => {
+interface ViewportOptions {
+  threshold?: number;
+  rootMargin?: number;
+  once?: boolean;
+  onVisibilityChange?: (isVisible: boolean) => void;
+}
+
+export const useViewportVisibility = (options: ViewportOptions = {}) => {
   const {
     threshold = 0,
     rootMargin = 0,
@@ -47,8 +54,8 @@ export const useViewportVisibility = (options = {}) => {
 
   const [isVisible, setIsVisible] = useState(false);
   const [hasBeenVisible, setHasBeenVisible] = useState(false);
-  const viewRef = useRef(null);
-  const intervalRef = useRef(null);
+  const viewRef = useRef<any>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   /**
    * Check if the element is visible in the viewport
@@ -63,7 +70,7 @@ return;
 return;
 }
 
-    viewRef.current.measureInWindow((x, y, width, height) => {
+    viewRef.current.measureInWindow((x: number, y: number, width: number, height: number) => {
       // Get viewport dimensions
       const windowHeight = require('react-native').Dimensions.get('window').height;
       const windowWidth = require('react-native').Dimensions.get('window').width;
@@ -109,7 +116,7 @@ return;
   /**
    * Ref callback to attach to the element
    */
-  const setRef = useCallback((node) => {
+  const setRef = useCallback((node: unknown) => {
     viewRef.current = node;
 
     // Start checking visibility when ref is set
@@ -142,7 +149,13 @@ return;
  * @param {Object} options - Configuration options
  * @returns {[Function, boolean, boolean]} [ref, isVisible, shouldLoad]
  */
-export const useLazyLoad = (options = {}) => {
+interface LazyLoadOptions {
+  threshold?: number;
+  rootMargin?: number;
+  once?: boolean;
+}
+
+export const useLazyLoad = (options: LazyLoadOptions = {}) => {
   const {
     threshold = 0.1,
     rootMargin = 100, // Start loading 100px before visible
@@ -176,17 +189,17 @@ export const useLazyLoad = (options = {}) => {
  * @param {number} options.threshold - Visibility threshold (default: 0.5)
  * @returns {Function} ref to attach to element
  */
-export const useViewportImpression = (onImpression, options = {}) => {
+export const useViewportImpression = (onImpression: () => void, options: Record<string, unknown> = {}) => {
   const {
     minDuration = 1000,
     threshold = 0.5,
   } = options;
 
   const impressionFiredRef = useRef(false);
-  const visibleStartTimeRef = useRef(null);
-  const timerRef = useRef(null);
+  const visibleStartTimeRef = useRef<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleVisibilityChange = useCallback((isVisible) => {
+  const handleVisibilityChange = useCallback((isVisible: boolean) => {
     if (isVisible && !impressionFiredRef.current) {
       // Start tracking visible time
       if (!visibleStartTimeRef.current) {
@@ -211,7 +224,7 @@ export const useViewportImpression = (onImpression, options = {}) => {
   }, [minDuration, onImpression]);
 
   const [ref] = useViewportVisibility({
-    threshold,
+    threshold: threshold as number,
     onVisibilityChange: handleVisibilityChange,
   });
 

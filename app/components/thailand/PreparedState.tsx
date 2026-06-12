@@ -51,6 +51,21 @@ const PreparedState = ({
   entryPackStatus,
   primaryActionState,
   onPrimaryAction,
+}: {
+  completionPercent: number;
+  completionStatus: string;
+  arrivalDate: string;
+  t: (key: string) => string;
+  passportParam: Record<string, unknown>;
+  destination: Record<string, unknown>;
+  userData: Record<string, unknown>;
+  handleEditInformation: () => void;
+  handlePreviewEntryCard: () => void;
+  navigation: { navigate: (screen: string, params?: Record<string, unknown>) => void };
+  renderPrimaryAction: () => React.ReactNode;
+  entryPackStatus: string;
+  primaryActionState: string;
+  onPrimaryAction: () => void;
 }) => {
   const fallbackRenderPrimaryAction = () => {
     if (!primaryActionState && typeof onPrimaryAction !== 'function') {

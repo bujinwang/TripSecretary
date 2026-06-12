@@ -1,16 +1,17 @@
-// @ts-nocheck — translation data, duplicate keys need manual review
 import countryTranslations from './translations/index';
 import { convertToTraditional } from './chineseConverter';
 
-const isPlainObject = (value) =>
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
 
-const deepMergeTranslations = (base = {}, overrides = {}) => {
+type TranslationsRecord = Record<string, unknown>;
+
+const deepMergeTranslations = (base: TranslationsRecord = {}, overrides: TranslationsRecord = {}): TranslationsRecord => {
   if (!isPlainObject(base)) {
     return overrides !== undefined ? overrides : base;
   }
 
-  const result = { ...base };
+  const result: TranslationsRecord = { ...base };
 
   Object.keys(overrides || {}).forEach((key) => {
     const baseValue = result[key];
@@ -32,7 +33,7 @@ export const SUPPORTED_LANGUAGES = ['en', 'zh-CN', 'zh-TW', 'fr', 'de', 'es', 'm
 export const PROGRESSIVE_FLOW_NAMESPACES = ['progressiveFlow', 'entryPack', 'notifications'];
 
 // Language fallback configuration
-export const LANGUAGE_FALLBACK = {
+export const LANGUAGE_FALLBACK: Record<string, string> = {
   'zh-TW': 'zh-CN',
   'zh-HK': 'zh-CN',
   'zh': 'zh-CN',
@@ -6293,13 +6294,14 @@ countryLangKeys.forEach((lang) => {
   }
 });
 
-export const getLanguageLabel = (language) =>
-  translations?.en?.languages?.[language] || language;
+export const getLanguageLabel = (language: string): string =>
+  (translations?.en?.languages as Record<string, string> | undefined)?.[language] || language;
 
 // Get translation with fallback mechanism
-export const getTranslationWithFallback = (key, language, params = {}) => {
+export const getTranslationWithFallback = (key: string, language: string, params: Record<string, string> = {}): string => {
   const keys = key.split('.');
-  let current = translations[language];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let current: any = (translations as Record<string, unknown>)[language];
   
   // Try primary language first
   for (const k of keys) {
@@ -6314,7 +6316,7 @@ export const getTranslationWithFallback = (key, language, params = {}) => {
   // If not found, try fallback language
   if (!current && LANGUAGE_FALLBACK[language]) {
     const fallbackLang = LANGUAGE_FALLBACK[language];
-    current = translations[fallbackLang];
+    current = (translations as Record<string, unknown>)[fallbackLang];
     for (const k of keys) {
       if (current && typeof current === 'object' && k in current) {
         current = current[k];

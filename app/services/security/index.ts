@@ -10,7 +10,7 @@ export { default as KeyManagementService } from './KeyManagementService';
 export { default as GDPRComplianceService } from './GDPRComplianceService';
 
 // Convenience function to initialize all security services
-export const initializeSecurityServices = async (userId, masterKey = null) => {
+export const initializeSecurityServices = async (userId: string, masterKey: string | null = null) => {
   try {
     const { KeyManagementService } = await import('./KeyManagementService');
     const { SecureStorageService } = await import('./SecureStorageService');
@@ -76,7 +76,7 @@ export const SecurityUtils = {
    * @param {string} key - Key to validate
    * @returns {boolean} - Is valid key
    */
-  isValidEncryptionKey: (key) => typeof key === 'string' &&
+  isValidEncryptionKey: (key: string) => typeof key === 'string' &&
            key.length >= 32 &&
            /^[a-f0-9]+$/i.test(key),
 
@@ -85,7 +85,7 @@ export const SecurityUtils = {
    * @param {string} data - Data to check
    * @returns {boolean} - Likely encrypted
    */
-  isEncryptedData: (data) => 
+  isEncryptedData: (data: string) => 
     // Heuristic: encrypted data is usually longer than 50 chars
      typeof data === 'string' &&
            data.length > 50 &&
@@ -97,7 +97,7 @@ export const SecurityUtils = {
    * @param {Object} data - Data object
    * @returns {Object} - Sanitized data
    */
-  sanitizeForLogging: (data) => {
+  sanitizeForLogging: (data: Record<string, unknown>) => {
     if (!data) {
 return data;
 }
@@ -135,7 +135,7 @@ return data;
    * @param {string} userId - User identifier
    * @returns {Promise<Object>} - Consent status
    */
-  getGDPRConsentStatus: async (userId) => {
+  getGDPRConsentStatus: async (userId: string) => {
     try {
       const consentData = await SecureStore.getItemAsync(`privacy_consents_${userId}`);
       if (!consentData) {
@@ -158,7 +158,7 @@ return data;
         hasConsented: false,
         consents: {},
         timestamp: null,
-        error: error.message
+        error: (error as Error).message
       };
     }
   },
@@ -169,7 +169,7 @@ return data;
    * @param {string} processingType - Type of processing
    * @returns {Promise<boolean>} - Whether consent is valid
    */
-  validateGDPRConsent: async (userId, processingType) => {
+  validateGDPRConsent: async (userId: string, processingType: string) => {
     try {
       const consentStatus = await SecurityUtils.getGDPRConsentStatus(userId);
 

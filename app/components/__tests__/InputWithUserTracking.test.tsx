@@ -14,8 +14,20 @@ import InputWithUserTracking from '../InputWithUserTracking';
 
 describe('InputWithUserTracking', () => {
   // Mock the component's core functionality
+  interface MockProps {
+    fieldName?: string;
+    value?: string;
+    onChangeText?: (text: string) => void;
+    onUserInteraction?: (fieldName: string, value: string) => void;
+    suggestions?: string[];
+  }
+
   class MockInputWithUserTracking {
-    constructor(props) {
+    props: MockProps;
+    hasUserInteracted: boolean;
+    userInteractionRef: boolean;
+
+    constructor(props: MockProps) {
       this.props = props;
       this.hasUserInteracted = false;
       this.userInteractionRef = false;
@@ -29,7 +41,7 @@ describe('InputWithUserTracking', () => {
         
         // Notify parent component about user interaction
         if (this.props.onUserInteraction) {
-          this.props.onUserInteraction(this.props.fieldName, text);
+          this.props.onUserInteraction(this.props.fieldName as string, text);
         }
       }
 
@@ -48,7 +60,7 @@ describe('InputWithUserTracking', () => {
 
       // Notify parent component about user interaction
       if (this.props.onUserInteraction) {
-        this.props.onUserInteraction(this.props.fieldName, suggestion);
+        this.props.onUserInteraction(this.props.fieldName as string, suggestion);
       }
 
       // Update value
@@ -232,7 +244,7 @@ return [];
         onUserInteraction: null
       };
 
-      const component = new MockInputWithUserTracking(props);
+      const component = new MockInputWithUserTracking(props as unknown as MockProps);
       
       expect(() => component.handleTextChange('test')).not.toThrow();
     });
@@ -245,7 +257,7 @@ return [];
         onUserInteraction: jest.fn()
       };
 
-      const component = new MockInputWithUserTracking(props);
+      const component = new MockInputWithUserTracking(props as unknown as MockProps);
       
       expect(() => component.handleTextChange('test')).not.toThrow();
     });

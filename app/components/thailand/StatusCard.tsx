@@ -9,6 +9,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { designTokens, spacing, borderRadius, shadows, typography } from '../../theme/designTokens';
 import { createAnimationValue, ANIMATIONS } from '../../utils/animations';
 
+interface StatusCardProps {
+  title: string;
+  icon: string;
+  status: 'complete' | 'incomplete' | 'partial';
+  progress: number;
+  onPress?: () => void;
+  variant?: 'default' | 'compact';
+  showChevron?: boolean;
+  disabled?: boolean;
+  style?: object;
+}
+
 const StatusCard = ({
   title,
   icon,
@@ -19,7 +31,7 @@ const StatusCard = ({
   showChevron = true,
   disabled = false,
   style,
-}) => {
+}: StatusCardProps) => {
   const scaleAnim = useRef(createAnimationValue(1)).current;
   const progressAnim = useRef(createAnimationValue(0)).current;
 

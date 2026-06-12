@@ -276,13 +276,11 @@ continue;
               debouncedSave();
             }
           } catch (saveError) {
-            // @ts-ignore - Remove when field type definitions are added
             logger.error('[Validation] Failed to save field data:', saveError);
           }
         }
       }
     } catch (error) {
-      // @ts-ignore - Remove when field type definitions are added
       logger.error('[Validation] Error in handleFieldBlur:', error);
     }
   }, [

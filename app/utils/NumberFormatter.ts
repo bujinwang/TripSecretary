@@ -53,7 +53,7 @@ class NumberFormatter {
     const { maximumFractionDigits = 2, useGrouping = true } = options;
     
     // Round to specified decimal places
-    const rounded = Math.round(number * Math.pow(10, maximumFractionDigits)) / Math.pow(10, maximumFractionDigits);
+    const rounded = Math.round(number * Math.pow(10, maximumFractionDigits as number)) / Math.pow(10, maximumFractionDigits as number);
     let formatted = rounded.toString();
 
     // Add thousands separators if requested
@@ -78,7 +78,7 @@ class NumberFormatter {
    * @returns {string} Thousands separator character
    */
   static getThousandsSeparator(locale: string): string {
-    const separators = {
+    const separators: Record<string, string> = {
       'zh-CN': ',',
       'zh-TW': ',',
       'zh': ',',
@@ -97,7 +97,7 @@ class NumberFormatter {
    * @returns {string} Decimal separator character
    */
   static getDecimalSeparator(locale: string): string {
-    const separators = {
+    const separators: Record<string, string> = {
       'zh-CN': '.',
       'zh-TW': '.',
       'zh': '.',
@@ -153,9 +153,9 @@ class NumberFormatter {
   static formatPercentageFallback(number: number, locale: string, options: Record<string, unknown> = {}): string {
     const { maximumFractionDigits = 1 } = options;
     const percentage = number * 100;
-    const rounded = Math.round(percentage * Math.pow(10, maximumFractionDigits)) / Math.pow(10, maximumFractionDigits);
+    const rounded = Math.round(percentage * Math.pow(10, maximumFractionDigits as number)) / Math.pow(10, maximumFractionDigits as number);
     
-    const percentSymbols = {
+    const percentSymbols: Record<string, string> = {
       'zh-CN': '%',
       'zh-TW': '%',
       'zh': '%',
@@ -184,7 +184,7 @@ class NumberFormatter {
     const { precision = 1 } = options;
     const normalizedLocale = this.normalizeLocale(locale);
 
-    const units = {
+    const units: Record<string, Array<{ value: number; symbol: string }>> = {
       'zh-CN': [
         { value: 1e8, symbol: '亿' },
         { value: 1e4, symbol: '万' },
@@ -226,7 +226,7 @@ class NumberFormatter {
 
     for (const unit of localeUnits) {
       if (Math.abs(number) >= unit.value) {
-        const formatted = (number / unit.value).toFixed(precision);
+        const formatted = (number / unit.value).toFixed(precision as number);
         return `${formatted}${unit.symbol}`;
       }
     }
@@ -257,7 +257,7 @@ class NumberFormatter {
       const pr = new Intl.PluralRules(normalizedLocale, { type: 'ordinal' });
       const rule = pr.select(number);
 
-      const suffixes = {
+      const suffixes: Record<string, Record<string, string>> = {
         en: {
           one: 'st',
           two: 'nd',
@@ -365,7 +365,7 @@ class NumberFormatter {
     const formattedStart = this.formatNumber(start, locale, options);
     const formattedEnd = this.formatNumber(end, locale, options);
 
-    const rangeSeparators = {
+    const rangeSeparators: Record<string, string> = {
       'zh-CN': ' - ',
       'zh-TW': ' - ',
       'zh': ' - ',
@@ -390,7 +390,7 @@ return 'en';
 }
     
     // Handle common variations
-    const localeMap = {
+    const localeMap: Record<string, string> = {
       'zh': 'zh-CN',
       'zh-Hans': 'zh-CN',
       'zh-Hant': 'zh-TW',
@@ -422,7 +422,7 @@ return 'en';
     try {
       const normalizedLocale = this.normalizeLocale(locale);
       
-      const formatOptions = {
+      const formatOptions: Record<string, unknown> = {
         style: 'currency',
         currency: currency.toUpperCase(),
         currencyDisplay
@@ -456,7 +456,7 @@ return 'en';
    * @returns {number} Default fraction digits
    */
   static getCurrencyFractionDigits(currency: string): number {
-    const fractionDigits = {
+    const fractionDigits: Record<string, number> = {
       // Major currencies
       'USD': 2, 'EUR': 2, 'GBP': 2, 'JPY': 0, 'CNY': 2, 'KRW': 0,
       // Asian currencies
@@ -483,7 +483,7 @@ return 'en';
     const normalizedLocale = this.normalizeLocale(locale);
     
     // Get currency symbol or code
-    const currencyInfo = this.getCurrencyInfo(currency, currencyDisplay);
+    const currencyInfo = this.getCurrencyInfo(currency, currencyDisplay as string);
     
     // Format the number part
     const fractionDigits = this.getCurrencyFractionDigits(currency);
@@ -509,7 +509,7 @@ return 'en';
    * @returns {string} Currency symbol or code
    */
   static getCurrencyInfo(currency: string, display = 'symbol'): string {
-    const currencyData = {
+    const currencyData: Record<string, { symbol: string; code: string; name: string }> = {
       'USD': { symbol: '$', code: 'USD', name: 'US Dollar' },
       'EUR': { symbol: '€', code: 'EUR', name: 'Euro' },
       'GBP': { symbol: '£', code: 'GBP', name: 'British Pound' },
@@ -584,7 +584,7 @@ return 'en';
       return '';
     }
 
-    const result = formatted.join(separator);
+    const result = formatted.join(separator as string);
     
     if (showTotal && amounts.length > 1) {
       // Calculate total in base currency (first currency)
@@ -614,7 +614,7 @@ return 'en';
    * @returns {string} Localized "Total" label
    */
   static getTotalLabel(locale: string): string {
-    const labels = {
+    const labels: Record<string, string> = {
       'zh-CN': '总计',
       'zh-TW': '總計',
       'zh': '总计',
@@ -667,8 +667,8 @@ return 'en';
    * @param {string} symbol - Currency symbol
    * @returns {string} Currency code
    */
-  static symbolToCurrency(symbol) {
-    const symbolMap = {
+  static symbolToCurrency(symbol: string) {
+    const symbolMap: Record<string, string> = {
       '$': 'USD',
       '€': 'EUR',
       '£': 'GBP',

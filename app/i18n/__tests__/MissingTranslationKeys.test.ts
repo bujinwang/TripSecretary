@@ -1,11 +1,8 @@
-// @ts-nocheck
-
 // Test for missing translation keys in progressive entry flow
 import { useLocale } from '../LocaleContext';
 import countryTranslations from '../translations/countries.zh.json';
 
 describe('Progressive Entry Flow Translation Keys', () => {
-  // Test that all required keys exist in the translation files
   const requiredKeys = [
     'common.error',
     'common.locale',
@@ -29,34 +26,31 @@ describe('Progressive Entry Flow Translation Keys', () => {
   test('should have all required translation keys in Chinese', () => {
     const translations = countryTranslations;
     
-    requiredKeys.forEach(key => {
+    requiredKeys.forEach((key: string) => {
       const keyPath = key.split('.');
-      let current = translations;
+      let current: Record<string, unknown> = translations as Record<string, unknown>;
       
       for (const segment of keyPath) {
         expect(current).toHaveProperty(segment);
-        current = current[segment];
+        current = current[segment] as Record<string, unknown>;
       }
       
       expect(typeof current).toBe('string');
-      expect(current.length).toBeGreaterThan(0);
+      expect((current as unknown as string).length).toBeGreaterThan(0);
     });
   });
 
   test('should provide fallback values for missing keys', () => {
-    // Mock the translation function behavior
-    const mockT = (key, options = {}) => {
+    const mockT = (key: string, options: { defaultValue?: string } = {}): string => {
       const { defaultValue } = options;
       
-      // Simulate missing key scenario
       if (key === 'thailand.entryFlow.categoriesTitle') {
         return defaultValue || '';
       }
       
-      return key; // Return key as fallback
+      return key;
     };
 
-    // Test fallback behavior
     expect(mockT('thailand.entryFlow.categoriesTitle', { defaultValue: '信息类别' }))
       .toBe('信息类别');
     
@@ -65,18 +59,16 @@ describe('Progressive Entry Flow Translation Keys', () => {
   });
 
   test('should handle locale-specific formatting', () => {
-    // Test date formatting
     const testDate = new Date('2024-10-20T14:30:00Z');
     
-    // Mock locale-aware formatting
-    const formatters = {
+    const formatters: Record<string, { date: (date: Date) => string; time: (date: Date) => string }> = {
       'zh-CN': {
-        date: (date) => date.toLocaleDateString('zh-CN'),
-        time: (date) => date.toLocaleTimeString('zh-CN', { hour12: false })
+        date: (date: Date) => date.toLocaleDateString('zh-CN'),
+        time: (date: Date) => date.toLocaleTimeString('zh-CN', { hour12: false })
       },
       'en': {
-        date: (date) => date.toLocaleDateString('en-US'),
-        time: (date) => date.toLocaleTimeString('en-US', { hour12: true })
+        date: (date: Date) => date.toLocaleDateString('en-US'),
+        time: (date: Date) => date.toLocaleTimeString('en-US', { hour12: true })
       }
     };
 
@@ -87,14 +79,13 @@ describe('Progressive Entry Flow Translation Keys', () => {
   test('should handle currency formatting for different locales', () => {
     const amount = 1234.56;
     
-    // Mock currency formatting
-    const formatCurrency = (amount, currency, locale) => {
+    const formatCurrency = (amount: number, currency: string, locale: string): string => {
       try {
         return new Intl.NumberFormat(locale, {
           style: 'currency',
           currency
         }).format(amount);
-      } catch (error) {
+      } catch (_error) {
         return `${currency} ${amount}`;
       }
     };
@@ -105,10 +96,8 @@ describe('Progressive Entry Flow Translation Keys', () => {
   });
 
   test('should handle pluralization correctly', () => {
-    // Mock pluralization function
-    const pluralize = (count, singular, plural, locale = 'en') => {
+    const pluralize = (count: number, singular: string, plural: string, locale = 'en'): string => {
       if (locale.startsWith('zh')) {
-        // Chinese doesn't have plural forms
         return `${count} ${singular}`;
       }
       
@@ -122,8 +111,7 @@ describe('Progressive Entry Flow Translation Keys', () => {
   });
 
   test('should handle text overflow in different languages', () => {
-    // Test text length variations across languages
-    const testTexts = {
+    const testTexts: Record<string, string> = {
       'zh-CN': '信息类别',
       'en': 'Information Categories',
       'es': 'Categorías de Información',
@@ -131,17 +119,15 @@ describe('Progressive Entry Flow Translation Keys', () => {
       'de': 'Informationskategorien'
     };
 
-    // Verify all translations exist and have reasonable lengths
-    Object.entries(testTexts).forEach(([locale, text]) => {
+    Object.entries(testTexts).forEach(([_locale, text]) => {
       expect(text).toBeTruthy();
       expect(text.length).toBeGreaterThan(0);
-      expect(text.length).toBeLessThan(50); // Reasonable UI limit
+      expect(text.length).toBeLessThan(50);
     });
   });
 
   test('should provide consistent translation structure', () => {
-    // Test that translation structure is consistent
-    const expectedStructure = {
+    const expectedStructure: Record<string, unknown> = {
       progressiveEntryFlow: {
         status: ['completed', 'cancelled', 'expired', 'inProgress', 'needsResubmission'],
         categories: ['passport', 'personal', 'funds', 'travel'],
@@ -149,24 +135,22 @@ describe('Progressive Entry Flow Translation Keys', () => {
       }
     };
 
-    // Mock structure validation
-    const validateStructure = (translations, expected) => {
+    const validateStructure = (translations: Record<string, unknown>, expected: Record<string, unknown>): void => {
       Object.keys(expected).forEach(section => {
         expect(translations).toHaveProperty(section);
         
         if (Array.isArray(expected[section])) {
-          expected[section].forEach(key => {
-            expect(translations[section]).toHaveProperty(key);
+          (expected[section] as string[]).forEach(key => {
+            expect(translations[section] as Record<string, unknown>).toHaveProperty(key);
           });
         } else {
-          validateStructure(translations[section], expected[section]);
+          validateStructure(translations[section] as Record<string, unknown>, expected[section] as Record<string, unknown>);
         }
       });
     };
 
-    // This would validate against actual translations
     expect(() => {
-      validateStructure(countryTranslations, expectedStructure);
+      validateStructure(countryTranslations as unknown as Record<string, unknown>, expectedStructure);
     }).not.toThrow();
   });
 });

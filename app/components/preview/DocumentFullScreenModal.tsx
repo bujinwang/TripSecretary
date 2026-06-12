@@ -74,6 +74,21 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
  *   <DocumentContent />
  * </DocumentFullScreenModal>
  */
+interface DocumentFullScreenModalProps {
+  visible?: boolean;
+  onClose?: () => void;
+  children?: React.ReactNode;
+  documentData?: { name?: string; tdacNumber?: string };
+  pageCount?: number;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
+  onShare?: () => void | Promise<void>;
+  onDownload?: () => void | Promise<void>;
+  showPageIndicator?: boolean;
+  showShareButton?: boolean;
+  style?: object;
+}
+
 const DocumentFullScreenModal = ({
   visible = false,
   onClose,
@@ -87,7 +102,7 @@ const DocumentFullScreenModal = ({
   showPageIndicator = true,
   showShareButton = true,
   style,
-}) => {
+}: DocumentFullScreenModalProps) => {
   const { t } = useTranslation();
   const [activePage, setActivePage] = useState(currentPage);
   const scrollViewRef = useRef(null);

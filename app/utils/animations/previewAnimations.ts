@@ -117,7 +117,7 @@ export class ReduceMotionManager {
     return this.isReduceMotionEnabled;
   }
 
-  static getConfig(normalConfig, reducedConfig = null) {
+  static getConfig(normalConfig: Record<string, unknown>, reducedConfig: Record<string, unknown> | null = null) {
     if (this.isReduceMotionEnabled) {
       // Return reduced motion config or instant transition
       return reducedConfig || { duration: 0, easing: ANIMATION_EASING.LINEAR };
@@ -125,7 +125,7 @@ export class ReduceMotionManager {
     return normalConfig;
   }
 
-  static getDuration(normalDuration) {
+  static getDuration(normalDuration: number) {
     return this.isReduceMotionEnabled ? 0 : normalDuration;
   }
 }
@@ -308,14 +308,14 @@ export const AnimationHelpers = {
    * @param {number} maxDelay - Maximum total delay (default: 300ms)
    * @returns {number} Delay in milliseconds
    */
-  staggerDelay: (index, baseDelay = 50, maxDelay = 300) => Math.min(index * baseDelay, maxDelay),
+  staggerDelay: (index: number, baseDelay: number = 50, maxDelay: number = 300) => Math.min(index * baseDelay, maxDelay),
 
   /**
    * Convert milliseconds to seconds (for some animation libraries)
    * @param {number} ms - Milliseconds
    * @returns {number} Seconds
    */
-  msToSeconds: (ms) => ms / 1000,
+  msToSeconds: (ms: number) => ms / 1000,
 
   /**
    * Get animation config with reduce motion support
@@ -323,7 +323,7 @@ export const AnimationHelpers = {
    * @param {Object} reducedConfig - Reduced motion alternative
    * @returns {Object} Appropriate config based on user preference
    */
-  withReduceMotion: (normalConfig, reducedConfig = null) => ReduceMotionManager.getConfig(normalConfig, reducedConfig),
+  withReduceMotion: (normalConfig: Record<string, unknown>, reducedConfig: Record<string, unknown> | null = null) => ReduceMotionManager.getConfig(normalConfig, reducedConfig),
 };
 
 /**

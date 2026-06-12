@@ -10,7 +10,11 @@ const getDefaultArrivalDate = () => {
   return date.toISOString().split('T')[0];
 };
 
-export const useUSTravelData = (userId, navigation, t) => {
+export const useUSTravelData = (
+  userId: string,
+  navigation: { addListener: (event: string, callback: () => void) => () => void },
+  t: (key: string, options?: Record<string, unknown>) => string,
+) => {
   const [isLoading, setIsLoading] = useState(true);
   const [errors, setErrors] = useState({});
 
@@ -28,7 +32,7 @@ export const useUSTravelData = (userId, navigation, t) => {
   const [email, setEmail] = useState('');
   const [gender, setGender] = useState('');
 
-  const [funds, setFunds] = useState([]);
+  const [funds, setFunds] = useState<FundItem[]>([]);
 
   const [travelPurpose, setTravelPurpose] = useState('Tourism');
   const [customTravelPurpose, setCustomTravelPurpose] = useState('');
@@ -39,7 +43,7 @@ export const useUSTravelData = (userId, navigation, t) => {
   const [accommodationPhone, setAccommodationPhone] = useState('');
   const [lengthOfStay, setLengthOfStay] = useState('');
 
-  const validateField = useCallback((fieldName, value) => {
+  const validateField = useCallback((fieldName: string, value: string) => {
     if (!value || value.toString().trim() === '') {
       return null;
     }
@@ -80,7 +84,7 @@ export const useUSTravelData = (userId, navigation, t) => {
     try {
       const existingPassport = await UserDataService.getPassport(userId);
 
-      const passportUpdates = {};
+      const passportUpdates: Record<string, string> = {};
       if (passportNo && passportNo.trim()) {
 passportUpdates.passportNumber = passportNo;
 }
@@ -108,7 +112,7 @@ passportUpdates.gender = gender;
         }
       }
 
-      const personalInfoUpdates = {};
+      const personalInfoUpdates: Record<string, string> = {};
       if (phoneNumber && phoneNumber.trim()) {
 personalInfoUpdates.phoneNumber = phoneNumber;
 }
@@ -129,7 +133,7 @@ personalInfoUpdates.countryRegion = residentCountry;
         await UserDataService.upsertPersonalInfo(userId, personalInfoUpdates);
       }
 
-      const travelInfoUpdates = {};
+      const travelInfoUpdates: Record<string, string | boolean> = {};
       if (travelPurpose === 'Other') {
         const customValue = customTravelPurpose.trim();
         if (customValue) {
@@ -171,7 +175,7 @@ travelInfoUpdates.lengthOfStay = lengthOfStay;
     isTransitPassenger, accommodationAddress, accommodationPhone, lengthOfStay
   ]);
 
-  const handleFieldBlur = useCallback(async (fieldName, value) => {
+  const handleFieldBlur = useCallback(async (fieldName: string, value: string) => {
     try {
       const validationError = validateField(fieldName, value);
       const isValid = !validationError;

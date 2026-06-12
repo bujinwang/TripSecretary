@@ -9,6 +9,11 @@ interface FlatListProps {
   removeClippedSubviews: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getItemLayout: ((data: any, index: number) => { length: number; offset: number; index: number }) | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  keyExtractor: (item: any, index: number) => string;
+  viewabilityConfig: { itemVisiblePercentThreshold: number; minimumViewTime: number };
+  scrollEventThrottle: number;
+  disableVirtualization: boolean;
 }
 
 interface OptimizedListOptions {
@@ -104,6 +109,11 @@ class LazyLoadingHelper {
           offset: itemHeight * index,
           index,
         })),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      keyExtractor: (item: any, index: number) => (item?.id ?? item?.key ?? String(index)),
+      viewabilityConfig: this.viewabilityConfig,
+      scrollEventThrottle: 16,
+      disableVirtualization: false,
     };
   }
 

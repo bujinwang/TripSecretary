@@ -13,7 +13,7 @@ class ArrivalWindowCalculator {
    * @param {string|Date} arrivalDate - Arrival date (YYYY-MM-DD or Date object)
    * @returns {Object} - Arrival window information
    */
-  static calculateWindow(arrivalDate) {
+  static calculateWindow(arrivalDate: string | Date) {
     if (!arrivalDate) {
       return {
         isWithin72Hours: false,
@@ -54,7 +54,7 @@ class ArrivalWindowCalculator {
    * @param {string|Date} arrivalDate - Arrival date
    * @returns {Object} - Window details with user-friendly messages
    */
-  static getSubmissionWindow(arrivalDate) {
+  static getSubmissionWindow(arrivalDate: string | Date) {
     const window = this.calculateWindow(arrivalDate);
 
     return {
@@ -71,7 +71,7 @@ class ArrivalWindowCalculator {
    * @param {string|Date} arrivalDate - Arrival date
    * @returns {boolean} - True if date is in the past
    */
-  static isArrivalPast(arrivalDate) {
+  static isArrivalPast(arrivalDate: string | Date) {
     if (!arrivalDate) {
 return false;
 }
@@ -85,7 +85,7 @@ return false;
    * @param {string|Date} arrivalDate - Arrival date
    * @returns {number} - Days until arrival (0 if past)
    */
-  static getDaysUntilArrival(arrivalDate) {
+  static getDaysUntilArrival(arrivalDate: string | Date) {
     const window = this.calculateWindow(arrivalDate);
     return window.daysRemaining || 0;
   }

@@ -21,6 +21,15 @@ const CollapsibleSection = ({
   style,
   headerStyle,
   contentStyle,
+}: {
+  title: string;
+  children?: React.ReactNode;
+  fieldCount?: { filled: number; total: number };
+  expanded?: boolean;
+  onToggle?: (expanded: boolean) => void;
+  style?: object;
+  headerStyle?: object;
+  contentStyle?: object;
 }) => {
   const [isExpanded, setIsExpanded] = useState(expanded);
 

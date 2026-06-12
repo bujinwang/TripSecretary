@@ -20,8 +20,8 @@ import { formatCurrency as formatCurrencyHelper, safeArray } from '../helpers';
  * @param {string} props.language - Display language ('english', 'thai', 'bilingual')
  * @param {Function} props.t - Translation function
  */
-const FundsInfoSection = ({ fundData, language, t }) => {
-  const getLabel = (englishKey, thaiText) => {
+const FundsInfoSection = ({ fundData, language, t }: { fundData: Record<string, unknown>[]; language: string; t: (key: string) => string }) => {
+  const getLabel = (englishKey: string, thaiText: string) => {
     if (language === 'english') {
       return t(`progressiveEntryFlow.immigrationOfficer.presentation.${englishKey}`);
     } else if (language === 'thai') {
@@ -31,7 +31,7 @@ const FundsInfoSection = ({ fundData, language, t }) => {
     }
   };
 
-  const formatCurrency = (amount, currency) => 
+  const formatCurrency = (amount: number, currency: string) => 
     // Use centralized helper with no decimals for cleaner display
      formatCurrencyHelper(amount, currency, {
       decimals: 0,
@@ -40,7 +40,7 @@ const FundsInfoSection = ({ fundData, language, t }) => {
     })
   ;
 
-  const formatAmount = (amount) => {
+  const formatAmount = (amount: number) => {
     try {
       return new Intl.NumberFormat('en-US', {
         minimumFractionDigits: 0,
@@ -127,15 +127,15 @@ const FundsInfoSection = ({ fundData, language, t }) => {
             :
           </Text>
 
-          {fundData.map((fund, index) => {
-            const originalAmount = parseFloat(fund.amount) || 0;
-            const originalCurrency = fund.currency || 'THB';
+          {fundData.map((fund: Record<string, unknown>, index: number) => {
+            const originalAmount = parseFloat(fund.amount as string) || 0;
+            const originalCurrency = (fund.currency as string) || 'THB';
             const convertedAmount = convertCurrency(originalAmount, originalCurrency, 'THB');
 
             return (
               <View key={index} style={styles.fundItem}>
                 <View style={styles.fundItemHeader}>
-                  <Text style={styles.fundItemType}>{fund.type || t('funds.cash')}</Text>
+                  <Text style={styles.fundItemType}>{(fund.type as string) || t('funds.cash')}</Text>
                   <View style={styles.fundItemAmounts}>
                     <Text style={styles.fundItemAmount}>
                       {formatCurrency(originalAmount, originalCurrency)}
@@ -148,13 +148,13 @@ const FundsInfoSection = ({ fundData, language, t }) => {
                   </View>
                 </View>
 
-                {fund.photoUri && (
+                {(fund.photoUri as string) && (
                   <TouchableOpacity
                     style={styles.fundPhotoContainer}
                     onPress={handleFundPhotoPress}
                   >
                     <OptimizedImage
-                      uri={fund.photoUri}
+                      uri={fund.photoUri as string}
                       style={styles.fundPhoto}
                       resizeMode="cover"
                       lazy={true}

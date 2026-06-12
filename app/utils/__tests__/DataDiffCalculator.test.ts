@@ -6,7 +6,7 @@
  * Requirements: 12.3, 12.4
  */
 
-import DataDiffCalculator from '../DataDiffCalculator';
+import DataDiffCalculator, { DiffResult } from '../DataDiffCalculator';
 
 describe('DataDiffCalculator', () => {
   describe('calculateDiff', () => {
@@ -119,7 +119,7 @@ describe('DataDiffCalculator', () => {
         }
       };
 
-      const summary = DataDiffCalculator.generateChangeSummary(diffResult);
+      const summary = DataDiffCalculator.generateChangeSummary(diffResult as unknown as DiffResult);
 
       expect(summary.needsResubmission).toBe(false);
       expect(summary.title).toContain('没有检测到变更');
@@ -147,7 +147,7 @@ describe('DataDiffCalculator', () => {
         }
       };
 
-      const summary = DataDiffCalculator.generateChangeSummary(diffResult);
+      const summary = DataDiffCalculator.generateChangeSummary(diffResult as unknown as DiffResult);
 
       expect(summary.needsResubmission).toBe(true);
       expect(summary.title).toContain('重要变更');
@@ -163,7 +163,7 @@ describe('DataDiffCalculator', () => {
         changedFields: ['passportNumber', 'email']
       };
 
-      const result = DataDiffCalculator.requiresImmediateResubmission(diffResult);
+      const result = DataDiffCalculator.requiresImmediateResubmission(diffResult as unknown as DiffResult);
       expect(result).toBe(true);
     });
 
@@ -173,7 +173,7 @@ describe('DataDiffCalculator', () => {
         changedFields: ['gender', 'accommodation']
       };
 
-      const result = DataDiffCalculator.requiresImmediateResubmission(diffResult);
+      const result = DataDiffCalculator.requiresImmediateResubmission(diffResult as unknown as DiffResult);
       expect(result).toBe(false);
     });
   });

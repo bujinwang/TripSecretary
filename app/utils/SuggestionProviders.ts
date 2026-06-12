@@ -3,6 +3,17 @@
  * 
  * Provides smart default suggestions for various form fields
  * based on user context, travel patterns, and common selections.
+
+interface SuggestionContext {
+  destination?: string;
+  nationality?: string;
+  travelPurpose?: string;
+  previousPurposes?: string[];
+  previousAccommodations?: string[];
+  previousBoardingCountries?: string[];
+  passportNationality?: string;
+  [key: string]: unknown;
+}
  * 
  * Features:
  * - Travel purpose suggestions based on common travel reasons
@@ -26,7 +37,7 @@ class SuggestionProviders {
    * @param {Array} context.previousPurposes - Previously selected purposes
    * @returns {Array<string>} Array of travel purpose suggestions
    */
-  static getTravelPurposeSuggestions(context = {}) {
+  static getTravelPurposeSuggestions(context: SuggestionContext = {}) {
     const { destination, nationality, previousPurposes = [] } = context;
 
     // Base suggestions ordered by popularity
@@ -105,7 +116,7 @@ class SuggestionProviders {
    * @param {Array} context.previousAccommodations - Previously selected accommodations
    * @returns {Array<string>} Array of accommodation type suggestions
    */
-  static getAccommodationTypeSuggestions(context = {}) {
+  static getAccommodationTypeSuggestions(context: SuggestionContext = {}) {
     const { destination, travelPurpose, previousAccommodations = [] } = context;
 
     // Base suggestions ordered by popularity
@@ -175,7 +186,7 @@ class SuggestionProviders {
    * @param {Array} context.previousBoardingCountries - Previously used boarding countries
    * @returns {Array<string>} Array of boarding country suggestions
    */
-  static getBoardingCountrySuggestions(context = {}) {
+  static getBoardingCountrySuggestions(context: SuggestionContext = {}) {
     const { passportNationality, destination, previousBoardingCountries = [] } = context;
 
     // Common boarding countries
@@ -267,7 +278,7 @@ class SuggestionProviders {
    * @param {Object} currentContext - Current user context
    * @returns {Object} Updated context
    */
-  static updateContextWithSelection(fieldType, selectedValue, currentContext = {}) {
+  static updateContextWithSelection(fieldType: string, selectedValue: string, currentContext: Record<string, unknown> = {}) {
     const updatedContext = { ...currentContext };
 
     switch (fieldType) {

@@ -13,7 +13,7 @@ import { getPhoneCode } from '../../data/phoneCodes';
  * @param {Object} passport - Passport information
  * @returns {Object} Form state and setters
  */
-export const useSingaporeFormState = (passport) => {
+export const useSingaporeFormState = (passport: Record<string, unknown>) => {
   // ========== Passport State ==========
   const [passportNo, setPassportNo] = useState('');
   const [visaNumber, setVisaNumber] = useState('');
@@ -255,5 +255,7 @@ export const useSingaporeFormState = (passport) => {
     getFormValues,
   };
 };
+
+export type SingaporeFormStateType = ReturnType<typeof useSingaporeFormState>;
 
 export default useSingaporeFormState;

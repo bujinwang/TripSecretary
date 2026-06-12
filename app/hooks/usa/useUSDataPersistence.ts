@@ -25,6 +25,22 @@ const getDefaultArrivalDate = () => {
  * @param {Object} params.navigation - Navigation object
  * @returns {Object} Data persistence functions
  */
+interface UseUSDataPersistenceParams {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  passport: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  destination: any;
+  userId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  formState: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  userInteractionTracker: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: any;
+}
+
 export const useUSDataPersistence = ({
   passport,
   destination,
@@ -33,7 +49,7 @@ export const useUSDataPersistence = ({
   userInteractionTracker,
   navigation,
   t,
-}) => {
+}: UseUSDataPersistenceParams) => {
   const saveTimeoutRef = useRef(null);
   const scrollViewRef = useRef(null);
   const shouldRestoreScrollPosition = useRef(false);
@@ -152,7 +168,7 @@ export const useUSDataPersistence = ({
       const formData = formState.getFormData();
 
       // Merge with overrides
-      const dataToSave = {
+      const dataToSave: Record<string, string | undefined> = {
         ...formData,
         ...overrides,
       };
@@ -160,7 +176,7 @@ export const useUSDataPersistence = ({
       // ========== SAVE PASSPORT DATA ==========
       const existingPassport = await UserDataService.getPassport(userId);
 
-      const passportUpdates = {};
+      const passportUpdates: Record<string, unknown> = {};
       if (dataToSave.passportNo && dataToSave.passportNo.trim()) {
         passportUpdates.passportNumber = dataToSave.passportNo;
       }
@@ -189,7 +205,7 @@ export const useUSDataPersistence = ({
       }
 
       // ========== SAVE PERSONAL INFO ==========
-      const personalInfoUpdates = {};
+      const personalInfoUpdates: Record<string, string> = {};
       if (dataToSave.phoneNumber && dataToSave.phoneNumber.trim()) {
         personalInfoUpdates.phoneNumber = dataToSave.phoneNumber;
       }
@@ -214,7 +230,7 @@ export const useUSDataPersistence = ({
       }
 
       // ========== SAVE TRAVEL INFO ==========
-      const travelInfoUpdates = {};
+      const travelInfoUpdates: Record<string, string | boolean> = {};
 
       // Travel purpose handling
       if (dataToSave.travelPurpose === 'Other') {
@@ -237,7 +253,7 @@ export const useUSDataPersistence = ({
       }
 
       // Transit and accommodation
-      travelInfoUpdates.isTransitPassenger = dataToSave.isTransitPassenger;
+      travelInfoUpdates.isTransitPassenger = Boolean(dataToSave.isTransitPassenger);
       if (!dataToSave.isTransitPassenger) {
         if (dataToSave.accommodationAddress && dataToSave.accommodationAddress.trim()) {
           travelInfoUpdates.hotelAddress = dataToSave.accommodationAddress;

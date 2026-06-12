@@ -6,7 +6,7 @@
  * Requirements: 5.1-5.5
  */
 
-import SoftValidation, { ValidationTypes, ValidationSeverity } from '../SoftValidation';
+import SoftValidation, { ValidationTypes, ValidationSeverity, FieldValidationResult } from '../SoftValidation';
 
 describe('SoftValidation', () => {
   describe('validateField', () => {
@@ -185,9 +185,9 @@ describe('SoftValidation', () => {
         message: null
       };
 
-      expect(SoftValidation.formatMessage(errorResult)).toContain('❌');
-      expect(SoftValidation.formatMessage(warningResult)).toContain('⚠️');
-      expect(SoftValidation.formatMessage(successResult)).toBe('');
+      expect(SoftValidation.formatMessage(errorResult as unknown as FieldValidationResult)).toContain('❌');
+      expect(SoftValidation.formatMessage(warningResult as unknown as FieldValidationResult)).toContain('⚠️');
+      expect(SoftValidation.formatMessage(successResult as unknown as FieldValidationResult)).toBe('');
     });
   });
 

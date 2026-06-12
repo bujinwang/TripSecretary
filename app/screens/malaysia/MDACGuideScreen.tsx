@@ -17,26 +17,25 @@ import UserDataService from '../../services/data/UserDataService';
 const MDACGuideScreen = ({ navigation, route }: any) => {
   const { passport: rawPassport, destination, travelInfo } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { t } = useLocale() as any;
+  const { t } = useLocale();
 
   const steps = useMemo(
     () =>
-      t('malaysia.guide.steps', {
+      (t('malaysia.guide.steps', {
         returnObjects: true,
         defaultValue: [],
         passport,
         travelInfo,
-      }),
+      }) as unknown[]),
     [t, passport, travelInfo]
   );
 
   const quickActions = useMemo(
     () =>
-      t('malaysia.guide.quickActions.items', {
+      (t('malaysia.guide.quickActions.items', {
         returnObjects: true,
         defaultValue: [],
-      }),
+      }) as unknown[]),
     [t]
   );
 
@@ -69,7 +68,7 @@ const MDACGuideScreen = ({ navigation, route }: any) => {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('malaysia.guide.stepSectionTitle')}</Text>
-          {steps.map((step, index) => (
+          {steps.map((step: Record<string, unknown>, index: number) => (
             <View key={`step-${index}`} style={styles.stepCard}>
               <View style={styles.stepHeader}>
                 <View style={styles.stepNumber}>
@@ -81,7 +80,7 @@ const MDACGuideScreen = ({ navigation, route }: any) => {
                 </View>
               </View>
               <View style={styles.stepBody}>
-                {step.details?.map((detail, detailIndex) => (
+                {step.details?.map((detail: string, detailIndex: number) => (
                   <Text key={`detail-${detailIndex}`} style={styles.stepBullet}>
                     • {detail}
                   </Text>
@@ -94,7 +93,7 @@ const MDACGuideScreen = ({ navigation, route }: any) => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('malaysia.guide.quickActions.title')}</Text>
           <View style={styles.quickActions}>
-            {quickActions.map((action, index) => (
+            {quickActions.map((action: Record<string, unknown>, index: number) => (
               <View key={`quick-${index}`} style={styles.quickActionCard}>
                 <Text style={styles.quickActionIcon}>{action.icon}</Text>
                 <Text style={styles.quickActionTitle}>{action.title}</Text>

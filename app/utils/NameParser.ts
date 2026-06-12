@@ -27,7 +27,7 @@
  * parsePassportName("John Robert Smith")
  * // Returns: { surname: "John", middleName: "Robert", givenName: "Smith" }
  */
-export const parsePassportName = (fullName) => {
+export const parsePassportName = (fullName: string) => {
   const result = {
     surname: '',
     middleName: '',
@@ -100,7 +100,7 @@ export const parsePassportName = (fullName) => {
  * formatFullName("Smith", "", "John", false)
  * // Returns: "Smith John"
  */
-export const formatFullName = (surname, middleName, givenName, useCommaFormat = false) => {
+export const formatFullName = (surname: string, middleName: string, givenName: string, useCommaFormat: boolean = false) => {
   const parts = [surname, middleName, givenName].filter(part => part && part.trim());
 
   if (useCommaFormat) {

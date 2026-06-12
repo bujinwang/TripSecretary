@@ -18,22 +18,22 @@ const CompletionSummaryCard = ({
     const configs = {
       th: {
         readyText: '泰国准备就绪！🌴',
-        progressText: (remaining) => `还差 ${remaining}% 即可完成`,
+        progressText: (remaining: number) => `还差 ${remaining}% 即可完成`,
         completeText: null
       },
       my: {
         readyText: '马来西亚准备就绪！🇲🇾',
-        progressText: (remaining) => `还差 ${remaining}% 即可完成`,
+        progressText: (remaining: number) => `还差 ${remaining}% 即可完成`,
         completeText: null
       },
       hk: {
         readyText: '香港准备就绪！🇭🇰',
-        progressText: (remaining) => `还差 ${remaining}% 即可完成`,
+        progressText: (remaining: number) => `还差 ${remaining}% 即可完成`,
         completeText: null
       },
       jp: {
         readyText: '日本准备就绪！🌸',
-        progressText: (remaining) => `还差 ${remaining}% 即可完成`,
+        progressText: (remaining: number) => `还差 ${remaining}% 即可完成`,
         completeText: null
       }
     };

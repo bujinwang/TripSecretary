@@ -471,24 +471,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   if (isWeb) {
     return (
       <WebLoginScreen
-        languages={LANGUAGES}
-        activeLanguage={activeLanguage}
-        setActiveLanguage={setActiveLanguage}
-        whisperVisible={whisperVisible}
-        onExperience={handleExperience}
-        t={t}
+        {...{languages: LANGUAGES, activeLanguage, setActiveLanguage, whisperVisible, onExperience: handleExperience, t} as any}
       />
     );
   }
 
   return (
     <NativeLoginScreen
-      languages={LANGUAGES}
-      activeLanguage={activeLanguage}
-      setActiveLanguage={setActiveLanguage}
-      whisperVisible={whisperVisible}
-      onExperience={handleExperience}
-      t={t}
+      {...{languages: LANGUAGES, activeLanguage, setActiveLanguage, whisperVisible, onExperience: handleExperience, t} as any}
     />
   );
 };

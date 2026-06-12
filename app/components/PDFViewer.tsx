@@ -50,7 +50,7 @@ const PDFViewer = ({
   watermarkText = 'SAMPLE'
 }) => {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [pdfData, setPdfData] = useState(null);
 
   useEffect(() => {
@@ -131,7 +131,7 @@ const PDFViewer = ({
 
     } catch (err) {
       console.error('❌ PDF load error:', err);
-      setError(err.message);
+      setError((err as Error).message || String(err));
       setLoading(false);
       onError?.(err);
     }

@@ -17,23 +17,22 @@ import UserDataService from '../../services/data/UserDataService';
 const JapanProceduresScreen = ({ navigation, route }: any) => {
   const { passport: rawPassport, destination } = route.params || {};
   const passport = UserDataService.toSerializablePassport(rawPassport);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { t } = useLocale() as any;
+  const { t } = useLocale();
 
   const handleStartPreparation = () => {
     navigation.navigate('TravelInfo', { passport, destination });
   };
 
   const entrySteps = useMemo(() => {
-    const steps = t('japan.procedures.entrySteps.steps', { defaultValue: [] });
-    return steps.map((step, index) => ({
+    const steps = t('japan.procedures.entrySteps.steps', { defaultValue: [] }) as unknown[];
+    return steps.map((step: Record<string, unknown>, index: number) => ({
       step: index + 1,
       ...step
     }));
   }, [t]);
 
   const appFeatures = useMemo(() => 
-    t('japan.procedures.features.items', { defaultValue: [] })
+    (t('japan.procedures.features.items', { defaultValue: [] }) as unknown[])
   , [t]);
 
   return (
@@ -72,7 +71,7 @@ const JapanProceduresScreen = ({ navigation, route }: any) => {
         {/* Entry Steps */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('japan.procedures.entrySteps.title')}</Text>
-          {entrySteps.map((step, index) => (
+          {entrySteps.map((step: Record<string, unknown>, index: number) => (
             <View key={index} style={styles.stepCard}>
               <View style={styles.stepHeader}>
                 <View style={styles.stepNumber}>
@@ -92,7 +91,7 @@ const JapanProceduresScreen = ({ navigation, route }: any) => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('japan.procedures.features.title')}</Text>
           <View style={styles.featuresGrid}>
-            {appFeatures.map((feature, index) => (
+            {appFeatures.map((feature: Record<string, unknown>, index: number) => (
               <View key={index} style={styles.featureCard}>
                 <Text style={styles.featureIcon}>{feature.icon}</Text>
                 <Text style={styles.featureTitle}>{feature.title}</Text>
@@ -106,7 +105,7 @@ const JapanProceduresScreen = ({ navigation, route }: any) => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('japan.procedures.importantNotes.title')}</Text>
           <View style={styles.notesCard}>
-            {t('japan.procedures.importantNotes.items', { defaultValue: [] }).map((note, index) => (
+            {t('japan.procedures.importantNotes.items', { defaultValue: [] }).map((note: string, index: number) => (
               <Text key={index} style={styles.noteText}>{note}</Text>
             ))}
           </View>

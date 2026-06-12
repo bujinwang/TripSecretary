@@ -6,7 +6,7 @@
  * CRUD operations, queries, and relationships.
  */
 
-import DataSerializer from '../utils/DataSerializer';
+import DataSerializer, { type PassportRow as DataSerializerPassportRow } from '../utils/DataSerializer';
 import DecryptionHelper from '../utils/DecryptionHelper';
 
 // Type definitions
@@ -137,7 +137,7 @@ class PassportRepository {
     }
 
     const decryptedFields = await this.decryption.decryptPassportFields(row);
-    return this.serializer.deserializePassport(row, decryptedFields) as PassportRecord;
+    return this.serializer.deserializePassport(row as unknown as DataSerializerPassportRow, decryptedFields) as PassportRecord;
   }
 
   /**
@@ -161,7 +161,7 @@ class PassportRepository {
     const passports: PassportRecord[] = [];
     for (const row of rows) {
       const decryptedFields = await this.decryption.decryptPassportFields(row);
-      passports.push(this.serializer.deserializePassport(row, decryptedFields) as PassportRecord);
+      passports.push(this.serializer.deserializePassport(row as unknown as DataSerializerPassportRow, decryptedFields) as PassportRecord);
     }
 
     return passports;
@@ -186,7 +186,7 @@ class PassportRepository {
     }
 
     const decryptedFields = await this.decryption.decryptPassportFields(row);
-    return this.serializer.deserializePassport(row, decryptedFields) as PassportRecord;
+    return this.serializer.deserializePassport(row as unknown as DataSerializerPassportRow, decryptedFields) as PassportRecord;
   }
 
   /**

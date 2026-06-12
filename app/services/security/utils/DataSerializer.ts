@@ -84,7 +84,7 @@ interface DigitalArrivalCardRow {
   [key: string]: unknown;
 }
 
-interface PassportRow {
+export interface PassportRow {
   id: string;
   user_id: string;
   gender?: string;
@@ -164,7 +164,7 @@ interface FundItemRow {
   [key: string]: unknown;
 }
 
-interface PassportCountryRow {
+export interface PassportCountryRow {
   passport_id: string;
   country_code: string;
   visa_required?: number;

@@ -1,4 +1,3 @@
-// @ts-nocheck — Barrel export; types deferred
 /**
  * 入境通 - Validation Utilities Index
  * Centralized export of validation and sanitization utilities
@@ -6,6 +5,22 @@
 
 export { default as DataValidator } from './DataValidator';
 export { default as InputSanitizer } from './InputSanitizer';
+
+// Dynamic import type interfaces for the modules used internally
+interface DynamicInputSanitizer {
+  secureSanitize(input: Record<string, unknown>, dataType: string): { isValid: boolean; sanitizedData: Record<string, unknown>; securityIssues: { patterns: string[] }[]; warnings: string[] };
+  sanitizeEmail(value: string): string;
+  sanitizePhoneNumber(value: string): string;
+  sanitizePassportNumber(value: string): string;
+  sanitizeDate(value: string): string;
+  sanitizeName(value: string): string;
+  sanitizeText(value: string, options?: Record<string, unknown>): string;
+  checkForSuspiciousPatterns(value: string): { isSuspicious: boolean };
+}
+
+interface DynamicDataValidator {
+  validateAndSanitize(input: Record<string, unknown>, dataType: string): { isValid: boolean; sanitizedData: Record<string, unknown>; errors: { message: string }[]; validationDetails?: { warnings?: string[] } };
+}
 
 // Validation utilities
 export const ValidationUtils = {
@@ -15,9 +30,9 @@ export const ValidationUtils = {
    * @param {string} dataType - Type of data (passport, personalInfo, etc.)
    * @returns {Object} - Validation and sanitization result
    */
-  validateAndSanitize: async (inputData, dataType) => {
-    const { DataValidator } = await import('./DataValidator');
-    const { InputSanitizer } = await import('./InputSanitizer');
+  validateAndSanitize: async (inputData: Record<string, unknown>, dataType: string) => {
+    const DataValidator = (await import('./DataValidator')).default as unknown as DynamicDataValidator;
+    const InputSanitizer = (await import('./InputSanitizer')).default as unknown as DynamicInputSanitizer;
 
     try {
       // Step 1: Sanitize input for security
@@ -50,16 +65,17 @@ export const ValidationUtils = {
         ],
         securityCheck: {
           issues: sanitizationResult.securityIssues,
-          patterns: sanitizationResult.securityIssues.flatMap(issue => issue.patterns)
+          patterns: sanitizationResult.securityIssues.flatMap((issue: { patterns: string[] }) => issue.patterns)
         },
         validationDetails: validationResult.validationDetails
       };
-    } catch (_error) {
-      console.error('Validation pipeline error:', error);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('Validation pipeline error:', message);
       return {
         success: false,
         stage: 'pipeline_error',
-        errors: [{ message: error.message }],
+        errors: [{ message }],
         data: null
       };
     }
@@ -71,10 +87,11 @@ export const ValidationUtils = {
    * @param {string} fieldType - Type of field
    * @returns {Object} - Quick validation result
    */
-  quickValidate: (value, fieldType) => {
-    const { InputSanitizer } = require('./InputSanitizer');
+  quickValidate: (value: string, fieldType: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const InputSanitizer = require('./InputSanitizer').default as unknown as DynamicInputSanitizer;
 
-    const result = {
+    const result: { isValid: boolean; errors: string[]; sanitized: string } = {
       isValid: true,
       errors: [],
       sanitized: value
@@ -82,46 +99,46 @@ export const ValidationUtils = {
 
     try {
       // Basic sanitization
-      let sanitized;
+      let sanitized: string;
       switch (fieldType) {
         case 'email':
           sanitized = InputSanitizer.sanitizeEmail(value);
           result.isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sanitized);
           if (!result.isValid) {
-result.errors.push('Invalid email format');
-}
+ result.errors.push('Invalid email format');
+ }
           break;
         case 'phone':
           sanitized = InputSanitizer.sanitizePhoneNumber(value);
-          result.isValid = sanitized && sanitized.replace(/\D/g, '').length >= 7;
+          result.isValid = Boolean(sanitized && sanitized.replace(/\D/g, '').length >= 7);
           if (!result.isValid) {
-result.errors.push('Invalid phone number');
-}
+ result.errors.push('Invalid phone number');
+ }
           break;
         case 'passport':
           sanitized = InputSanitizer.sanitizePassportNumber(value);
-          result.isValid = sanitized && sanitized.length >= 6;
+          result.isValid = Boolean(sanitized && sanitized.length >= 6);
           if (!result.isValid) {
-result.errors.push('Invalid passport number');
-}
+ result.errors.push('Invalid passport number');
+ }
           break;
         case 'date':
           sanitized = InputSanitizer.sanitizeDate(value);
-          result.isValid = sanitized && sanitized.length === 10;
+          result.isValid = Boolean(sanitized && sanitized.length === 10);
           if (!result.isValid) {
-result.errors.push('Invalid date format (YYYY-MM-DD)');
-}
+ result.errors.push('Invalid date format (YYYY-MM-DD)');
+ }
           break;
         case 'name':
           sanitized = InputSanitizer.sanitizeName(value);
-          result.isValid = sanitized && sanitized.length >= 2;
+          result.isValid = Boolean(sanitized && sanitized.length >= 2);
           if (!result.isValid) {
-result.errors.push('Name must be at least 2 characters');
-}
+ result.errors.push('Name must be at least 2 characters');
+ }
           break;
         default:
           sanitized = InputSanitizer.sanitizeText(value);
-          result.isValid = sanitized && sanitized.length > 0;
+          result.isValid = Boolean(sanitized && sanitized.length > 0);
       }
 
       result.sanitized = sanitized;
@@ -133,7 +150,7 @@ result.errors.push('Name must be at least 2 characters');
         result.errors.push('Input contains suspicious patterns');
       }
 
-    } catch (_error) {
+    } catch {
       result.isValid = false;
       result.errors.push('Validation error');
     }
@@ -147,25 +164,27 @@ result.errors.push('Name must be at least 2 characters');
    * @param {Object} fieldConfig - Field configuration
    * @returns {Object} - Field-level validation results
    */
-  validateForm: (formData, fieldConfig) => {
-    const { InputSanitizer } = require('./InputSanitizer');
+  validateForm: (formData: Record<string, unknown>, fieldConfig: Record<string, Record<string, unknown>>) => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const InputSanitizer = require('./InputSanitizer').default as unknown as DynamicInputSanitizer;
 
-    const results = {
+    const results: { isValid: boolean; fields: Record<string, Record<string, unknown>>; errors: string[] } = {
       isValid: true,
       fields: {},
       errors: []
     };
 
-    for (const [fieldName, config] of Object.entries(fieldConfig)) {
+    for (const [fieldName, config] of Object.entries(fieldConfig) as [string, Record<string, unknown>][]) {
       const value = formData[fieldName];
-      const fieldResult = {
+      const strValue = value !== null && value !== undefined ? String(value) : '';
+      const fieldResult: { isValid: boolean; errors: string[]; sanitized: string } = {
         isValid: true,
         errors: [],
-        sanitized: value
+        sanitized: strValue
       };
 
       // Required check
-      if (config.required && (!value || value.toString().trim().length === 0)) {
+      if (config.required && (!value || String(value).trim().length === 0)) {
         fieldResult.isValid = false;
         fieldResult.errors.push(`${config.label || fieldName} is required`);
       }
@@ -174,73 +193,73 @@ result.errors.push('Name must be at least 2 characters');
       if (value && config.type) {
         switch (config.type) {
           case 'email':
-            fieldResult.sanitized = InputSanitizer.sanitizeEmail(value);
+            fieldResult.sanitized = InputSanitizer.sanitizeEmail(strValue);
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fieldResult.sanitized)) {
               fieldResult.isValid = false;
               fieldResult.errors.push('Invalid email format');
             }
             break;
           case 'phone':
-            fieldResult.sanitized = InputSanitizer.sanitizePhoneNumber(value);
+            fieldResult.sanitized = InputSanitizer.sanitizePhoneNumber(strValue);
             if (fieldResult.sanitized.replace(/\D/g, '').length < 7) {
               fieldResult.isValid = false;
               fieldResult.errors.push('Invalid phone number');
             }
             break;
           case 'date':
-            fieldResult.sanitized = InputSanitizer.sanitizeDate(value);
+            fieldResult.sanitized = InputSanitizer.sanitizeDate(strValue);
             if (!fieldResult.sanitized) {
               fieldResult.isValid = false;
               fieldResult.errors.push('Invalid date format');
             }
             break;
           case 'passport':
-            fieldResult.sanitized = InputSanitizer.sanitizePassportNumber(value);
+            fieldResult.sanitized = InputSanitizer.sanitizePassportNumber(strValue);
             if (fieldResult.sanitized.length < 6) {
               fieldResult.isValid = false;
               fieldResult.errors.push('Invalid passport number');
             }
             break;
           case 'name':
-            fieldResult.sanitized = InputSanitizer.sanitizeName(value);
+            fieldResult.sanitized = InputSanitizer.sanitizeName(strValue);
             if (fieldResult.sanitized.length < 2) {
               fieldResult.isValid = false;
               fieldResult.errors.push('Name too short');
             }
             break;
           default:
-            fieldResult.sanitized = InputSanitizer.sanitizeText(value, {
-              maxLength: config.maxLength
+            fieldResult.sanitized = InputSanitizer.sanitizeText(strValue, {
+              maxLength: config.maxLength as number
             });
         }
       }
 
       // Length validation
-      if (config.minLength && fieldResult.sanitized && fieldResult.sanitized.length < config.minLength) {
+      if (config.minLength && fieldResult.sanitized.length < (config.minLength as number)) {
         fieldResult.isValid = false;
         fieldResult.errors.push(`Minimum ${config.minLength} characters required`);
       }
 
-      if (config.maxLength && fieldResult.sanitized && fieldResult.sanitized.length > config.maxLength) {
+      if (config.maxLength && fieldResult.sanitized.length > (config.maxLength as number)) {
         fieldResult.isValid = false;
         fieldResult.errors.push(`Maximum ${config.maxLength} characters allowed`);
       }
 
       // Pattern validation
-      if (config.pattern && fieldResult.sanitized && !config.pattern.test(fieldResult.sanitized)) {
+      if (config.pattern && !(config.pattern as RegExp).test(fieldResult.sanitized)) {
         fieldResult.isValid = false;
-        fieldResult.errors.push(config.patternMessage || 'Invalid format');
+        fieldResult.errors.push((config.patternMessage as string) || 'Invalid format');
       }
 
       // Custom validation
       if (config.customValidator && typeof config.customValidator === 'function') {
         try {
-          const customResult = config.customValidator(fieldResult.sanitized, formData);
+          const customResult = (config.customValidator as (v: string, d: Record<string, unknown>) => string | boolean)(fieldResult.sanitized, formData);
           if (customResult !== true) {
             fieldResult.isValid = false;
-            fieldResult.errors.push(customResult);
+            fieldResult.errors.push(String(customResult));
           }
-        } catch (_error) {
+        } catch {
           fieldResult.isValid = false;
           fieldResult.errors.push('Validation error');
         }
@@ -271,8 +290,8 @@ result.errors.push('Name must be at least 2 characters');
    * @param {string} formType - Type of form
    * @returns {Object} - Form validation configuration
    */
-  getFormConfig: (formType) => {
-    const configs = {
+  getFormConfig: (formType: string): Record<string, Record<string, unknown>> => {
+    const configs: Record<string, Record<string, Record<string, unknown>>> = {
       passport: {
         passportNumber: {
           type: 'passport',
@@ -347,14 +366,15 @@ result.errors.push('Name must be at least 2 characters');
    * @param {Object} data - Data to sanitize for display
    * @returns {Object} - Display-safe data
    */
-  sanitizeForDisplay: (data) => {
-    const { InputSanitizer } = require('./InputSanitizer');
+  sanitizeForDisplay: (data: Record<string, unknown> | null | undefined) => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const InputSanitizer = require('./InputSanitizer').default as unknown as DynamicInputSanitizer;
 
     if (!data || typeof data !== 'object') {
       return data;
     }
 
-    const sanitized = {};
+    const sanitized: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(data)) {
       if (typeof value === 'string') {
@@ -370,7 +390,7 @@ result.errors.push('Name must be at least 2 characters');
             : item
         );
       } else if (typeof value === 'object' && value !== null) {
-        sanitized[key] = ValidationUtils.sanitizeForDisplay(value);
+        sanitized[key] = ValidationUtils.sanitizeForDisplay(value as Record<string, unknown>);
       } else {
         sanitized[key] = value;
       }
@@ -384,20 +404,20 @@ result.errors.push('Name must be at least 2 characters');
    * @param {Object} data - Data to check
    * @returns {Object} - Sensitivity analysis
    */
-  analyzeSensitivity: (data) => {
+  analyzeSensitivity: (data: Record<string, unknown> | null | undefined) => {
     const sensitiveFields = [
       'passport', 'password', 'ssn', 'social', 'credit', 'card',
       'phone', 'email', 'address', 'birth', 'nationality'
     ];
 
-    const analysis = {
+    const analysis: { containsSensitiveData: boolean; sensitiveFields: string[]; riskLevel: string; recommendations: string[] } = {
       containsSensitiveData: false,
       sensitiveFields: [],
       riskLevel: 'low',
       recommendations: []
     };
 
-    const checkField = (key, value) => {
+    const checkField = (key: string, value: unknown) => {
       const keyLower = key.toLowerCase();
       const isSensitive = sensitiveFields.some(field => keyLower.includes(field));
 
@@ -414,12 +434,12 @@ result.errors.push('Name must be at least 2 characters');
       }
     };
 
-    const analyzeObject = (obj, prefix = '') => {
+    const analyzeObject = (obj: Record<string, unknown>, prefix = '') => {
       for (const [key, value] of Object.entries(obj)) {
         const fullKey = prefix ? `${prefix}.${key}` : key;
 
         if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-          analyzeObject(value, fullKey);
+          analyzeObject(value as Record<string, unknown>, fullKey);
         } else {
           checkField(fullKey, value);
         }
@@ -450,7 +470,9 @@ result.errors.push('Name must be at least 2 characters');
 };
 
 export default {
-  DataValidator,
-  InputSanitizer,
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  DataValidator: require('./DataValidator').default,
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  InputSanitizer: require('./InputSanitizer').default,
   ValidationUtils
 };

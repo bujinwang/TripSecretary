@@ -8,7 +8,7 @@
 /**
  * Maps legacy country names to ISO 3166-1 alpha-2 codes
  */
-const LEGACY_COUNTRY_MAP = {
+const LEGACY_COUNTRY_MAP: Record<string, string> = {
   thailand: 'th',
   malaysia: 'my',
   singapore: 'sg',
@@ -41,7 +41,7 @@ const LEGACY_COUNTRY_MAP = {
  * normalizeCountryCode('TH') // => 'th'
  * normalizeCountryCode('th') // => 'th'
  */
-export const normalizeCountryCode = (countryCode) => {
+export const normalizeCountryCode = (countryCode: string) => {
   if (!countryCode || typeof countryCode !== 'string') {
     return 'th'; // Default to Thailand
   }

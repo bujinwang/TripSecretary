@@ -228,10 +228,11 @@ export async function exampleGetNotificationStats() {
     console.log('System initialized:', stats.isInitialized);
     console.log('Last updated:', stats.lastUpdated);
     
+    const wo = stats.windowOpen as { totalScheduled: number; activeNotifications: number; expiredNotifications: number };
     console.log('\n📱 Window Open Notifications:');
-    console.log('Total scheduled:', stats.windowOpen.totalScheduled);
-    console.log('Active notifications:', stats.windowOpen.activeNotifications);
-    console.log('Expired notifications:', stats.windowOpen.expiredNotifications);
+    console.log('Total scheduled:', wo.totalScheduled);
+    console.log('Active notifications:', wo.activeNotifications);
+    console.log('Expired notifications:', wo.expiredNotifications);
     
     console.log('\n📋 Template Notifications:');
     console.log('Total templated notifications:', stats.templated.total);
@@ -269,17 +270,17 @@ export async function exampleValidateNotificationConsistency() {
     console.log('\n📱 Window Open Notifications:');
     console.log('Consistent:', validation.windowOpen.isConsistent ? '✅ Yes' : '❌ No');
     
-    if (validation.windowOpen.inconsistencies && validation.windowOpen.inconsistencies.length > 0) {
+    if ((validation.windowOpen as any).inconsistencies && (validation.windowOpen as any).inconsistencies.length > 0) {
       console.log('Inconsistencies found:');
-      validation.windowOpen.inconsistencies.forEach((issue, index) => {
+      (validation.windowOpen as any).inconsistencies.forEach((issue: any, index: number) => {
         console.log(`${index + 1}. Entry Pack: ${issue.entryPackId}`);
         console.log(`   Issue: ${issue.issue}`);
         console.log(`   Notification ID: ${issue.notificationId}`);
       });
     }
 
-    if (validation.windowOpen.validNotifications && validation.windowOpen.validNotifications.length > 0) {
-      console.log(`Valid notifications: ${validation.windowOpen.validNotifications.length}`);
+    if ((validation.windowOpen as any).validNotifications && (validation.windowOpen as any).validNotifications.length > 0) {
+      console.log(`Valid notifications: ${(validation.windowOpen as any).validNotifications.length}`);
     }
 
     return validation;

@@ -12,6 +12,18 @@ import StatusCard from './StatusCard';
 import ActionButton from './ActionButton';
 import SubmissionCountdown from '../SubmissionCountdown';
 
+interface ProgressViewProps {
+  completionPercent: number;
+  categories: Array<{ id: string; name: string; icon: string; status: string; completedCount: number; totalCount: number }>;
+  arrivalDate?: string;
+  primaryActionState: { title: string; variant: string; disabled: boolean };
+  onCategoryPress?: (category: Record<string, unknown>) => void;
+  onPrimaryAction?: () => void;
+  onPreviewEntryCard?: () => void;
+  onEditInformation?: () => void;
+  language?: string;
+}
+
 const ProgressView = ({
   completionPercent,
   categories,
@@ -22,7 +34,7 @@ const ProgressView = ({
   onPreviewEntryCard,
   onEditInformation,
   language,
-}) => {
+}: ProgressViewProps) => {
   // Animation refs
   const fadeAnim = useRef(createAnimationValue(0)).current;
   const slideAnim = useRef(createAnimationValue(20)).current;

@@ -1,7 +1,7 @@
 // Destination countries for nationality selection in TripSecretary
 // Maps ISO-3166 codes to Chinese display names
 
-export const NATIONALITIES = {
+export const NATIONALITIES: Record<string, string> = {
   // Main destination countries in the app
   'CHN': '中国',
   'JPN': '日本',
@@ -171,9 +171,9 @@ export const NATIONALITIES = {
 };
 
 // Helper functions
-export const getNationalityDisplayName = (code) => NATIONALITIES[code] || code;
+export const getNationalityDisplayName = (code: string) => NATIONALITIES[code] || code;
 
-export const getNationalityCode = (displayName) => {
+export const getNationalityCode = (displayName: string) => {
   const entry = Object.entries(NATIONALITIES).find(([code, name]) => name === displayName);
   return entry ? entry[0] : displayName;
 };

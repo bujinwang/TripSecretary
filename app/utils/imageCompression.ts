@@ -12,32 +12,54 @@
 
 import * as ImageManipulator from 'expo-image-manipulator';
 
-/**
- * Compression presets for different image types
- */
-export const CompressionPresets = {
-  // High quality for passport photos (need to be readable)
+interface CompressionPreset {
+  maxWidth: number;
+  maxHeight: number;
+  quality: number;
+  format: ImageManipulator.SaveFormat;
+}
+
+interface Dimensions {
+  width: number;
+  height: number;
+}
+
+interface CompressOptions {
+  rotate?: boolean;
+  flipVertically?: boolean;
+  flipHorizontally?: boolean;
+}
+
+interface ImageInfo {
+  uri: string;
+  width: number;
+  height: number;
+}
+
+interface BatchImageItem {
+  uri: string;
+  preset?: CompressionPreset;
+}
+
+export const CompressionPresets: Record<string, CompressionPreset> = {
   PASSPORT: {
     maxWidth: 1200,
     maxHeight: 1600,
     quality: 0.9,
     format: ImageManipulator.SaveFormat.JPEG,
   },
-  // Medium quality for tickets and receipts
   DOCUMENT: {
     maxWidth: 1024,
     maxHeight: 1366,
     quality: 0.85,
     format: ImageManipulator.SaveFormat.JPEG,
   },
-  // Lower quality for fund proof photos
   PROOF: {
     maxWidth: 800,
     maxHeight: 1067,
     quality: 0.8,
     format: ImageManipulator.SaveFormat.JPEG,
   },
-  // Thumbnail for previews
   THUMBNAIL: {
     maxWidth: 200,
     maxHeight: 200,
@@ -46,15 +68,7 @@ export const CompressionPresets = {
   },
 };
 
-/**
- * Calculate new dimensions while maintaining aspect ratio
- * @param {number} width - Original width
- * @param {number} height - Original height
- * @param {number} maxWidth - Maximum width
- * @param {number} maxHeight - Maximum height
- * @returns {{width: number, height: number}} New dimensions
- */
-export const calculateDimensions = (width, height, maxWidth, maxHeight) => {
+export const calculateDimensions = (width: number, height: number, maxWidth: number, maxHeight: number): Dimensions => {
   const aspectRatio = width / height;
 
   if (width <= maxWidth && height <= maxHeight) {
@@ -75,18 +89,7 @@ export const calculateDimensions = (width, height, maxWidth, maxHeight) => {
   };
 };
 
-/**
- * Compress an image using a preset configuration
- *
- * @param {string} uri - Image URI to compress
- * @param {Object} preset - Compression preset from CompressionPresets
- * @param {Object} options - Additional options
- * @param {boolean} options.rotate - Auto-rotate based on EXIF (default: true)
- * @param {boolean} options.flipVertically - Flip image vertically
- * @param {boolean} options.flipHorizontally - Flip image horizontally
- * @returns {Promise<Object>} Compressed image result with uri, width, height
- */
-export const compressImage = async (uri, preset = CompressionPresets.DOCUMENT, options = {}) => {
+export const compressImage = async (uri: string, preset: CompressionPreset = CompressionPresets.DOCUMENT, options: CompressOptions = {}): Promise<ImageManipulator.ImageResult> => {
   try {
     if (!uri) {
       throw new Error('Image URI is required');
@@ -98,10 +101,8 @@ export const compressImage = async (uri, preset = CompressionPresets.DOCUMENT, o
       flipHorizontally = false,
     } = options;
 
-    // Build manipulation actions
-    const actions = [];
+    const actions: ImageManipulator.Action[] = [];
 
-    // Add resize action
     actions.push({
       resize: {
         width: preset.maxWidth,
@@ -109,13 +110,6 @@ export const compressImage = async (uri, preset = CompressionPresets.DOCUMENT, o
       },
     });
 
-    // Add rotation if needed
-    if (rotate) {
-      // expo-image-manipulator automatically reads EXIF orientation
-      // No explicit rotation needed
-    }
-
-    // Add flip actions if needed
     if (flipVertically) {
       actions.push({ flip: ImageManipulator.FlipType.Vertical });
     }
@@ -124,7 +118,6 @@ export const compressImage = async (uri, preset = CompressionPresets.DOCUMENT, o
       actions.push({ flip: ImageManipulator.FlipType.Horizontal });
     }
 
-    // Perform compression
     const result = await ImageManipulator.manipulateAsync(
       uri,
       actions,
@@ -150,69 +143,27 @@ export const compressImage = async (uri, preset = CompressionPresets.DOCUMENT, o
   }
 };
 
-/**
- * Compress a passport photo
- * Uses high quality to ensure text is readable
- *
- * @param {string} uri - Image URI
- * @returns {Promise<Object>} Compressed image result
- */
-export const compressPassportPhoto = async (uri) => compressImage(uri, CompressionPresets.PASSPORT, { rotate: true });
+export const compressPassportPhoto = async (uri: string): Promise<ImageManipulator.ImageResult> => compressImage(uri, CompressionPresets.PASSPORT, { rotate: true });
 
-/**
- * Compress a document photo (ticket, receipt, etc.)
- * Uses medium quality for balance between size and readability
- *
- * @param {string} uri - Image URI
- * @returns {Promise<Object>} Compressed image result
- */
-export const compressDocumentPhoto = async (uri) => compressImage(uri, CompressionPresets.DOCUMENT, { rotate: true });
+export const compressDocumentPhoto = async (uri: string): Promise<ImageManipulator.ImageResult> => compressImage(uri, CompressionPresets.DOCUMENT, { rotate: true });
 
-/**
- * Compress a fund proof photo
- * Uses lower quality as exact details less critical
- *
- * @param {string} uri - Image URI
- * @returns {Promise<Object>} Compressed image result
- */
-export const compressFundProofPhoto = async (uri) => compressImage(uri, CompressionPresets.PROOF, { rotate: true });
+export const compressFundProofPhoto = async (uri: string): Promise<ImageManipulator.ImageResult> => compressImage(uri, CompressionPresets.PROOF, { rotate: true });
 
-/**
- * Generate a thumbnail for preview
- * Uses low quality and small size for fast loading
- *
- * @param {string} uri - Image URI
- * @returns {Promise<Object>} Thumbnail result
- */
-export const generateThumbnail = async (uri) => compressImage(uri, CompressionPresets.THUMBNAIL, { rotate: true });
+export const generateThumbnail = async (uri: string): Promise<ImageManipulator.ImageResult> => compressImage(uri, CompressionPresets.THUMBNAIL, { rotate: true });
 
-/**
- * Get estimated file size reduction
- * This is approximate based on typical compression ratios
- *
- * @param {Object} preset - Compression preset
- * @returns {number} Estimated reduction percentage (0-100)
- */
-export const getEstimatedReduction = (preset) => {
-  const reductionMap = {
-    [CompressionPresets.PASSPORT]: 60,   // ~60% smaller
-    [CompressionPresets.DOCUMENT]: 70,   // ~70% smaller
-    [CompressionPresets.PROOF]: 75,      // ~75% smaller
-    [CompressionPresets.THUMBNAIL]: 90,  // ~90% smaller
-  };
+export const getEstimatedReduction = (preset: CompressionPreset): number => {
+  const reductionMap = new Map<CompressionPreset, number>([
+    [CompressionPresets.PASSPORT, 60],
+    [CompressionPresets.DOCUMENT, 70],
+    [CompressionPresets.PROOF, 75],
+    [CompressionPresets.THUMBNAIL, 90],
+  ]);
 
-  return reductionMap[preset] || 70;
+  return reductionMap.get(preset) || 70;
 };
 
-/**
- * Batch compress multiple images
- *
- * @param {Array<{uri: string, preset: Object}>} images - Array of images to compress
- * @param {Function} onProgress - Progress callback (current, total)
- * @returns {Promise<Array<Object>>} Array of compressed results
- */
-export const batchCompressImages = async (images, onProgress) => {
-  const results = [];
+export const batchCompressImages = async (images: BatchImageItem[], onProgress?: (current: number, total: number) => void): Promise<Array<{ success: boolean; error?: string; uri?: string } & Partial<ImageManipulator.ImageResult>>> => {
+  const results: Array<{ success: boolean; error?: string; uri?: string } & Partial<ImageManipulator.ImageResult>> = [];
 
   for (let i = 0; i < images.length; i++) {
     const { uri, preset = CompressionPresets.DOCUMENT } = images[i];
@@ -222,7 +173,7 @@ export const batchCompressImages = async (images, onProgress) => {
       results.push({ success: true, ...result });
     } catch (error) {
       console.error(`[imageCompression] Failed to compress image ${i}:`, error);
-      results.push({ success: false, error: error.message, uri });
+      results.push({ success: false, error: (error as Error).message, uri });
     }
 
     if (onProgress) {
@@ -233,15 +184,8 @@ export const batchCompressImages = async (images, onProgress) => {
   return results;
 };
 
-/**
- * Helper to compress based on image type string
- *
- * @param {string} uri - Image URI
- * @param {string} type - Image type ('passport', 'document', 'proof', 'thumbnail')
- * @returns {Promise<Object>} Compressed image result
- */
-export const compressByType = async (uri, type = 'document') => {
-  const typeMap = {
+export const compressByType = async (uri: string, type = 'document'): Promise<ImageManipulator.ImageResult> => {
+  const typeMap: Record<string, (uri: string) => Promise<ImageManipulator.ImageResult>> = {
     passport: compressPassportPhoto,
     document: compressDocumentPhoto,
     proof: compressFundProofPhoto,

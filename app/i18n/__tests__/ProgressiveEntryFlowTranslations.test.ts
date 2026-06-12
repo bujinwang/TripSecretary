@@ -238,8 +238,12 @@ describe('Progressive Entry Flow Translations', () => {
  * @param {string} key - Dot notation key (e.g., 'a.b.c')
  * @returns {*} Value at the key path
  */
-function getNestedValue(obj, key) {
-  return key.split('.').reduce((current, keyPart) => {
-    return current && current[keyPart];
+interface NestedObject {
+  [key: string]: unknown;
+}
+
+function getNestedValue(obj: NestedObject, key: string) {
+  return key.split('.').reduce((current: NestedObject | undefined, keyPart: string) => {
+    return current && current[keyPart] as NestedObject | undefined;
   }, obj);
 }

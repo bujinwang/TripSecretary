@@ -1,26 +1,46 @@
 // 历史记录检查和验证工具
 
-/**
- * 检查历史记录是否还有效
- * @param {Object} generation - 历史生成记录
- * @returns {Object} { isValid: boolean, reason: string, daysUntilExpiry: number }
- */
-export function checkGenerationValidity(generation) {
+interface GenerationRecord {
+  travelInfo?: {
+    arrivalDate?: string;
+    flightNumber?: string;
+    [key: string]: unknown;
+  };
+  destination?: {
+    id?: string;
+    name?: string;
+    [key: string]: unknown;
+  };
+  passport?: {
+    passportNo?: string;
+    [key: string]: unknown;
+  };
+  createdAt?: string;
+  [key: string]: unknown;
+}
+
+interface ValidityResult {
+  isValid: boolean;
+  reason: string;
+  daysUntilExpiry?: number;
+  daysSinceCreated?: number;
+  warning?: string;
+}
+
+export function checkGenerationValidity(generation: GenerationRecord): ValidityResult {
   if (!generation) {
     return { isValid: false, reason: '记录不存在' };
   }
 
   const { travelInfo, createdAt } = generation;
   
-  // 1. 检查航班日期
   if (travelInfo?.arrivalDate) {
     const arrivalDate = new Date(travelInfo.arrivalDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const daysUntilFlight = Math.ceil((arrivalDate - today) / (1000 * 60 * 60 * 24));
+    const daysUntilFlight = Math.ceil((arrivalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     
-    // 航班日期已过期
     if (daysUntilFlight < 0) {
       return {
         isValid: false,
@@ -29,7 +49,6 @@ export function checkGenerationValidity(generation) {
       };
     }
     
-    // 航班日期即将到来（未来7天内）- 可能需要更新信息
     if (daysUntilFlight <= 7 && daysUntilFlight >= 0) {
       return {
         isValid: true,
@@ -39,7 +58,6 @@ export function checkGenerationValidity(generation) {
       };
     }
     
-    // 航班日期在未来（7天后）- 完全有效
     if (daysUntilFlight > 7) {
       return {
         isValid: true,
@@ -49,13 +67,11 @@ export function checkGenerationValidity(generation) {
     }
   }
   
-  // 2. 如果没有航班日期，检查生成时间
   if (createdAt) {
     const createdDate = new Date(createdAt);
     const today = new Date();
-    const daysSinceCreated = Math.ceil((today - createdDate) / (1000 * 60 * 60 * 24));
+    const daysSinceCreated = Math.ceil((today.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
     
-    // 超过30天视为过期
     if (daysSinceCreated > 30) {
       return {
         isValid: false,
@@ -64,7 +80,6 @@ export function checkGenerationValidity(generation) {
       };
     }
     
-    // 30天内有效
     return {
       isValid: true,
       reason: '记录有效',
@@ -72,23 +87,14 @@ export function checkGenerationValidity(generation) {
     };
   }
   
-  // 默认返回无效
   return { isValid: false, reason: '无法判断有效性' };
 }
 
-/**
- * 查找用户最近的有效历史记录
- * @param {string} destinationId - 目的地ID
- * @param {string} passportNo - 护照号
- * @param {Array} historyList - 历史记录列表
- * @returns {Object} 最近的有效记录或null
- */
-export function findRecentValidGeneration(destinationId, passportNo, historyList) {
+export function findRecentValidGeneration(destinationId: string, passportNo: string, historyList: GenerationRecord[]): (GenerationRecord & { validity: ValidityResult }) | null {
   if (!historyList || historyList.length === 0) {
     return null;
   }
   
-  // 过滤出匹配目的地和护照的记录
   const matchingRecords = historyList.filter(
     (record) =>
       record.destination?.id === destinationId &&
@@ -99,14 +105,12 @@ export function findRecentValidGeneration(destinationId, passportNo, historyList
     return null;
   }
   
-  // 按创建时间排序（最新的在前）
   matchingRecords.sort((a, b) => {
-    const dateA = new Date(a.createdAt);
-    const dateB = new Date(b.createdAt);
+    const dateA = new Date(a.createdAt || 0).getTime();
+    const dateB = new Date(b.createdAt || 0).getTime();
     return dateB - dateA;
   });
   
-  // 查找第一个有效的记录
   for (const record of matchingRecords) {
     const validity = checkGenerationValidity(record);
     if (validity.isValid) {
@@ -120,16 +124,11 @@ export function findRecentValidGeneration(destinationId, passportNo, historyList
   return null;
 }
 
-/**
- * 格式化日期为友好显示
- * @param {string} dateString - 日期字符串
- * @returns {string} 格式化后的日期
- */
-export function formatDate(dateString) {
+export function formatDate(dateString: string): string {
   if (!dateString) {
-return '';
-}
-  
+    return '';
+  }
+   
   const date = new Date(dateString);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -138,65 +137,55 @@ return '';
   return `${year}-${month}-${day}`;
 }
 
-/**
- * 格式化相对时间（多少天前/后）
- * @param {number} days - 天数
- * @returns {string} 相对时间描述
- */
-export function formatRelativeTime(days) {
+export function formatRelativeTime(days: number): string {
   const absDays = Math.abs(days);
   
   if (days === 0) {
-return '今天';
-}
+    return '今天';
+  }
   if (days === 1) {
-return '明天';
-}
+    return '明天';
+  }
   if (days === -1) {
-return '昨天';
-}
-  
+    return '昨天';
+  }
+   
   if (days > 0) {
     if (absDays <= 7) {
-return `${absDays}天后`;
-}
+      return `${absDays}天后`;
+    }
     if (absDays <= 30) {
-return `${Math.ceil(absDays / 7)}周后`;
-}
+      return `${Math.ceil(absDays / 7)}周后`;
+    }
     return `${Math.ceil(absDays / 30)}个月后`;
   } else {
     if (absDays <= 7) {
-return `${absDays}天前`;
-}
+      return `${absDays}天前`;
+    }
     if (absDays <= 30) {
-return `${Math.ceil(absDays / 7)}周前`;
-}
+      return `${Math.ceil(absDays / 7)}周前`;
+    }
     return `${Math.ceil(absDays / 30)}个月前`;
   }
 }
 
-/**
- * 生成历史记录摘要
- * @param {Object} generation - 历史记录
- * @returns {string} 摘要文本
- */
-export function generateSummary(generation) {
+export function generateSummary(generation: GenerationRecord): string {
   const { travelInfo, destination, createdAt } = generation;
   const validity = checkGenerationValidity(generation);
   
   let summary = `${destination?.name || '目的地'}通关包`;
   
   if (travelInfo?.arrivalDate) {
-    const daysText = formatRelativeTime(validity.daysUntilExpiry);
+    const daysText = formatRelativeTime(validity.daysUntilExpiry || 0);
     summary += ` · 航班${daysText}`;
   } else if (createdAt) {
-    const daysText = formatRelativeTime(-validity.daysSinceCreated);
+    const daysText = formatRelativeTime(-(validity.daysSinceCreated || 0));
     summary += ` · ${daysText}生成`;
   }
   
   if (travelInfo?.flightNumber) {
     summary += ` · ${travelInfo.flightNumber}`;
   }
-  
+
   return summary;
 }

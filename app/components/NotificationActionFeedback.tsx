@@ -15,7 +15,7 @@ import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native
 import NotificationService from '../services/notification/NotificationService';
 
 const NotificationActionFeedback = () => {
-  const [feedback, setFeedback] = useState(null);
+  const [feedback, setFeedback] = useState<ActionFeedback | null>(null);
   const [fadeAnim] = useState(new Animated.Value(0));
 
   useEffect(() => {

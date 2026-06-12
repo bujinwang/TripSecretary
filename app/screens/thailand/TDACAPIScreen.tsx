@@ -46,7 +46,7 @@ const TDACAPIScreen = ({ navigation, route }) => {
   
   // Result modal
   const [showResult, setShowResult] = useState(false);
-  const [resultData, setResultData] = useState(null);
+  const [resultData, setResultData] = useState<any>(null);
   
   // Form data (pre-filled from travelerInfo if available)
   const [formData, setFormData] = useState({
@@ -105,7 +105,7 @@ const TDACAPIScreen = ({ navigation, route }) => {
   /**
    * Handle Cloudflare verification
    */
-  const handleCloudflareVerify = (token) => {
+  const handleCloudflareVerify = (token: string) => {
     setCloudflareToken(token);
     setCloudflareVerified(true);
     Alert.alert('✅ 验证成功', '已通过Cloudflare人机验证');
@@ -196,7 +196,7 @@ const TDACAPIScreen = ({ navigation, route }) => {
 
             if (serviceResult.success) {
               console.log('✅ TDAC submission handled successfully by service:', {
-                digitalArrivalCardId: serviceResult.digitalArrivalCard?.id,
+                digitalArrivalCardId: (serviceResult.digitalArrivalCard as any)?.id,
                 entryInfoId: serviceResult.entryInfoId
               });
             } else {
@@ -244,9 +244,10 @@ const TDACAPIScreen = ({ navigation, route }) => {
       console.error('Submit error:', error);
       
       // 更友好的错误提示
-      const errorMessage = error.message.includes('JSON Parse') || error.message.includes('Cloudflare')
+      const err = error as Error;
+      const errorMessage = err.message.includes('JSON Parse') || err.message.includes('Cloudflare')
         ? '⚠️ API功能开发中\n\n目前需要通过真实的Cloudflare验证才能提交。\n\n建议使用WebView版本（自动化填表方式）。'
-        : error.message;
+        : err.message;
       
       Alert.alert(
         '❌ 提交失败', 
@@ -285,7 +286,7 @@ const TDACAPIScreen = ({ navigation, route }) => {
    * @param {Object} result - Submission result metadata
    * @returns {Promise<Object|null>} - PDF save result or null if failed
    */
-  const savePDFAndQRCode = async (arrCardNo, pdfBlob, result = {}) => {
+  const savePDFAndQRCode = async (arrCardNo: string, pdfBlob: Blob, result: Record<string, unknown> = {}) => {
     try {
       // Request media library permissions
       const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -301,7 +302,8 @@ const TDACAPIScreen = ({ navigation, route }) => {
         { submissionMethod: 'api' }
       );
 
-      console.log('✅ PDF saved to app storage:', pdfSaveResult.filepath);
+      const pdfPath = (pdfSaveResult as { filepath: string }).filepath;
+      console.log('✅ PDF saved to app storage:', pdfPath);
 
       // ═══════════════════════════════════════════════════════════════════════
       // ARCHITECTURE CHANGE: AsyncStorage Deprecated
@@ -321,7 +323,7 @@ const TDACAPIScreen = ({ navigation, route }) => {
       // Save full PDF to photo album
       // TODO Priority 1: Extract QR code only and save that instead of full PDF
       // Currently saves full PDF containing sensitive personal information
-      await MediaLibrary.createAssetAsync(pdfSaveResult.filepath);
+      await MediaLibrary.createAssetAsync(pdfPath);
       console.log('✅ PDF saved to photo album (full PDF, not just QR code)');
 
       return pdfSaveResult;

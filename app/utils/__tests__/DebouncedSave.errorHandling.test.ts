@@ -9,7 +9,7 @@
 import { DebouncedSave } from '../DebouncedSave';
 
 describe('DebouncedSave Error Handling', () => {
-  let debouncedSave;
+  let debouncedSave: DebouncedSave;
 
   beforeEach(() => {
     debouncedSave = new DebouncedSave();

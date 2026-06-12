@@ -21,7 +21,7 @@
  * parseLocalDate(new Date()) // Returns the same Date object
  * parseLocalDate(null) // Returns null
  */
-export function parseLocalDate(dateValue) {
+export function parseLocalDate(dateValue: string | Date | null | undefined) {
   if (!dateValue) {
     return null;
   }
@@ -63,7 +63,7 @@ export function parseLocalDate(dateValue) {
  * formatLocalDate("2025-10-31") // Returns "2025-10-31" (passes through if already valid)
  * formatLocalDate(null) // Returns null
  */
-export function formatLocalDate(dateValue) {
+export function formatLocalDate(dateValue: Date | string | null | undefined) {
   if (!dateValue) {
     return null;
   }
@@ -99,7 +99,7 @@ export function formatLocalDate(dateValue) {
  * @param {any} value - Value to check
  * @returns {boolean} True if value is a valid YYYY-MM-DD date string
  */
-export function isValidDateString(value) {
+export function isValidDateString(value: unknown) {
   if (typeof value !== 'string') {
     return false;
   }
@@ -123,7 +123,7 @@ export function isValidDateString(value) {
  * @example
  * formatChineseDate("2025-10-31") // Returns "2025年10月31日"
  */
-export function formatChineseDate(dateValue) {
+export function formatChineseDate(dateValue: Date | string | null | undefined) {
   if (!dateValue) {
     return '';
   }

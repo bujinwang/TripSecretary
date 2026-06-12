@@ -255,6 +255,22 @@ class TDACValidationService {
   ): void {
     // File accessibility check stub — requires FileSystem API at runtime
   }
+
+  validateTravelerData(travelerData: Record<string, unknown>): {
+    isValid: boolean;
+    warnings: string[];
+  } {
+    const warnings: string[] = [];
+    const requiredFields = ['familyName', 'firstName', 'passportNo', 'nationality', 'birthDate', 'gender'];
+    
+    for (const field of requiredFields) {
+      if (!travelerData[field]) {
+        return { isValid: false, warnings: [`Missing required field: ${field}`] };
+      }
+    }
+    
+    return { isValid: true, warnings };
+  }
 }
 
 export default new TDACValidationService();

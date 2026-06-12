@@ -16,6 +16,20 @@ import DebouncedSave from '../../utils/DebouncedSave';
  * @param {Object} params.navigation - Navigation object
  * @returns {Object} Data persistence functions
  */
+interface UseMalaysiaDataPersistenceParams {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  passport: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  destination: any;
+  userId: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  formState: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  userInteractionTracker: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: any;
+}
+
 export const useMalaysiaDataPersistence = ({
   passport,
   destination,
@@ -23,7 +37,7 @@ export const useMalaysiaDataPersistence = ({
   formState,
   userInteractionTracker,
   navigation,
-}) => {
+}: UseMalaysiaDataPersistenceParams) => {
   // Refs for managing save operations
   const saveTimeoutRef = useRef(null);
   const scrollViewRef = useRef(null);
@@ -32,14 +46,40 @@ export const useMalaysiaDataPersistence = ({
   /**
    * Migration function to mark existing data as user-modified
    */
-  const migrateExistingDataToInteractionState = useCallback(async (userData) => {
+  interface ExistingUserData {
+    passport?: {
+      passportNumber?: string;
+      fullName?: string;
+      nationality?: string;
+      dateOfBirth?: string;
+      expiryDate?: string;
+      gender?: string;
+    };
+    personalInfo?: {
+      phoneCode?: string;
+      phoneNumber?: string;
+      email?: string;
+      occupation?: string;
+      countryRegion?: string;
+    };
+    travelInfo?: {
+      travelPurpose?: string;
+      accommodationType?: string;
+      arrivalFlightNumber?: string;
+      arrivalDate?: string;
+      hotelAddress?: string;
+      lengthOfStay?: string;
+    };
+  }
+
+  const migrateExistingDataToInteractionState = useCallback(async (userData: ExistingUserData) => {
     if (!userData || !userInteractionTracker.isInitialized) {
       return;
     }
 
     console.log('=== MIGRATING MALAYSIA EXISTING DATA TO INTERACTION STATE ===');
 
-    const existingDataToMigrate = {};
+    const existingDataToMigrate: Record<string, string> = {};
 
     // Migrate passport data
     if (userData.passport) {
@@ -242,7 +282,7 @@ existingDataToMigrate.stayDuration = travelInfo.lengthOfStay;
   /**
    * Save fund items
    */
-  const saveFundItems = useCallback(async (fundItems) => {
+  const saveFundItems = useCallback(async (fundItems: Record<string, unknown>[]) => {
     try {
       await UserDataService.updateFundItems(userId, fundItems);
       formState.setFunds(fundItems);
@@ -343,7 +383,7 @@ existingDataToMigrate.stayDuration = travelInfo.lengthOfStay;
   /**
    * Save photo to storage
    */
-  const savePhoto = useCallback(async (photoType, photoUri) => {
+  const savePhoto = useCallback(async (photoType: string, photoUri: string) => {
     try {
       const fieldName = photoType === 'flightTicket'
         ? 'flightTicketPhoto'

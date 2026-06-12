@@ -5,7 +5,8 @@
  * fund management, field filtering, and immediate save for critical fields.
  */
 
-import { TravelInfoSectionConfig, TravelInfoFieldConfig, TravelInfoConfig } from '../types';
+import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
+import { TravelInfoSectionConfig, TravelInfoFieldConfig, TravelInfoConfig } from '../config/destinations/types';
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LoggingService from '../services/LoggingService';
@@ -31,6 +32,17 @@ import {
   FundsSection,
   TravelDetailsSection,
 } from '../components/shared/sections';
+import type { FundsSectionProps, FundSectionConfig } from '../components/shared/sections/FundsSection';
+import type { TravelDetailsSectionProps } from '../components/shared/sections/TravelDetailsSection';
+import type { BaseButtonProps } from '../components/tamagui';
+
+// Typed aliases for shared components — extends base props with template-specific extras not in the base interfaces
+type _FundsSectionExtra = { setFunds?: (funds: unknown[]) => void; debouncedSaveData?: () => void };
+const TypedFundsSection = FundsSection as React.FC<FundsSectionProps & _FundsSectionExtra>;
+const TypedTravelDetailsSection = TravelDetailsSection as React.FC<TravelDetailsSectionProps>;
+
+// Type for config.sections.travel photo upload configuration
+type TravelPhotoConfig = { photoUploads?: { flightTicket?: { enabled?: boolean }; departureTicket?: { enabled?: boolean }; hotelReservation?: { enabled?: boolean } } };
 
 // Import BackButton
 import BackButton from '../components/BackButton';
@@ -55,7 +67,7 @@ type EnhancedTravelInfoTemplateProps = {
 // ============================================
 // TEMPLATE CONTEXT
 // ============================================
-const EnhancedTemplateContext = React.createContext(null);
+const EnhancedTemplateContext = React.createContext<any>(null);
 
 const useEnhancedTemplate = () => {
   const context = React.useContext(EnhancedTemplateContext);
@@ -110,38 +122,38 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
   }, [config?.destinationId, destination]);
 
 // Helper function to resolve section labels using i18n
-const resolveSectionLabels = useCallback((sectionKey: string, sectionConfig: TravelInfoSectionConfig, labelSource: Record<string, any> = {}) => {
-  const resolvedLabels: Record<string, any> = { ...labelSource };
+const resolveSectionLabels = useCallback((sectionKey: string, sectionConfig: TravelInfoSectionConfig, labelSource: Record<string, unknown> = {}) => {
+  const resolvedLabels: Record<string, any> = { ...labelSource as Record<string, string> };
     const destId = config?.destinationId || destinationId || 'hongkong';
     
     // Resolve title using titleKey if available
     if (sectionConfig?.titleKey) {
       resolvedLabels.title = t(sectionConfig.titleKey, { 
-        defaultValue: sectionConfig.defaultTitle || labelSource.title || sectionKey 
+        defaultValue: sectionConfig.defaultTitle || (labelSource.title as string | undefined) || sectionKey 
       });
     } else if (labelSource.title) {
       // If labelSource has a title, try to resolve it as a translation key
       const titleKey = `${destId}.travelInfo.sections.${sectionKey}.title`;
-      resolvedLabels.title = t(titleKey, { defaultValue: labelSource.title });
+      resolvedLabels.title = t(titleKey, { defaultValue: labelSource.title as string | undefined });
     }
     
     // Resolve subtitle if there's a subtitleKey
     if (sectionConfig?.subtitleKey) {
-      resolvedLabels.subtitle = t(sectionConfig.subtitleKey, {
-        defaultValue: sectionConfig.defaultSubtitle || labelSource.subtitle || ''
+      resolvedLabels.subtitle = t(sectionConfig.subtitleKey as string, {
+        defaultValue: (sectionConfig.defaultSubtitle as string | undefined) || (labelSource.subtitle as string | undefined) || ''
       });
     } else if (labelSource.subtitle) {
       // If labelSource has a subtitle, try to resolve it as a translation key
       const subtitleKey = `${destId}.travelInfo.sections.${sectionKey}.subtitle`;
-      resolvedLabels.subtitle = t(subtitleKey, { defaultValue: labelSource.subtitle });
+      resolvedLabels.subtitle = t(subtitleKey, { defaultValue: labelSource.subtitle as string | undefined });
     }
     
      // Resolve field labels from config
      if (sectionConfig?.fields) {
        Object.entries(sectionConfig.fields as Record<string, TravelInfoFieldConfig>).forEach(([fieldKey, fieldConfig]) => {
          if (fieldConfig?.labelKey) {
-          // Map field keys to component label keys
-          const labelKeyMap = {
+           // Map field keys to component label keys
+           const labelKeyMap: Record<string, string | string[]> = {
             // Passport fields
             surname: ['surname', 'surnameLabel'],
             middleName: ['middleName', 'middleNameLabel'],
@@ -204,12 +216,12 @@ const resolveSectionLabels = useCallback((sectionKey: string, sectionConfig: Tra
           
           // Try fieldHelp structure first (e.g., kr.travelInfo.fieldHelp.nationality)
           const fieldHelpKey = `${destId}.travelInfo.fieldHelp.${fieldKey}`;
-          let translatedHelpText = t(fieldHelpKey, { defaultValue: null });
+          let translatedHelpText: string | undefined = t(fieldHelpKey, { defaultValue: undefined });
           
           // If not found, try nested structure (e.g., kr.travelInfo.fields.nationality.help)
           if (!translatedHelpText) {
             const nestedHelpKey = `${destId}.travelInfo.fields.${fieldKey}.help`;
-            translatedHelpText = t(nestedHelpKey, { defaultValue: null });
+            translatedHelpText = t(nestedHelpKey, { defaultValue: undefined });
           }
           
           // Use config helpText as fallback
@@ -250,14 +262,14 @@ const resolveSectionLabels = useCallback((sectionKey: string, sectionConfig: Tra
       Object.entries(additionalLabels).forEach(([labelKey, fieldKey]) => {
         // Try to resolve from i18n
         const translationKey = `${destId}.travelInfo.sections.travel.${labelKey}`;
-        const translated = t(translationKey, { defaultValue: null });
+        const translated: string | undefined = t(translationKey, { defaultValue: undefined });
         if (translated) {
           resolvedLabels[labelKey] = translated;
         } else {
           // Try field-level resolution for some labels
           if (['isTransitPassenger', 'transitYes', 'transitNo'].includes(labelKey)) {
             const fieldTranslationKey = `${destId}.travelInfo.fields.${fieldKey}`;
-            const fieldTranslated = t(fieldTranslationKey, { defaultValue: null });
+            const fieldTranslated: string | undefined = t(fieldTranslationKey, { defaultValue: undefined });
             if (fieldTranslated) {
               resolvedLabels[labelKey] = fieldTranslated;
             }
@@ -266,7 +278,7 @@ const resolveSectionLabels = useCallback((sectionKey: string, sectionConfig: Tra
           if (labelKey.includes('Placeholder')) {
             const baseFieldKey = labelKey.replace('Placeholder', '');
             const placeholderKey = `${destId}.travelInfo.fields.${baseFieldKey}.placeholder`;
-            const placeholderTranslated = t(placeholderKey, { defaultValue: null });
+            const placeholderTranslated: string | undefined = t(placeholderKey, { defaultValue: undefined });
             if (placeholderTranslated) {
               resolvedLabels[labelKey] = placeholderTranslated;
             }
@@ -274,7 +286,7 @@ const resolveSectionLabels = useCallback((sectionKey: string, sectionConfig: Tra
           // For modal titles, try sections.travel structure
           if (labelKey.includes('ModalTitle')) {
             const modalTitleKey = `${destId}.travelInfo.sections.travel.${labelKey}`;
-            const modalTitleTranslated = t(modalTitleKey, { defaultValue: null });
+            const modalTitleTranslated: string | undefined = t(modalTitleKey, { defaultValue: undefined });
             if (modalTitleTranslated) {
               resolvedLabels[labelKey] = modalTitleTranslated;
             }
@@ -299,19 +311,19 @@ const resolveSectionLabels = useCallback((sectionKey: string, sectionConfig: Tra
         if (!resolvedLabels[labelKey]) {
           // Try fieldHelp structure first (destination-specific)
           const fieldHelpKey = `${destId}.travelInfo.fieldHelp.${fieldKey}`;
-          let translatedHelpText = t(fieldHelpKey, { defaultValue: null });
+          let translatedHelpText: string | undefined = t(fieldHelpKey, { defaultValue: undefined });
           
           // If not found, try nested structure
           if (!translatedHelpText) {
             const nestedHelpKey = `${destId}.travelInfo.fields.${fieldKey}.help`;
-            translatedHelpText = t(nestedHelpKey, { defaultValue: null });
+            translatedHelpText = t(nestedHelpKey, { defaultValue: undefined });
           }
           
           // Fallback: try common translations if destination-specific not found
           if (!translatedHelpText) {
             // Try common.fieldHelp structure as fallback
             const commonHelpKey = `common.fieldHelp.${fieldKey}`;
-            translatedHelpText = t(commonHelpKey, { defaultValue: null });
+            translatedHelpText = t(commonHelpKey, { defaultValue: undefined });
           }
           
           if (translatedHelpText) {
@@ -344,7 +356,7 @@ const resolveSectionLabels = useCallback((sectionKey: string, sectionConfig: Tra
       
       fundsLabels.forEach(labelKey => {
         const translationKey = `${destId}.travelInfo.sections.funds.${labelKey}`;
-        const translated = t(translationKey, { defaultValue: null });
+        const translated: string | undefined = t(translationKey, { defaultValue: undefined });
         if (translated) {
           resolvedLabels[labelKey] = translated;
         }
@@ -358,7 +370,7 @@ const resolveSectionLabels = useCallback((sectionKey: string, sectionConfig: Tra
       
       fundTypeKeys.forEach(typeKey => {
         const translationKey = `${destId}.travelInfo.sections.funds.fundTypes.${typeKey}`;
-        const translated = t(translationKey, { defaultValue: null });
+        const translated: string | undefined = t(translationKey, { defaultValue: undefined });
         if (translated) {
           resolvedLabels.fundTypes[typeKey] = translated;
         }
@@ -455,9 +467,9 @@ const resolveSectionLabels = useCallback((sectionKey: string, sectionConfig: Tra
 
   // Travel section config (inject location depth if provided in hierarchy)
   const travelSectionConfig = useMemo(() => {
-    const section = config?.sections?.travel || {};
+    const section: Record<string, unknown> = config?.sections?.travel || {};
     const hierarchyLevels =
-      section?.locationHierarchy?.levels ?? locationData.levels;
+      (section?.locationHierarchy as Record<string, unknown>)?.levels ?? locationData.levels;
 
     if (hierarchyLevels && section.locationDepth !== hierarchyLevels) {
       return { ...section, locationDepth: hierarchyLevels };
@@ -510,13 +522,13 @@ interface FormState {
   });
 
   // Helper to update form state
-  const updateFormState = useCallback((updates) => {
+  const updateFormState = useCallback((updates: Record<string, unknown>) => {
     setFormState(prev => ({ ...prev, ...updates }));
   }, []);
 
   // Initialize form state from config
   useEffect(() => {
-    let initialState: any = {};
+    const initialState: Record<string, unknown> = {};
     const arrivalFieldNames = ['arrivalDate', 'arrivalArrivalDate'];
     const departureFieldNames = ['departureDate', 'departureDepartureDate'];
     const defaultArrivalDate = getDefaultArrivalDate();
@@ -525,7 +537,7 @@ interface FormState {
     // Build state object from config sections
     if (!config?.sections) {
       LoggingService.warn('Template', 'config.sections is undefined, skipping form initialization');
-      setFormState(initialState);
+      setFormState(initialState as FormState);
       return;
     }
 
@@ -633,7 +645,7 @@ initialState.visaNumber = passport.visaNumber;
     initialState.scrollPosition = 0;
 
     LoggingService.debug('Template', 'Initializing formState', { fieldCount: Object.keys(initialState).length });
-    setFormState(initialState);
+    setFormState(initialState as FormState);
   }, [config, passport]);
 
   // ============================================
@@ -646,7 +658,7 @@ initialState.visaNumber = passport.visaNumber;
 
   // Track in-flight entry info creation to prevent duplicate records when
   // multiple ensure calls run in parallel (e.g., StrictMode double renders)
-  const entryInfoCreationPromiseRef = useRef(null);
+  const entryInfoCreationPromiseRef = useRef<Promise<any> | null>(null);
 
    // ============================================
    // ENTRY INFO MANAGEMENT
@@ -1016,7 +1028,7 @@ initialState.visaNumber = passport.visaNumber;
       let savedTravelInfo = null;
 
       // Get always-save fields from config
-      const alwaysSaveFields = TemplateFieldStateManager.getAlwaysSaveFieldsFromConfig(config);
+      const alwaysSaveFields = TemplateFieldStateManager.getAlwaysSaveFieldsFromConfig(config as unknown as TemplateConfig);
 
       // Filter options
       const filterOptions = {
@@ -1163,7 +1175,8 @@ initialState.visaNumber = passport.visaNumber;
       setTimeout(() => {
         try {
           updateFormState({ saveStatus: null });
-        } catch (error) {
+        } catch (err: unknown) {
+          const error = err as Error;
           if (error?.message?.includes('useEntryFlowTemplate')) {
             LoggingService.error('Template', 'CRITICAL: useEntryFlowTemplate error in setTimeout callback');
             LoggingService.error('Template', 'Stack trace', { stack: error.stack });
@@ -1173,7 +1186,8 @@ initialState.visaNumber = passport.visaNumber;
       }, 2000);
 
       LoggingService.debug('Template', 'Data saved successfully');
-    } catch (error) {
+    } catch (err: unknown) {
+      const error = err as Error;
       LoggingService.error('Template', 'Error saving data', { error });
       // Check if this is the useEntryFlowTemplate error
       if (error?.message?.includes('useEntryFlowTemplate')) {
@@ -1185,7 +1199,7 @@ initialState.visaNumber = passport.visaNumber;
   }, [userId, formState, config, userInteractionTracker.interactionState, updateFormState, destinationId, ensureEntryInfoRecord]);
 
   // Debounced save
-  const saveTimerRef = useRef(null);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const debouncedSave = useCallback(() => {
     if (saveTimerRef.current) {
       clearTimeout(saveTimerRef.current);
@@ -1193,7 +1207,7 @@ initialState.visaNumber = passport.visaNumber;
     updateFormState({ saveStatus: 'pending' });
     saveTimerRef.current = setTimeout(() => {
       saveDataToUserDataService();
-    }, config.features?.autoSave?.delay || 1000);
+    }, (config.features?.autoSave as Record<string, number> | undefined)?.delay || 1000);
   }, [saveDataToUserDataService, config.features, updateFormState]);
 
   // ============================================
@@ -1201,7 +1215,7 @@ initialState.visaNumber = passport.visaNumber;
   // ============================================
   const validation = useTemplateValidation({
     config,
-    formState: { ...formState, setErrors: (fn) => updateFormState({ errors: typeof fn === 'function' ? fn(formState.errors) : fn }), setWarnings: (fn) => updateFormState({ warnings: typeof fn === 'function' ? fn(formState.warnings) : fn }), setLastEditedAt: (val) => updateFormState({ lastEditedAt: val }) },
+    formState: { ...formState, setErrors: (fn: unknown) => updateFormState({ errors: typeof fn === 'function' ? fn(formState.errors) : fn }), setWarnings: (fn: unknown) => updateFormState({ warnings: typeof fn === 'function' ? fn(formState.warnings) : fn }), setLastEditedAt: (val: string) => updateFormState({ lastEditedAt: val }) },
     userInteractionTracker,
     saveDataToUserDataService,
     debouncedSave,
@@ -1234,7 +1248,7 @@ initialState.visaNumber = passport.visaNumber;
   // ============================================
   // FIELD UPDATE HANDLERS
   // ============================================
-  const updateField = useCallback((fieldName, value) => {
+  const updateField = useCallback((fieldName: string, value: string) => {
     updateFormState({ [fieldName]: value });
 
     // Mark as user-modified
@@ -1248,7 +1262,7 @@ initialState.visaNumber = passport.visaNumber;
   // ============================================
   // LOCATION CASCADE HANDLERS
   // ============================================
-  const handleProvinceSelect = useCallback((province) => {
+  const handleProvinceSelect = useCallback((province: string) => {
     updateFormState({
       province,
       district: '',
@@ -1262,7 +1276,7 @@ initialState.visaNumber = passport.visaNumber;
     debouncedSave();
   }, [userInteractionTracker, debouncedSave, updateFormState]);
 
-  const handleDistrictSelect = useCallback((district, districtId) => {
+  const handleDistrictSelect = useCallback((district: string, districtId: string) => {
     updateFormState({
       district,
       districtId,
@@ -1279,7 +1293,7 @@ initialState.visaNumber = passport.visaNumber;
     debouncedSave();
   }, [userInteractionTracker, debouncedSave, updateFormState]);
 
-  const handleSubDistrictSelect = useCallback((subDistrict, subDistrictId, postalCode) => {
+  const handleSubDistrictSelect = useCallback((subDistrict: string, subDistrictId: string, postalCode: string) => {
     updateFormState({
       subDistrict,
       subDistrictId,
@@ -1351,7 +1365,7 @@ initialState.visaNumber = passport.visaNumber;
   // ============================================
   // SECTION COLLAPSE/EXPAND
   // ============================================
-  const toggleSection = useCallback((sectionKey) => {
+  const toggleSection = useCallback((sectionKey: string) => {
     updateFormState({
       expandedSections: {
         ...formState.expandedSections,
@@ -1422,7 +1436,7 @@ initialState.visaNumber = passport.visaNumber;
   if (children) {
     return (
       <EnhancedTemplateContext.Provider value={contextValue}>
-        {typeof children === 'function' ? children(contextValue) : children}
+        {typeof children === 'function' ? (children as (ctx: unknown) => React.ReactNode)(contextValue) : children}
       </EnhancedTemplateContext.Provider>
     );
   }
@@ -1444,7 +1458,7 @@ initialState.visaNumber = passport.visaNumber;
 
           {/* Last Edited Timestamp */}
           {config.features?.lastEditedTimestamp && formState.lastEditedAt && (
-            <LastEditedTimestamp time={formState.lastEditedAt} t={t} />
+            <LastEditedTimestamp time={formState.lastEditedAt} />
           )}
 
           {/* Privacy Notice */}
@@ -1478,14 +1492,17 @@ initialState.visaNumber = passport.visaNumber;
               warnings={formState.warnings}
               handleFieldBlur={validation.handleFieldBlur}
               debouncedSaveData={debouncedSave}
-              labels={resolveSectionLabels('passport', config?.sections?.passport, config?.i18n?.labelSource?.passport || {})}
+              labels={(() => {
+                const labelSource: Record<string, unknown> = ((config?.i18n as Record<string, Record<string, unknown>> | undefined)?.labelSource?.passport || {}) as Record<string, unknown>;
+                return resolveSectionLabels('passport', config?.sections?.passport, labelSource);
+              })()}
               config={{
                 ...config?.sections?.passport,
                 genderOptions: (() => {
-                  const sexFieldConfig = config?.sections?.passport?.fields?.sex;
+                    const sexFieldConfig = (config?.sections?.passport?.fields as Record<string, TravelInfoFieldConfig> | undefined)?.sex;
                   if (sexFieldConfig?.options) {
                     // Translate gender options if they have labelKey
-                    return sexFieldConfig.options.map(option => {
+                    return sexFieldConfig.options.map((option: {value: string; labelKey?: string; label?: string; [key: string]: unknown}) => {
                       if (option.labelKey) {
                         return {
                           ...option,
@@ -1514,7 +1531,7 @@ initialState.visaNumber = passport.visaNumber;
             const destId = config?.destinationId || destinationId || 'hongkong';
             
             // Get base labels from resolveSectionLabels
-            const baseLabels = resolveSectionLabels('personal', config?.sections?.personal, config?.i18n?.labelSource?.personal || {});
+            const baseLabels = resolveSectionLabels('personal', config?.sections?.personal, ((config?.i18n as Record<string, unknown> | undefined)?.labelSource as Record<string, unknown> | undefined)?.personal || {});
             
             // Resolve cityOfResidence labels with proper destId and ensure strings
             const cityOfResidenceLabelKey = isChineseResidence
@@ -1528,7 +1545,7 @@ initialState.visaNumber = passport.visaNumber;
               : `${destId}.travelInfo.fields.cityOfResidence.placeholder`;
             
             // Get translations and ensure they are strings (not objects)
-            const getTranslationString = (key, defaultValue) => {
+            const getTranslationString = (key: string, defaultValue: string) => {
               const translation = t(key, { defaultValue });
               // If translation is an object, return the defaultValue or key
               if (typeof translation === 'object' && translation !== null) {
@@ -1560,7 +1577,7 @@ initialState.visaNumber = passport.visaNumber;
 
             return (
               <PersonalInfoSection
-                isExpanded={formState.expandedSections.personal}
+                isExpanded={!!formState.expandedSections.personal}
                 onToggle={() => toggleSection('personal')}
                 fieldCount={validation.getFieldCount('personal')}
                 occupation={formState.occupation}
@@ -1584,7 +1601,7 @@ initialState.visaNumber = passport.visaNumber;
                 warnings={formState.warnings}
                 handleFieldBlur={validation.handleFieldBlur}
                 debouncedSaveData={debouncedSave}
-                saveDataToSecureStorageWithOverride={async (overrideData) => {
+                saveDataToSecureStorageWithOverride={async (overrideData: Record<string, unknown>) => {
                   // Temporarily update form state with override data, save, then restore
                   const previousState = { ...formState };
                   updateFormState(overrideData);
@@ -1595,33 +1612,33 @@ initialState.visaNumber = passport.visaNumber;
                     updateFormState(previousState);
                   }
                 }}
-                setLastEditedAt={(val) => updateFormState({ lastEditedAt: val })}
+                setLastEditedAt={(val: string) => updateFormState({ lastEditedAt: val })}
                 t={t}
                 labels={mergedLabels}
-                config={config?.sections?.personal || {}}
+                config={(config?.sections?.personal || {})}
               />
             );
           })()}
 
           {/* Funds Section */}
           {config?.sections?.funds?.enabled && (
-            <FundsSection
+            <TypedFundsSection
               isExpanded={formState.expandedSections.funds}
               onToggle={() => toggleSection('funds')}
-              fieldCount={validation.getFieldCount('funds')}
+              fieldCount={validation.getFieldCount('funds') as any}
               funds={formState.funds || []}
-              setFunds={(v) => updateField('funds', v)}
+              setFunds={(v: unknown[]) => updateField('funds', v as unknown as string)}
               addFund={fundManagement.addFund}
               handleFundItemPress={fundManagement.handleFundItemPress}
               debouncedSaveData={debouncedSave}
-              labels={resolveSectionLabels('funds', config?.sections?.funds, config?.i18n?.labelSource?.funds || {})}
-              config={config?.sections?.funds || {}}
+              labels={resolveSectionLabels('funds', config?.sections?.funds, ((config?.i18n as Record<string, unknown> | undefined)?.labelSource as Record<string, unknown> | undefined)?.funds || {})}
+              config={(config?.sections?.funds || {}) as unknown as Partial<FundSectionConfig>}
             />
           )}
 
           {/* Travel Details Section */}
           {config?.sections?.travel?.enabled && (
-            <TravelDetailsSection
+            <TypedTravelDetailsSection
               isExpanded={formState.expandedSections.travel}
               onToggle={() => toggleSection('travel')}
               fieldCount={validation.getFieldCount('travel')}
@@ -1646,48 +1663,48 @@ initialState.visaNumber = passport.visaNumber;
               postalCode={formState.postalCode}
               hotelAddress={formState.hotelAddress}
               hotelReservationPhoto={formState.hotelReservationPhoto}
-              setTravelPurpose={(v) => updateField('travelPurpose', v)}
-              setCustomTravelPurpose={(v) => updateField('customTravelPurpose', v)}
-              setRecentStayCountry={(v) => updateField('recentStayCountry', v)}
-              setBoardingCountry={(v) => updateField('boardingCountry', v)}
-              setArrivalFlightNumber={(v) => updateField('arrivalFlightNumber', v)}
-              setArrivalDate={(v) => updateField('arrivalDate', v)}
-              setFlightTicketPhoto={(v) => updateField('flightTicketPhoto', v)}
-              setDepartureFlightNumber={(v) => updateField('departureFlightNumber', v)}
-              setDepartureDate={(v) => updateField('departureDate', v)}
-              setDepartureFlightTicketPhoto={(v) => updateField('departureFlightTicketPhoto', v)}
-              setIsTransitPassenger={(v) => updateField('isTransitPassenger', v)}
-              setAccommodationType={(v) => updateField('accommodationType', v)}
-              setCustomAccommodationType={(v) => updateField('customAccommodationType', v)}
-              setProvince={(v) => updateField('province', v)}
-              setDistrict={(v) => updateField('district', v)}
-              setDistrictId={(v) => updateField('districtId', v)}
-              setSubDistrict={(v) => updateField('subDistrict', v)}
-              setSubDistrictId={(v) => updateField('subDistrictId', v)}
-              setPostalCode={(v) => updateField('postalCode', v)}
-              setHotelAddress={(v) => updateField('hotelAddress', v)}
-              setHotelReservationPhoto={(v) => updateField('hotelReservationPhoto', v)}
+              setTravelPurpose={(v: string) => updateField('travelPurpose', v)}
+              setCustomTravelPurpose={(v: string) => updateField('customTravelPurpose', v)}
+              setRecentStayCountry={(v: string) => updateField('recentStayCountry', v)}
+              setBoardingCountry={(v: string) => updateField('boardingCountry', v)}
+              setArrivalFlightNumber={(v: string) => updateField('arrivalFlightNumber', v)}
+              setArrivalDate={(v: string) => updateField('arrivalDate', v)}
+              setFlightTicketPhoto={(v: string) => updateField('flightTicketPhoto', v)}
+              setDepartureFlightNumber={(v: string) => updateField('departureFlightNumber', v)}
+              setDepartureDate={(v: string) => updateField('departureDate', v)}
+              setDepartureFlightTicketPhoto={(v: string) => updateField('departureFlightTicketPhoto', v)}
+              setIsTransitPassenger={(v: boolean) => updateField('isTransitPassenger', v as unknown as string)}
+              setAccommodationType={(v: string) => updateField('accommodationType', v)}
+              setCustomAccommodationType={(v: string) => updateField('customAccommodationType', v)}
+              setProvince={(v: string) => updateField('province', v)}
+              setDistrict={(v: string) => updateField('district', v)}
+              setDistrictId={(v: string) => updateField('districtId', v)}
+              setSubDistrict={(v: string) => updateField('subDistrict', v)}
+              setSubDistrictId={(v: string) => updateField('subDistrictId', v)}
+              setPostalCode={(v: string) => updateField('postalCode', v)}
+              setHotelAddress={(v: string) => updateField('hotelAddress', v)}
+              setHotelReservationPhoto={(v: string) => updateField('hotelReservationPhoto', v)}
               handleProvinceSelect={handleProvinceSelect}
               handleDistrictSelect={handleDistrictSelect}
               handleSubDistrictSelect={handleSubDistrictSelect}
-              getProvinceData={locationData.provinces}
-              getDistrictData={locationData.getDistricts}
-              getSubDistrictData={locationData.getSubDistricts}
-              handleFlightTicketPhotoUpload={config?.sections?.travel?.photoUploads?.flightTicket?.enabled ? photoManagement.handleFlightTicketPhotoUpload : undefined}
-              handleDepartureFlightTicketPhotoUpload={config?.sections?.travel?.photoUploads?.departureTicket?.enabled ? photoManagement.handleDepartureFlightTicketPhotoUpload : undefined}
-              handleHotelReservationPhotoUpload={config?.sections?.travel?.photoUploads?.hotelReservation?.enabled ? photoManagement.handleHotelReservationPhotoUpload : undefined}
+              getProvinceData={locationData.provinces as any}
+              getDistrictData={locationData.getDistricts as any}
+              getSubDistrictData={locationData.getSubDistricts as any}
+              handleFlightTicketPhotoUpload={((config?.sections?.travel as unknown as TravelPhotoConfig | undefined)?.photoUploads?.flightTicket?.enabled) ? photoManagement.handleFlightTicketPhotoUpload : undefined}
+              handleDepartureFlightTicketPhotoUpload={((config?.sections?.travel as unknown as TravelPhotoConfig | undefined)?.photoUploads?.departureTicket?.enabled) ? photoManagement.handleDepartureFlightTicketPhotoUpload : undefined}
+              handleHotelReservationPhotoUpload={((config?.sections?.travel as unknown as TravelPhotoConfig | undefined)?.photoUploads?.hotelReservation?.enabled) ? photoManagement.handleHotelReservationPhotoUpload : undefined}
               errors={formState.errors}
               warnings={formState.warnings}
               handleFieldBlur={validation.handleFieldBlur}
               debouncedSaveData={debouncedSave}
-              labels={resolveSectionLabels('travel', config?.sections?.travel, config?.i18n?.labelSource?.travel || {})}
+              labels={resolveSectionLabels('travel', config?.sections?.travel, ((config?.i18n as Record<string, unknown> | undefined)?.labelSource as Record<string, unknown> | undefined)?.travel || {})}
               config={{
                 ...travelSectionConfig,
                 accommodationOptions: (() => {
                   // Get accommodation options from multiple possible sources
-                  let options = travelSectionConfig?.accommodationOptions 
-                    || config?.sections?.travel?.accommodationOptions 
-                    || config?.sections?.travel?.fields?.accommodationType?.options
+                  let options: unknown[] = (travelSectionConfig?.accommodationOptions as unknown[]) 
+                    || (config?.sections?.travel?.accommodationOptions as unknown[]) 
+                    || (config?.sections?.travel?.fields as Record<string, TravelInfoFieldConfig> | undefined)?.accommodationType?.options
                     || [];
                   
                   // If still no options, use default accommodation types
@@ -1705,7 +1722,7 @@ initialState.visaNumber = passport.visaNumber;
                   }
                   
                   // Translate accommodation options
-                  return options.map(option => {
+                  return options.map((option: {value: string; labelKey?: string; label?: string; defaultLabel?: string; [key: string]: unknown}) => {
                     if (option.labelKey) {
                       // If option has a labelKey, translate it
                       const translatedLabel = t(option.labelKey, { defaultValue: option.defaultLabel || option.label || option.value });
@@ -1758,7 +1775,8 @@ initialState.visaNumber = passport.visaNumber;
               onClose={fundManagement.handleFundItemModalClose}
               onUpdate={fundManagement.handleFundItemUpdate}
               onCreate={fundManagement.handleFundItemCreate}
-              onDelete={fundManagement.handleFundItemDelete}
+              onManageAll={() => {}}
+              onDelete={(item) => fundManagement.handleFundItemDelete(item.id || item)}
             />
           ) : null;
         })()}
@@ -1772,7 +1790,7 @@ initialState.visaNumber = passport.visaNumber;
 // ============================================
 
 // Rich Hero Section (Thailand-style)
-const RichHeroSection = ({ config }) => {
+const RichHeroSection = ({ config }: { config: TravelInfoConfig }) => {
   const { t } = useLocale();
   if (!config?.hero || config.hero.type !== 'rich') {
     return null;
@@ -1786,7 +1804,7 @@ const RichHeroSection = ({ config }) => {
     ? t(config.hero.subtitleKey, { defaultValue: config.hero.defaultSubtitle || config.hero.subtitle })
     : config.hero.subtitle;
   const beginnerTipText = config.hero.beginnerTip?.textKey
-    ? t(config.hero.beginnerTip.textKey, { defaultValue: config.hero.beginnerTip.defaultText || config.hero.beginnerTip.text })
+    ? t(config.hero.beginnerTip.textKey as string, { defaultValue: (config.hero.beginnerTip.defaultText || config.hero.beginnerTip.text) as string | undefined })
     : config.hero.beginnerTip?.text;
 
   return (
@@ -1816,7 +1834,7 @@ const RichHeroSection = ({ config }) => {
 
           {/* Value Propositions */}
           <XStack justifyContent="space-around" width="100%" marginVertical="$sm" paddingVertical="$xs">
-            {config.hero.valuePropositions.map((vp, idx) => {
+            {config.hero.valuePropositions.map((vp: {icon: string; textKey?: string; text?: string; defaultText?: string}, idx: number) => {
               // Support both textKey (i18n) and text (direct) properties
               const text = vp.textKey
                 ? t(vp.textKey, { defaultValue: vp.defaultText || vp.text || '' })
@@ -1852,7 +1870,7 @@ const RichHeroSection = ({ config }) => {
 };
 
 // Save Status Indicator
-const SaveStatusIndicator = ({ status, t }) => {
+const SaveStatusIndicator = ({ status, t }: { status: string; t: ReturnType<typeof useLocale>['t'] }) => {
   const statusConfig = {
     pending: { 
       icon: '⏳', 
@@ -1876,7 +1894,7 @@ const SaveStatusIndicator = ({ status, t }) => {
     },
   };
 
-  const config = statusConfig[status];
+  const config = statusConfig[status as keyof typeof statusConfig];
   if (!config) {
     return null;
   }
@@ -1901,21 +1919,22 @@ const SaveStatusIndicator = ({ status, t }) => {
 };
 
 // Last Edited Timestamp
-const LastEditedTimestamp = ({ time }) => {
+const LastEditedTimestamp = ({ time }: { time: string | Date }) => {
   if (!time) {
     return null;
   }
 
   const { language } = useLocale();
+  const dateValue = typeof time === 'string' ? new Date(time) : time;
   return (
     <TamaguiText fontSize="$1" color="$textSecondary" textAlign="center" marginBottom="$sm">
-      {language && language.startsWith('zh') ? '最后编辑：' : 'Last edited: '} {time.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}
+      {language && language.startsWith('zh') ? '最后编辑：' : 'Last edited: '} {dateValue.toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' })}
     </TamaguiText>
   );
 };
 
 // Privacy Notice
-const PrivacyNotice = ({ t }) => (
+const PrivacyNotice = ({ t }: { t: ReturnType<typeof useLocale>['t'] }) => (
     <YStack paddingHorizontal="$md" marginBottom="$md">
       <BaseCard variant="flat" padding="md">
         <XStack gap="$sm" alignItems="center">
@@ -1929,15 +1948,16 @@ const PrivacyNotice = ({ t }) => (
   );
 
 // Smart Submit Button
-const SmartButton = ({ config, validation, onPress }) => {
+const SmartButton = ({ config, validation, onPress }: { config: TravelInfoConfig; validation: { getSmartButtonConfig: () => { variant: string; icon: string; label: string } }; onPress?: () => void }) => {
   const buttonConfig = validation.getSmartButtonConfig();
   
   // Label is already translated by the validation hook
   const {label} = buttonConfig;
+  const variant = buttonConfig.variant as BaseButtonProps['variant'];
 
   return (
     <BaseButton
-      variant={buttonConfig.variant}
+      variant={variant}
       size="lg"
       onPress={onPress}
       fullWidth

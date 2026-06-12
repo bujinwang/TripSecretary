@@ -282,7 +282,7 @@ class NotificationService {
    */
   handleNotificationReceived(notification: Notifications.Notification): void {
     // Log the notification for debugging and analytics
-    NotificationLogService.logEvent('received', notification, {
+    NotificationLogService.logEvent('received', notification as unknown as Record<string, unknown>, {
       appState: 'foreground',
       receivedAt: new Date().toISOString()
     });
@@ -297,7 +297,7 @@ class NotificationService {
    */
   async handleNotificationResponse(response: Notifications.NotificationResponse): Promise<void> {
     // Log the interaction with comprehensive data
-    await NotificationLogService.logEvent('interacted', response.notification, {
+    await NotificationLogService.logEvent('interacted', response.notification as unknown as Record<string, unknown>, {
       actionIdentifier: response.actionIdentifier,
       userText: response.userText,
       appState: 'background', // User tapped notification from outside app
@@ -500,7 +500,7 @@ class NotificationService {
       } else {
         // Fallback to direct EntryInfoService if no userId provided
         if (data.entryInfoId || data.entryPackId) {
-          await UserDataService.updateEntryInfoStatus(data.entryInfoId || data.entryPackId, 'archived', {
+          await UserDataService.updateEntryInfoStatus((data.entryInfoId || data.entryPackId) as string, 'archived', {
             reason: 'user_action_from_notification',
             archivedAt: new Date().toISOString()
           });

@@ -13,7 +13,7 @@ import DataExportService from './DataExportService';
 /**
  * Example: Export entry pack as JSON with all options
  */
-export async function exportEntryPackExample(entryPackId) {
+export async function exportEntryPackExample(entryPackId: string) {
   try {
     console.log('Starting entry pack export...');
 
@@ -41,7 +41,7 @@ export async function exportEntryPackExample(entryPackId) {
             { text: 'Cancel', style: 'cancel' },
             { 
               text: 'Share', 
-              onPress: () => shareExportedFile(result.sharingOptions)
+              onPress: () => shareExportedFile(result.sharingOptions as unknown as Record<string, unknown>)
             }
           ]
         );
@@ -61,7 +61,7 @@ export async function exportEntryPackExample(entryPackId) {
     console.error('Export failed:', error);
     Alert.alert(
       'Export Failed',
-      `Failed to export entry pack: ${error.message}`,
+      `Failed to export entry pack: ${(error as Error).message}`,
       [{ text: 'OK' }]
     );
     throw error;
@@ -71,7 +71,7 @@ export async function exportEntryPackExample(entryPackId) {
 /**
  * Example: Export entry pack as PDF with all information
  */
-export async function exportEntryPackAsPDF(entryPackId) {
+export async function exportEntryPackAsPDF(entryPackId: string) {
   try {
     console.log('Starting PDF export...');
 
@@ -96,7 +96,7 @@ export async function exportEntryPackAsPDF(entryPackId) {
             { text: 'Cancel', style: 'cancel' },
             { 
               text: 'Share PDF', 
-              onPress: () => shareExportedFile(result.sharingOptions)
+              onPress: () => shareExportedFile(result.sharingOptions as unknown as Record<string, unknown>)
             }
           ]
         );
@@ -116,7 +116,7 @@ export async function exportEntryPackAsPDF(entryPackId) {
     console.error('PDF export failed:', error);
     Alert.alert(
       'PDF Export Failed',
-      `Failed to export entry pack as PDF: ${error.message}`,
+      `Failed to export entry pack as PDF: ${(error as Error).message}`,
       [{ text: 'OK' }]
     );
     throw error;
@@ -126,7 +126,7 @@ export async function exportEntryPackAsPDF(entryPackId) {
 /**
  * Example: Export entry pack as PDF for printing (no funds section)
  */
-export async function exportEntryPackForPrinting(entryPackId) {
+export async function exportEntryPackForPrinting(entryPackId: string) {
   try {
     const result = await DataExportService.exportEntryPack(entryPackId, 'pdf', {
       includeQRCode: true,
@@ -144,7 +144,7 @@ export async function exportEntryPackForPrinting(entryPackId) {
 /**
  * Example: Export entry pack with minimal options (faster)
  */
-export async function exportEntryPackMinimal(entryPackId) {
+export async function exportEntryPackMinimal(entryPackId: string) {
   try {
     const result = await DataExportService.exportEntryPack(entryPackId, 'json', {
       includeMetadata: false,
@@ -163,7 +163,7 @@ export async function exportEntryPackMinimal(entryPackId) {
 /**
  * Example: Export entry pack and return data for processing
  */
-export async function exportEntryPackForProcessing(entryPackId) {
+export async function exportEntryPackForProcessing(entryPackId: string) {
   try {
     const result = await DataExportService.exportEntryPack(entryPackId, 'json', {
       includeMetadata: true,
@@ -193,7 +193,7 @@ export async function exportEntryPackForProcessing(entryPackId) {
 /**
  * Example: Share exported file
  */
-async function shareExportedFile(sharingOptions) {
+async function shareExportedFile(sharingOptions: Record<string, unknown>) {
   try {
     if (!sharingOptions.available) {
       Alert.alert('Sharing Not Available', 'Sharing is not supported on this device');
@@ -209,14 +209,14 @@ async function shareExportedFile(sharingOptions) {
     return shareResult;
   } catch (error) {
     console.error('Sharing failed:', error);
-    Alert.alert('Sharing Failed', `Failed to share file: ${error.message}`);
+    Alert.alert('Sharing Failed', `Failed to share file: ${(error as Error).message}`);
   }
 }
 
 /**
  * Example: Process exported data
  */
-function processExportedData(exportData) {
+function processExportedData(exportData: Record<string, unknown>) {
   const summary = {
     exportedAt: exportData.exportInfo.exportedAt,
     entryPackId: exportData.entryPack.id,
@@ -236,7 +236,7 @@ function processExportedData(exportData) {
 /**
  * Example: Export multiple entry packs (when batch export is implemented)
  */
-export async function exportMultipleEntryPacksExample(entryPackIds) {
+export async function exportMultipleEntryPacksExample(entryPackIds: string[]) {
   try {
     // This will be implemented in task 8.5
     console.log('Batch export will be available in task 8.5');
@@ -328,9 +328,9 @@ export async function getExportDirectoryInfoExample() {
  */
 export const ExportButtons = ({ entryPackId, onExportComplete }) => {
   const [isExporting, setIsExporting] = useState(false);
-  const [exportFormat, setExportFormat] = useState(null);
+  const [exportFormat, setExportFormat] = useState<string | null>(null);
 
-  const handleExport = async (format) => {
+  const handleExport = async (format: string) => {
     if (isExporting) {
 return;
 }

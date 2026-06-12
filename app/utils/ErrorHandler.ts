@@ -18,7 +18,7 @@ export const ErrorSeverity = {
   WARNING: 'warning',    // Non-critical errors, user should be informed
   INFO: 'info',          // Informational messages, minimal user impact
   SILENT: 'silent',      // Log only, no user notification
-};
+} as const;
 
 /**
  * Error types for categorization
@@ -33,12 +33,32 @@ export const ErrorType = {
   DATA_SAVE: 'data_save',
   NAVIGATION: 'navigation',
   UNKNOWN: 'unknown',
-};
+} as const;
+
+type ErrorSeverityValue = (typeof ErrorSeverity)[keyof typeof ErrorSeverity];
+type ErrorTypeValue = (typeof ErrorType)[keyof typeof ErrorType];
+
+interface ErrorHandlerOptions {
+  context?: string;
+  severity?: ErrorSeverityValue;
+  type?: ErrorTypeValue;
+  customTitle?: string;
+  customMessage?: string;
+  onRetry?: () => void;
+  onCancel?: () => void;
+  additionalInfo?: Record<string, unknown>;
+  rethrow?: boolean;
+}
+
+interface DefaultMessage {
+  title: string;
+  message: string;
+}
 
 /**
  * Default error messages by type
  */
-const DEFAULT_ERROR_MESSAGES = {
+const DEFAULT_ERROR_MESSAGES: Record<string, DefaultMessage> = {
   [ErrorType.NETWORK]: {
     title: '网络错误',
     message: '网络连接失败，请检查您的网络设置后重试。',
@@ -77,6 +97,12 @@ const DEFAULT_ERROR_MESSAGES = {
   },
 };
 
+interface AlertButton {
+  text: string;
+  onPress?: () => void;
+  style?: 'default' | 'cancel' | 'destructive';
+}
+
 /**
  * ErrorHandler class - Main error handling service
  */
@@ -85,11 +111,12 @@ class ErrorHandler {
    * Log error to console with context
    * @private
    */
-  static _logError(context, error, additionalInfo = {}) {
+  static _logError(context: string, error: Error | string, additionalInfo: Record<string, unknown> = {}): void {
     const timestamp = new Date().toISOString();
+    const err = error instanceof Error ? error : new Error(String(error));
     console.error(`[${timestamp}] [${context}]`, {
-      error: error.message || error,
-      stack: error.stack,
+      error: err.message || error,
+      stack: err.stack,
       ...additionalInfo,
     });
   }
@@ -98,7 +125,7 @@ class ErrorHandler {
    * Show error alert to user
    * @private
    */
-  static _showErrorAlert(title, message, buttons = []) {
+  static _showErrorAlert(title: string, message: string, buttons: AlertButton[] = []): void {
     Alert.alert(
       title,
       message,
@@ -109,19 +136,8 @@ class ErrorHandler {
 
   /**
    * Handle error with specified severity and options
-   *
-   * @param {Error|string} error - Error object or error message
-   * @param {Object} options - Error handling options
-   * @param {string} options.context - Context where error occurred (e.g., 'ThailandTravelInfo.saveData')
-   * @param {ErrorSeverity} options.severity - Error severity level
-   * @param {ErrorType} options.type - Error type for categorization
-   * @param {string} options.customTitle - Custom error title for user notification
-   * @param {string} options.customMessage - Custom error message for user notification
-   * @param {Function} options.onRetry - Callback function for retry action
-   * @param {Function} options.onCancel - Callback function for cancel action
-   * @param {Object} options.additionalInfo - Additional info to log
    */
-  static handle(error, options = {}) {
+  static handle(error: Error | string, options: ErrorHandlerOptions = {}): void {
     const {
       context = 'Unknown',
       severity = ErrorSeverity.WARNING,
@@ -142,14 +158,14 @@ class ErrorHandler {
     }
 
     // Get default messages for the error type
-    const defaultMessages = DEFAULT_ERROR_MESSAGES[type] || DEFAULT_ERROR_MESSAGES[ErrorType.UNKNOWN];
+    const defaultMessages = DEFAULT_ERROR_MESSAGES[type as string] || DEFAULT_ERROR_MESSAGES[ErrorType.UNKNOWN];
 
     // Use custom messages if provided, otherwise use defaults
     const title = customTitle || defaultMessages.title;
     const message = customMessage || defaultMessages.message;
 
     // Build alert buttons based on callbacks
-    const buttons = [];
+    const buttons: AlertButton[] = [];
 
     if (onRetry) {
       buttons.push({
@@ -179,10 +195,8 @@ class ErrorHandler {
     this._showErrorAlert(title, message, buttons);
   }
 
-  /**
-   * Handle network errors
-   */
-  static handleNetworkError(error, context, options = {}) {
+  /** Handle network errors */
+  static handleNetworkError(error: Error | string, context: string, options: ErrorHandlerOptions = {}): void {
     this.handle(error, {
       context,
       type: ErrorType.NETWORK,
@@ -191,10 +205,8 @@ class ErrorHandler {
     });
   }
 
-  /**
-   * Handle validation errors
-   */
-  static handleValidationError(error, context, options = {}) {
+  /** Handle validation errors */
+  static handleValidationError(error: Error | string, context: string, options: ErrorHandlerOptions = {}): void {
     this.handle(error, {
       context,
       type: ErrorType.VALIDATION,
@@ -203,10 +215,8 @@ class ErrorHandler {
     });
   }
 
-  /**
-   * Handle authentication errors
-   */
-  static handleAuthenticationError(error, context, options = {}) {
+  /** Handle authentication errors */
+  static handleAuthenticationError(error: Error | string, context: string, options: ErrorHandlerOptions = {}): void {
     this.handle(error, {
       context,
       type: ErrorType.AUTHENTICATION,
@@ -215,10 +225,8 @@ class ErrorHandler {
     });
   }
 
-  /**
-   * Handle storage errors (save/load)
-   */
-  static handleStorageError(error, context, options = {}) {
+  /** Handle storage errors (save/load) */
+  static handleStorageError(error: Error | string, context: string, options: ErrorHandlerOptions = {}): void {
     this.handle(error, {
       context,
       type: ErrorType.STORAGE,
@@ -227,10 +235,8 @@ class ErrorHandler {
     });
   }
 
-  /**
-   * Handle data loading errors
-   */
-  static handleDataLoadError(error, context, options = {}) {
+  /** Handle data loading errors */
+  static handleDataLoadError(error: Error | string, context: string, options: ErrorHandlerOptions = {}): void {
     this.handle(error, {
       context,
       type: ErrorType.DATA_LOAD,
@@ -239,10 +245,8 @@ class ErrorHandler {
     });
   }
 
-  /**
-   * Handle data saving errors
-   */
-  static handleDataSaveError(error, context, options = {}) {
+  /** Handle data saving errors */
+  static handleDataSaveError(error: Error | string, context: string, options: ErrorHandlerOptions = {}): void {
     this.handle(error, {
       context,
       type: ErrorType.DATA_SAVE,
@@ -251,10 +255,8 @@ class ErrorHandler {
     });
   }
 
-  /**
-   * Handle navigation errors
-   */
-  static handleNavigationError(error, context, options = {}) {
+  /** Handle navigation errors */
+  static handleNavigationError(error: Error | string, context: string, options: ErrorHandlerOptions = {}): void {
     this.handle(error, {
       context,
       type: ErrorType.NAVIGATION,
@@ -265,49 +267,36 @@ class ErrorHandler {
 
   /**
    * Wrap async function with error handling
-   *
-   * @param {Function} fn - Async function to wrap
-   * @param {Object} errorOptions - Error handling options (same as handle())
-   * @returns {Function} - Wrapped function with error handling
-   *
-   * @example
-   * const loadData = ErrorHandler.wrapAsync(
-   *   async () => { await fetchData(); },
-   *   { context: 'MyComponent.loadData', type: ErrorType.DATA_LOAD }
-   * );
    */
-  static wrapAsync(fn, errorOptions = {}) {
-    return async (...args) => {
+  static wrapAsync<T extends (...args: unknown[]) => Promise<unknown>>(
+    fn: T,
+    errorOptions: ErrorHandlerOptions = {}
+  ): (...args: Parameters<T>) => Promise<ReturnType<T> | undefined> {
+    return async (...args: Parameters<T>) => {
       try {
-        return await fn(...args);
+        return await fn(...args) as ReturnType<T>;
       } catch (error) {
-        this.handle(error, errorOptions);
+        this.handle(error as Error | string, errorOptions);
         // Re-throw if needed for further handling
         if (errorOptions.rethrow) {
           throw error;
         }
+        return undefined;
       }
     };
   }
 
   /**
    * Create a try-catch wrapper for common async operations
-   *
-   * @param {Function} operation - Async operation to execute
-   * @param {Object} options - Error handling options
-   * @returns {Promise<any>} - Result of the operation or undefined if error
-   *
-   * @example
-   * const result = await ErrorHandler.tryAsync(
-   *   () => UserDataService.save(data),
-   *   { context: 'SaveUserData', type: ErrorType.DATA_SAVE }
-   * );
    */
-  static async tryAsync(operation, options = {}) {
+  static async tryAsync<T>(
+    operation: () => Promise<T>,
+    options: ErrorHandlerOptions = {}
+  ): Promise<T | undefined> {
     try {
       return await operation();
     } catch (error) {
-      this.handle(error, options);
+      this.handle(error as Error | string, options);
       return undefined;
     }
   }

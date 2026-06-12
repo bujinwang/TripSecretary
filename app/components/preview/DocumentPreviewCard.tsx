@@ -48,6 +48,17 @@ import { PreviewHaptics } from '../../utils/haptics';
  *   onExpand={() => navigation.navigate('FullScreenPreview')}
  * />
  */
+interface DocumentPreviewCardProps {
+  variant?: 'sample' | 'filled' | 'submitted';
+  documentData?: Record<string, unknown>;
+  documentContent?: React.ReactNode;
+  loading?: boolean;
+  error?: Error | null;
+  onExpand?: () => void;
+  onRetry?: () => void;
+  style?: Record<string, unknown>;
+}
+
 const DocumentPreviewCard = ({
   variant = 'sample',
   documentData = {},
@@ -57,7 +68,7 @@ const DocumentPreviewCard = ({
   onExpand,
   onRetry,
   style,
-}) => {
+}: DocumentPreviewCardProps) => {
   const { t } = useTranslation();
   const [isFullScreen, setIsFullScreen] = useState(false);
 

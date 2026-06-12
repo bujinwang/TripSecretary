@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { translations } from '../locales';
 
 describe('Login Screen Translations', () => {

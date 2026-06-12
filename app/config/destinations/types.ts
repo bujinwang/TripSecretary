@@ -211,6 +211,8 @@ export interface TravelInfoSectionConfig {
   maxAllowed?: number;
   fundTypes?: string[];
   labels?: Record<string, string>;
+  locationHierarchy?: TravelInfoLocationHierarchy;
+  accommodationOptions?: unknown[];
   [extra: string]: unknown;
 }
 

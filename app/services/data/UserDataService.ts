@@ -53,7 +53,7 @@ import FundItemOperations from './operations/FundItemOperations';
 import TravelInfoOperations from './operations/TravelInfoOperations';
 import EntryInfoOperations from './operations/EntryInfoOperations';
 import DataValidationService from './validation/DataValidationService';
-import DataEventService, { DataChangeListener as EventDataChangeListener } from './events/DataEventService';
+import DataEventService, { DataChangeListener as EventDataChangeListener, type GetEntryInfosCallback, type CheckEntryInfoCallback, type EntryInfoRecord } from './events/DataEventService';
 import EntryInfoService from '../EntryInfoService';
 import logger from '../LoggingService';
 
@@ -1290,7 +1290,7 @@ class UserDataService {
    * @returns {Object} - Validation result
    */
   static validatePassportData(passport: PassportModel): Record<string, any> {
-    return DataValidationService.validatePassportData(passport);
+    return DataValidationService.validatePassportData(passport as unknown as PassportData);
   }
 
   /**
@@ -1299,7 +1299,7 @@ class UserDataService {
    * @returns {Object} - Validation result
    */
   static validatePersonalInfoData(personalInfo: PersonalInfoModel): Record<string, any> {
-    return DataValidationService.validatePersonalInfoData(personalInfo);
+    return DataValidationService.validatePersonalInfoData(personalInfo as unknown as PersonalInfoData);
   }
 
   /**
@@ -1338,15 +1338,15 @@ class UserDataService {
       userId,
       dataType,
       changeDetails,
-      this.getAllEntryInfosForUser.bind(this),
-      (entryInfo: EntryInfoModel, dt: string, cd: Record<string, any>) => DataEventService.checkEntryInfoForDataChanges(
-        entryInfo,
+      this.getAllEntryInfosForUser.bind(this) as unknown as GetEntryInfosCallback,
+      ((entryInfo: EntryInfoModel, dt: string, cd: Record<string, any>) => DataEventService.checkEntryInfoForDataChanges(
+        entryInfo as unknown as EntryInfoRecord,
         dt,
         cd,
         this.getAllUserData.bind(this),
         this.getTravelInfo.bind(this),
         this.getFundItems.bind(this)
-      )
+      )) as unknown as CheckEntryInfoCallback
     );
   }
 

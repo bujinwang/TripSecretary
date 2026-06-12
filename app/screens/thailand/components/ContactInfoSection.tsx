@@ -8,7 +8,14 @@ import { safeGet, safeString } from '../helpers';
  * Displays contact information including phone, email, and Thai address
  * for immigration officer presentation mode
  */
-const ContactInfoSection = ({ passportData, travelData, language, t }) => (
+interface ContactInfoSectionProps {
+  passportData?: Record<string, unknown>;
+  travelData?: Record<string, unknown>;
+  language: string;
+  t: (key: string, options?: Record<string, unknown>) => string;
+}
+
+const ContactInfoSection = ({ passportData, travelData, language, t }: ContactInfoSectionProps) => (
     <View style={styles.infoSection}>
       <Text style={styles.sectionTitle}>
         {language === 'english' ? t('progressiveEntryFlow.immigrationOfficer.presentation.contactInformation') :

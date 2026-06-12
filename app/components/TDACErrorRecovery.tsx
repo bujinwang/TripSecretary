@@ -20,6 +20,18 @@ import {
 import { colors } from '../theme';
 import TDACErrorHandler from '../services/error/TDACErrorHandler';
 
+interface TDACErrorRecoveryProps {
+  visible: boolean;
+  onClose: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  errorResult: any;
+  onRetry?: () => void;
+  onAlternativeMethod?: () => void;
+  onContactSupport?: () => void;
+  showAlternativeMethod?: boolean;
+  alternativeMethodText?: string;
+}
+
 const TDACErrorRecovery = ({ 
   visible, 
   onClose, 
@@ -29,7 +41,7 @@ const TDACErrorRecovery = ({
   onContactSupport,
   showAlternativeMethod = true,
   alternativeMethodText = 'Try Different Method'
-}) => {
+}: TDACErrorRecoveryProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [retryCountdown, setRetryCountdown] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);

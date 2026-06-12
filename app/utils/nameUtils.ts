@@ -54,7 +54,7 @@
  * parseFullName("WANG BAOBAO")
  * // → { familyName: 'WANG', middleName: '', firstName: 'BAOBAO' }
  */
-export const parseFullName = (fullName, options = {}) => {
+export const parseFullName = (fullName: string, options: Record<string, boolean> = {}) => {
   const {
     removeCommas = true,
     normalize = true,
@@ -180,7 +180,7 @@ export const parseFullName = (fullName, options = {}) => {
  * formatForDisplay('ZHANG', 'MING', 'WEI', { format: 'eastern' })
  * // → "ZHANG WEI MING"
  */
-export const formatForDisplay = (familyName, firstName, middleName = '', options = {}) => {
+export const formatForDisplay = (familyName: string, firstName: string, middleName = '', options: Record<string, unknown> = {}) => {
   const {
     format = 'western',
     includeMiddle = true,
@@ -281,7 +281,7 @@ export const formatForAPI = (parsedName) => {
  * validateNameFormat("123", { minLength: 2 })
  * // → { isValid: false, errors: ['Name contains numbers'] }
  */
-export const validateNameFormat = (fullName, rules = {}) => {
+export const validateNameFormat = (fullName: string, rules: Record<string, unknown> = {}) => {
   const {
     minLength = 2,
     maxLength = 100,
@@ -362,7 +362,7 @@ export const validateNameFormat = (fullName, rules = {}) => {
  * getInitials("ZHANG WEI MING")
  * // → "ZWM"
  */
-export const getInitials = (fullName, options = {}) => {
+export const getInitials = (fullName: string, options: Record<string, unknown> = {}) => {
   const { includeMiddle = true } = options;
 
   const parsed = parseFullName(fullName);

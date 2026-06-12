@@ -19,8 +19,8 @@ const SubmissionCountdown = ({
    variant = 'default',
    showArrivalDate = true,
  }) => {
-  const [windowInfo, setWindowInfo] = useState(null);
-  const [timeRemaining, setTimeRemaining] = useState(null);
+  const [windowInfo, setWindowInfo] = useState<Record<string, unknown> | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState<string | null>(null);
   const isCompact = variant === 'compact';
 
   const { language } = useLocale();

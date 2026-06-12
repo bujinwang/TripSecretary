@@ -46,11 +46,75 @@ jest.mock('../../../utils/FieldStateManager', () => ({
   },
 }));
 
-describe('useThailandValidation', () => {
-  let mockFormState;
-  let mockUserInteractionTracker;
-  let mockSaveDataToSecureStorageWithOverride;
-  let mockDebouncedSaveData;
+  // Mock type definitions
+  interface FundItem {
+    id: string;
+    type: string;
+    amount: number;
+  }
+
+  interface MockFormState {
+    passportNo: string;
+    surname: string;
+    givenName: string;
+    middleName?: string;
+    nationality: string;
+    dob: string;
+    expiryDate: string;
+    sex: string;
+    occupation: string;
+    email: string;
+    phoneNumber: string;
+    phoneCode: string;
+    cityOfResidence: string;
+    residentCountry: string;
+    travelPurpose: string;
+    customTravelPurpose: string;
+    accommodationType: string;
+    customAccommodationType: string;
+    arrivalFlightNumber: string;
+    arrivalArrivalDate: string;
+    departureDepartureDate: string;
+    departureFlightNumber?: string;
+    province: string;
+    hotelAddress: string;
+    isTransitPassenger: boolean;
+    funds: FundItem[];
+    errors: Record<string, string>;
+    warnings: Record<string, string>;
+    totalCompletionPercent: number;
+    boardingCountry?: string;
+    recentStayCountry?: string;
+    district?: string;
+    subDistrict?: string;
+    postalCode?: string;
+    visaNumber?: string;
+    setErrors: jest.Mock;
+    setWarnings: jest.Mock;
+    setLastEditedField: jest.Mock;
+    setLastEditedAt: jest.Mock;
+    setCityOfResidence: jest.Mock;
+    setTravelPurpose: jest.Mock;
+    setCustomTravelPurpose: jest.Mock;
+    setAccommodationType: jest.Mock;
+    setCustomAccommodationType: jest.Mock;
+    setBoardingCountry: jest.Mock;
+    isLoading: boolean;
+    setCompletionMetrics?: jest.Mock;
+    setTotalCompletionPercent?: jest.Mock;
+  }
+
+  interface MockUserInteractionTracker {
+    markFieldAsModified: jest.Mock;
+    isFieldUserModified: jest.Mock;
+    getFieldInteractionDetails: jest.Mock;
+  }
+
+  describe('useThailandValidation', () => {
+    let mockFormState: MockFormState;
+    let mockUserInteractionTracker: MockUserInteractionTracker;
+    let mockSaveDataToSecureStorageWithOverride: jest.Mock<Promise<void>, [Record<string, unknown>]>;
+    let mockDebouncedSaveData: jest.Mock;
 
   beforeEach(() => {
     // Reset mocks before each test
@@ -69,6 +133,7 @@ describe('useThailandValidation', () => {
       occupation: '',
       email: '',
       phoneNumber: '',
+      phoneCode: '',
       cityOfResidence: '',
       residentCountry: '',
       travelPurpose: '',
@@ -118,7 +183,7 @@ describe('useThailandValidation', () => {
     it('should mark field as modified on blur', async () => {
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -138,7 +203,7 @@ describe('useThailandValidation', () => {
     it('should set last edited field', async () => {
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -155,7 +220,7 @@ describe('useThailandValidation', () => {
     it('should update errors state for invalid field', async () => {
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -172,7 +237,7 @@ describe('useThailandValidation', () => {
     it('should update warnings state for warning field', async () => {
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -192,7 +257,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -209,7 +274,7 @@ describe('useThailandValidation', () => {
     it('should save immediately for date fields', async () => {
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -228,7 +293,7 @@ describe('useThailandValidation', () => {
     it('should use debounced save for non-critical fields', async () => {
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -247,7 +312,7 @@ describe('useThailandValidation', () => {
     it('should handle travel purpose selection', () => {
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -265,7 +330,7 @@ describe('useThailandValidation', () => {
     it('should clear custom travel purpose when selecting predefined option', () => {
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -282,7 +347,7 @@ describe('useThailandValidation', () => {
     it('should handle accommodation type selection', () => {
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -299,7 +364,7 @@ describe('useThailandValidation', () => {
     it('should handle boarding country selection', () => {
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -325,7 +390,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -345,7 +410,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -362,7 +427,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -382,7 +447,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -401,7 +466,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -425,7 +490,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -464,7 +529,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -479,7 +544,7 @@ describe('useThailandValidation', () => {
     it('should return metrics for each section', () => {
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -501,7 +566,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -519,7 +584,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -537,7 +602,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -567,7 +632,7 @@ describe('useThailandValidation', () => {
 
         const { result } = renderHook(() =>
           useThailandValidation({
-            formState: mockFormState,
+            formState: mockFormState as any,
             userInteractionTracker: mockUserInteractionTracker,
             saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
             debouncedSaveData: mockDebouncedSaveData,
@@ -586,7 +651,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -602,7 +667,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -618,7 +683,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -639,7 +704,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,
@@ -657,7 +722,7 @@ describe('useThailandValidation', () => {
 
       const { result } = renderHook(() =>
         useThailandValidation({
-          formState: mockFormState,
+          formState: mockFormState as any,
           userInteractionTracker: mockUserInteractionTracker,
           saveDataToSecureStorageWithOverride: mockSaveDataToSecureStorageWithOverride,
           debouncedSaveData: mockDebouncedSaveData,

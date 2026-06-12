@@ -26,7 +26,7 @@ import FundItemRepository from './repositories/FundItemRepository';
 import EntryInfoRepository from './repositories/EntryInfoRepository';
 import DigitalArrivalCardRepository from './repositories/DigitalArrivalCardRepository';
 import SnapshotRepository from './repositories/SnapshotRepository';
-import DataSerializer from './utils/DataSerializer';
+import DataSerializer, { type PassportCountryRow as DataSerializerPassportCountryRow } from './utils/DataSerializer';
 
 // Type definitions
 // SQLiteDatabase type from expo-sqlite
@@ -430,7 +430,7 @@ class SecureStorageService {
       );
 
       if (saved) {
-        const normalized = this.serializer.deserializePassportCountry(saved as PassportCountryRow);
+        const normalized = this.serializer.deserializePassportCountry(saved as unknown as DataSerializerPassportCountryRow);
         return {
           passportId: String(normalized.passportId ?? passportCountry.passportId),
           countryCode: String(normalized.countryCode ?? passportCountry.countryCode),
@@ -465,7 +465,7 @@ class SecureStorageService {
       if (!record) {
         return null;
       }
-      const normalized = this.serializer.deserializePassportCountry(record as PassportCountryRow);
+      const normalized = this.serializer.deserializePassportCountry(record as unknown as DataSerializerPassportCountryRow);
       return {
         passportId: String(normalized.passportId ?? passportId),
         countryCode: String(normalized.countryCode ?? countryCode),
@@ -494,7 +494,7 @@ class SecureStorageService {
         return [];
       }
       return records.map(record => {
-        const normalized = this.serializer.deserializePassportCountry(record as PassportCountryRow);
+        const normalized = this.serializer.deserializePassportCountry(record as unknown as DataSerializerPassportCountryRow);
         return {
           passportId: String(normalized.passportId ?? passportId),
           countryCode: String(normalized.countryCode ?? ''),

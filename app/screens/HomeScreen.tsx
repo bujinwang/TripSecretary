@@ -91,7 +91,7 @@ const HomeScreen = ({ navigation }) => {
     { code: 'es', label: 'Español' },
   ];
 
-  const handleLanguageSelect = (selectedLanguage) => {
+  const handleLanguageSelect = (selectedLanguage: string) => {
     setLanguage(selectedLanguage);
     setShowLanguageModal(false);
   };
@@ -105,7 +105,7 @@ const HomeScreen = ({ navigation }) => {
     ]);
 
     // Get hot countries from centralized service
-    const hotCountries = getHotCountries(t, language, Array.from(activeDestinationIds));
+    const hotCountries = getHotCountries(t as TranslateFunction, language, Array.from(activeDestinationIds));
 
     // Filter out destinations that already have active entry packs
     return hotCountries.filter(
@@ -335,7 +335,7 @@ return '';
         submittedEntryPacks: activeSubmittedPacks,
       });
 
-      PerformanceMonitor.endTiming(operationId, {
+      PerformanceMonitor.endTiming(operationId as string, {
         submittedPacks: activeSubmittedPacks.length,
         inProgressDestinations: homeScreenData.inProgressDestinations.length,
         overallCompletion: homeScreenData.summary.overallCompletionPercent
@@ -348,7 +348,7 @@ return '';
       if (error.cause) {
         console.error('[HomeScreen] Error cause:', error.cause);
       }
-      PerformanceMonitor.endTiming(operationId, { error: error.message });
+      PerformanceMonitor.endTiming(operationId as string, { error: error.message });
       setActiveEntryPacks([]);
       setInProgressDestinations([]);
       setMultiDestinationData(null);
@@ -394,7 +394,7 @@ return '';
     navigation.navigate('ScanPassport');
   };
 
-  const handleCountrySelect = async (country) => {
+  const handleCountrySelect = async (country: { enabled: boolean; displayName?: string; id: string; name?: string; flag: string; flightTime?: string }) => {
     // Check if country is enabled
     if (!country.enabled) {
       Alert.alert(t('home.alerts.notAvailableTitle'), t('home.alerts.notAvailableBody'));
@@ -451,7 +451,7 @@ return '';
   };
 
 
-  const getHistoryDisplayTime = (item) => {
+  const getHistoryDisplayTime = (item: Record<string, unknown>) => {
     if (item?.travelInfo?.generatedAtLabel) {
       return item.travelInfo.generatedAtLabel;
     }
@@ -461,7 +461,7 @@ return '';
     }
 
     if (item?.createdAt) {
-      return formatDate(item.createdAt);
+      return formatDate(item.createdAt as string);
     }
 
     return '';
@@ -542,7 +542,7 @@ return '';
     [language, t]
   );
 
-  const getDestinationFlag = (destinationId: string | null) => getCountryFlag(destinationId);
+  const getDestinationFlag = (destinationId: string | null) => getCountryFlag(destinationId as string);
 
   const confirmLeaveEntry = useCallback(
     (destination: InProgressDestinationItem) => {
@@ -577,10 +577,10 @@ return '';
   );
 
   // Get estimated flight duration based on destination
-  const getFlightDuration = (destinationId) => {
+  const getFlightDuration = (destinationId: string) => {
     // Try to get from country data
     try {
-      const country = getHotCountries(t, language, []).find(c => c.id === destinationId);
+      const country = getHotCountries(t as TranslateFunction, language, []).find(c => c.id === destinationId);
       if (country?.flightTime) {
         return country.flightTime;
       }
@@ -803,7 +803,7 @@ return null;
         });
 
         // Get submission countdown if arrival date is set
-        const submissionCountdown = getSubmissionCountdown(destination.arrivalDate);
+        const submissionCountdown = getSubmissionCountdown(destination.arrivalDate ?? null);
 
         // Prefer entryInfoId for stability; otherwise include arrivalDate + index
         // to avoid duplicate keys when multiple drafts share the same destination + progress.
@@ -1036,7 +1036,7 @@ return null;
                 name={country.displayName}
                 flightTime={country.flightTime}
                 visaRequirement={country.visaRequirement}
-                onPress={() => handleCountrySelect(country)}
+                onPress={() => handleCountrySelect(country as CountryDisplay)}
                 disabled={!country.enabled}
               />
             ))}

@@ -23,7 +23,7 @@ export interface BaseInputProps extends Omit<InputProps, 'size'> {
   /**
    * Input label
    */
-  label?: string;
+  label?: string | Record<string, unknown>;
 
   /**
    * Helper text shown below input

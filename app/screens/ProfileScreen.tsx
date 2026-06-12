@@ -185,7 +185,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
           console.error('Failed to initialize UserDataService:', initError);
 
           // If initialization fails due to schema issues, show alert to user
-          if (initError.message && initError.message.includes('no such column')) {
+          if ((initError as Error).message && (initError as Error).message.includes('no such column')) {
             Alert.alert(
               'Database Schema Error',
               'The database schema is outdated. Please tap "Clear Saved Data" in the settings below to reset the database.',
@@ -587,7 +587,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
       Alert.alert(
         t('profile.export.errorTitle', { defaultValue: 'Export Failed' }),
         t('profile.export.errorMessage', {
-          defaultValue: `Failed to export data: ${error.message}`
+          defaultValue: `Failed to export data: ${(error as Error).message}`
         })
       );
     }
@@ -614,7 +614,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
       Alert.alert(
         t('profile.export.shareErrorTitle', { defaultValue: 'Share Failed' }),
         t('profile.export.shareErrorMessage', {
-          defaultValue: `Failed to share file: ${error.message}`
+          defaultValue: `Failed to share file: ${(error as Error).message}`
         })
       );
     }

@@ -185,7 +185,7 @@ return;
    * Trigger haptic by type
    * @param {string} type - Haptic type from HapticType enum
    */
-  async trigger(type) {
+  async trigger(type: string) {
     if (!this.isHapticsEnabled()) {
 return;
 }
@@ -248,7 +248,7 @@ export const PreviewHaptics = {
    * Status change feedback
    * Use in: ProgressStepper status updates (completed → error)
    */
-  statusChange: (status) => {
+  statusChange: (status: string) => {
     if (status === 'completed') {
       return hapticsManager.success();
     } else if (status === 'error') {
@@ -319,7 +319,7 @@ export const PreviewHaptics = {
  * @returns {Object} Haptic feedback functions
  */
 export const useHaptics = () => ({
-    trigger: (type) => hapticsManager.trigger(type),
+    trigger: (type: string) => hapticsManager.trigger(type),
     enable: () => hapticsManager.enable(),
     disable: () => hapticsManager.disable(),
     isEnabled: () => hapticsManager.isHapticsEnabled(),
@@ -332,8 +332,8 @@ export const useHaptics = () => ({
  * @param {string} hapticType - Type of haptic to trigger
  * @returns {Function} Enhanced component
  */
-export const withHapticFeedback = (Component, hapticType = HapticType.LIGHT) => (props) => {
-    const handlePress = async (event) => {
+export const withHapticFeedback = (Component: React.ComponentType<Record<string, unknown>>, hapticType: string = HapticType.LIGHT) => (props: Record<string, unknown>) => {
+    const handlePress = async (event: Record<string, unknown>) => {
       await hapticsManager.trigger(hapticType);
       if (props.onPress) {
         props.onPress(event);

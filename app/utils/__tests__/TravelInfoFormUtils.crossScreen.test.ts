@@ -19,13 +19,13 @@ describe('TravelInfoFormUtils - Cross-Screen Consistency Tests', () => {
     jest.clearAllMocks();
     
     // Mock FieldStateManager
-    FieldStateManager.getFieldCount.mockReturnValue({
+    (FieldStateManager.getFieldCount as jest.Mock).mockReturnValue({
       totalUserModified: 5,
       totalWithValues: 3,
       totalFields: 8
     });
     
-    FieldStateManager.getCompletionMetrics.mockReturnValue({
+    (FieldStateManager.getCompletionMetrics as jest.Mock).mockReturnValue({
       totalFields: 10,
       completedFields: 6,
       completionPercentage: 60,
@@ -35,7 +35,7 @@ describe('TravelInfoFormUtils - Cross-Screen Consistency Tests', () => {
       userModifiedFields: 6
     });
     
-    FieldStateManager.filterSaveableFields.mockImplementation((fields) => {
+    (FieldStateManager.filterSaveableFields as jest.Mock).mockImplementation((fields: Record<string, unknown>) => {
       // Return only fields that would be user-modified
       const filtered = {};
       Object.keys(fields).forEach(key => {
@@ -117,7 +117,7 @@ describe('TravelInfoFormUtils - Cross-Screen Consistency Tests', () => {
       ];
 
       // This tests the migration logic that would be used by all destinations
-      const extractedData = {};
+      const extractedData: Record<string, string> = {};
       
       if (testData.passport) {
         if (testData.passport.fullName) {
@@ -199,7 +199,7 @@ extractedData.boardingCountry = testData.travelInfo.boardingCountry;
       };
 
       // Mock interaction state
-      const interactionState = {
+      const interactionState: InteractionState = {
         fullName: { isUserModified: true },
         nationality: { isUserModified: true },
         passportNo: { isUserModified: true },
@@ -242,7 +242,7 @@ extractedData.boardingCountry = testData.travelInfo.boardingCountry;
       };
 
       // Mock interaction state
-      const interactionState = {
+      const interactionState: InteractionState = {
         fullName: { isUserModified: true },
         nationality: { isUserModified: true },
         passportNo: { isUserModified: true },
@@ -371,12 +371,12 @@ extractedData.boardingCountry = testData.travelInfo.boardingCountry;
   describe('Error Recovery Consistency', () => {
     test('should handle errors consistently across destinations', () => {
       // Mock FieldStateManager to throw an error
-      FieldStateManager.getCompletionMetrics.mockImplementationOnce(() => {
+      (FieldStateManager.getCompletionMetrics as jest.Mock).mockImplementationOnce(() => {
         throw new Error('Test error');
       });
 
       const testFields = { fullName: 'John Doe' };
-      const interactionState = { fullName: { isUserModified: true } };
+      const interactionState: InteractionState = { fullName: { isUserModified: true } };
 
       // Test error handling directly
       let result;

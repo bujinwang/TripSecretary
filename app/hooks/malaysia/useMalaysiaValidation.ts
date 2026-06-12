@@ -22,7 +22,7 @@ export const useMalaysiaValidation = ({
    * @param {any} value - Value of the field
    * @returns {boolean} True if field is valid, false otherwise
    */
-  const validateField = useCallback((fieldName, value) => {
+  const validateField = useCallback((fieldName: string, value: string) => {
     const newErrors = { ...formState.errors };
     const newWarnings = { ...formState.warnings };
 
@@ -158,7 +158,7 @@ export const useMalaysiaValidation = ({
    * @param {string} fieldName - Name of the field
    * @param {any} value - Value of the field
    */
-  const handleFieldBlur = useCallback((fieldName, value) => {
+  const handleFieldBlur = useCallback((fieldName: string, value: string) => {
     // Validate the field
     validateField(fieldName, value);
 
@@ -179,7 +179,7 @@ export const useMalaysiaValidation = ({
    * @param {any} value - Value of the field
    * @param {Function} setter - Setter function for the field
    */
-  const handleFieldChange = useCallback((fieldName, value, setter) => {
+  const handleFieldChange = useCallback((fieldName: string, value: string, setter: (v: string) => void) => {
     setter(value);
     userInteractionTracker.markFieldAsUserModified(fieldName, value);
     formState.setLastEditedField(fieldName);
@@ -193,7 +193,7 @@ export const useMalaysiaValidation = ({
    * Handle user interaction (for fields that don't blur or change text)
    * @param {string} fieldName - Name of the field
    */
-  const handleUserInteraction = useCallback((fieldName) => {
+  const handleUserInteraction = useCallback((fieldName: string) => {
     userInteractionTracker.trackFieldEdit(fieldName);
     debouncedSaveData();
   }, [userInteractionTracker, debouncedSaveData]);
@@ -347,7 +347,7 @@ export const useMalaysiaValidation = ({
    * @param {number} completionPercent - Completion percentage
    * @returns {Object} Button configuration
    */
-  const getSmartButtonConfig = useCallback((completionPercent) => {
+  const getSmartButtonConfig = useCallback((completionPercent: number) => {
     if (completionPercent >= 100) {
       return {
         text: 'Continue to Entry Flow →',
@@ -374,7 +374,7 @@ export const useMalaysiaValidation = ({
    * @param {number} percent - Completion percentage
    * @returns {string} Progress text
    */
-  const getProgressText = useCallback((percent) => {
+  const getProgressText = useCallback((percent: number) => {
     if (percent >= 100) {
 return '✅ 完成!';
 }
@@ -389,7 +389,7 @@ return '进展不错 💪';
    * @param {number} percent - Completion percentage
    * @returns {string} Progress color
    */
-  const getProgressColor = useCallback((percent) => {
+  const getProgressColor = useCallback((percent: number) => {
     if (percent >= 100) {
 return '#34C759';
 }

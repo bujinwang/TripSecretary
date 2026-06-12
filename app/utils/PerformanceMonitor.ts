@@ -8,7 +8,23 @@ type MetricsRecord = Record<string, any>;
  * Requirements: 18.1-18.5
  */
 
+interface PerformanceThresholds {
+  [key: string]: number;
+  dataLoading: number;
+  rendering: number;
+  navigation: number;
+  storage: number;
+  calculation: number;
+}
+
 class PerformanceMonitor {
+  private metrics: Map<string, MetricsRecord[]>;
+  private operationTimings: Map<string, { operationName: string; startTime: number; metadata: MetricsRecord; status: string }>;
+  private memorySnapshots: MetricsRecord[];
+  private isEnabled: boolean;
+  private maxMetricsHistory: number;
+  private performanceThresholds: PerformanceThresholds;
+
   constructor() {
     this.metrics = new Map();
     this.operationTimings = new Map();
@@ -30,7 +46,7 @@ class PerformanceMonitor {
    * @param {Object} metadata - Additional metadata
    * @returns {string} - Operation ID for ending the timing
    */
-  startTiming(operationName: string, metadata: MetricsRecord = {}): string {
+  startTiming(operationName: string, metadata: MetricsRecord = {}): string | null {
     if (!this.isEnabled) {
 return null;
 }
@@ -113,7 +129,7 @@ return null;
       this.endTiming(operationId, { success: true });
       return result;
     } catch (error) {
-      this.endTiming(operationId, { success: false, error: error.message });
+      this.endTiming(operationId, { success: false, error: (error as Error).message });
       throw error;
     }
   }
@@ -123,7 +139,7 @@ return null;
    * @param {string} context - Context where memory is being measured
    * @param {Object} metadata - Additional metadata
    */
-  recordMemoryUsage(context: string, metadata: MetricsRecord = {}): MetricsRecord | null {
+  recordMemoryUsage(context: string, metadata: MetricsRecord = {}): void {
     if (!this.isEnabled) {
 return;
 }
@@ -328,7 +344,7 @@ continue;
    * Get performance recommendations
    * @returns {Array} - Array of performance recommendations
    */
-  getRecommendations(): string[] {
+  getRecommendations(): MetricsRecord[] {
     const recommendations = [];
     const summary = this.getPerformanceSummary();
 
@@ -345,7 +361,7 @@ continue;
     }
 
     // Check average duration by type
-    for (const [type, typeMetrics] of Object.entries(summary.operationTypes)) {
+    for (const [type, typeMetrics] of Object.entries(summary.operationTypes) as [string, { averageDuration: number }][]) {
       const threshold = this.performanceThresholds[type];
       if (threshold && typeMetrics.averageDuration > threshold * 0.8) {
         recommendations.push({

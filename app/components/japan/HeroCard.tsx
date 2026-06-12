@@ -10,6 +10,13 @@ const HeroCard = ({
   metaLabel,
   progressLabel,
   onPress,
+}: {
+  completionPercent: number;
+  nextActionLabel?: string;
+  summaryLabel?: string;
+  metaLabel?: string;
+  progressLabel?: string;
+  onPress?: () => void;
 }) => (
     <View style={styles.container}>
       <TouchableOpacity

@@ -344,14 +344,14 @@ export const FIELD_TRANSLATIONS = {
 /**
  * 获取目的地的语言代码
  */
-export function getDestinationLanguage(destinationId) {
+export function getDestinationLanguage(destinationId: string): string {
   return DESTINATION_LANGUAGES[destinationId]?.code || 'en';
 }
 
 /**
  * 翻译字段名
  */
-export function translateField(fieldKey, destinationId, targetLanguageOverride) {
+export function translateField(fieldKey: string, destinationId: string, targetLanguageOverride?: string): string {
   const langCode = targetLanguageOverride || getDestinationLanguage(destinationId);
   const translations = FIELD_TRANSLATIONS[fieldKey];
   
@@ -365,7 +365,7 @@ return fieldKey;
 /**
  * 翻译表格数据
  */
-export function translateFormData(formData, destinationId) {
+export function translateFormData(formData: Record<string, string>, destinationId: string): Record<string, string> {
   const langCode = getDestinationLanguage(destinationId);
   
   const translated = {};
@@ -390,7 +390,7 @@ export function translateFormData(formData, destinationId) {
  * 生成双语对照表
  * 用于海关问答卡
  */
-export function generateBilingualQA(destinationId) {
+export function generateBilingualQA(destinationId: string): Array<Record<string, string>> {
   const commonQuestions = [
     {
       id: 'purpose',
@@ -431,7 +431,7 @@ export function generateBilingualQA(destinationId) {
   }));
 }
 
-function translateQuestionToEnglish(text) {
+function translateQuestionToEnglish(text: string): string {
   // 简单的映射，实际应该调用翻译API
   const map = {
     '你来这里的目的是什么？': 'What is the purpose of your visit?',

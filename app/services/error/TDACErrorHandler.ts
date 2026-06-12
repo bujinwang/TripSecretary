@@ -1,5 +1,3 @@
-
-// @ts-nocheck — TDAC error handler; full typing deferred
 /**
  * TDAC Error Handler Service
  * Comprehensive error handling, retry mechanisms, and user-friendly error reporting
@@ -9,12 +7,78 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+interface ErrorCategory {
+  patterns: RegExp[];
+  userMessage: string;
+  recoverable: boolean;
+  retryable: boolean;
+}
+
+interface ErrorCategories {
+  [key: string]: ErrorCategory;
+}
+
+interface RetryConfig {
+  maxRetries: number;
+  baseDelay: number;
+  maxDelay: number;
+  backoffMultiplier: number;
+  retryableErrors: string[];
+}
+
+interface ErrorLogEntry {
+  id: string;
+  timestamp: string;
+  message: string;
+  stack?: string;
+  name?: string;
+  context: Record<string, unknown>;
+  attemptNumber: number;
+  userAgent?: string;
+  submissionMethod?: string;
+}
+
+interface ErrorResult {
+  category: string;
+  userMessage: string;
+  technicalMessage: string;
+  recoverable: boolean;
+  shouldRetry: boolean;
+  retryDelay: number;
+  attemptNumber: number;
+  maxRetries: number;
+  suggestions: string[];
+  errorId: string;
+  timestamp: string;
+}
+
+interface ErrorStatistics {
+  totalErrors: number;
+  errorsByCategory: Record<string, number>;
+  errorsByMethod: Record<string, number>;
+  recentErrors: ErrorLogEntry[];
+  errorRate: number;
+}
+
+interface ErrorDialog {
+  title: string;
+  message: string;
+  buttons: { text: string; action: string; primary: boolean }[];
+  icon: string;
+  severity: string;
+}
+
 class TDACErrorHandler {
+  retryConfig: RetryConfig;
+  errorCategories: ErrorCategories;
+  errorLog: ErrorLogEntry[];
+  maxLogEntries: number;
+
   constructor() {
     this.retryConfig = {
       maxRetries: 3,
-      baseDelay: 1000, // 1 second
-      maxDelay: 10000, // 10 seconds
+      baseDelay: 1000,
+      maxDelay: 10000,
       backoffMultiplier: 2,
       retryableErrors: [
         'NetworkError',
@@ -132,7 +196,7 @@ class TDACErrorHandler {
    * @param {number} attemptNumber - Current attempt number (0-based)
    * @returns {Object} - Error handling result with retry decision
    */
-  async handleSubmissionError(error, context = {}, attemptNumber = 0) {
+  async handleSubmissionError(error: Error, context: Record<string, unknown> = {}, attemptNumber: number = 0): Promise<ErrorResult> {
     try {
       console.log('🚨 Handling TDAC submission error:', {
         message: error.message,
@@ -199,10 +263,10 @@ class TDACErrorHandler {
   /**
    * Categorize error based on patterns
    */
-  categorizeError(error) {
+  categorizeError(error: Error): ErrorCategory & { name: string } {
     const errorMessage = error.message || error.toString();
     
-    for (const [categoryName, category] of Object.entries(this.errorCategories)) {
+    for (const [categoryName, category] of Object.entries(this.errorCategories) as [string, ErrorCategory][]) {
       for (const pattern of category.patterns) {
         if (pattern.test(errorMessage)) {
           return {
@@ -216,6 +280,7 @@ class TDACErrorHandler {
     // Default category for unknown errors
     return {
       name: 'unknown',
+      patterns: [/.*/],
       userMessage: 'An unexpected error occurred. Please try again.',
       recoverable: true,
       retryable: true
@@ -225,7 +290,7 @@ class TDACErrorHandler {
   /**
    * Determine if operation should be retried
    */
-  shouldRetry(error, errorCategory, attemptNumber) {
+  shouldRetry(error: Error, errorCategory: ErrorCategory & { name: string }, attemptNumber: number): boolean {
     // Don't retry if max attempts reached
     if (attemptNumber >= this.retryConfig.maxRetries) {
       return false;
@@ -258,7 +323,7 @@ class TDACErrorHandler {
   /**
    * Calculate retry delay with exponential backoff
    */
-  calculateRetryDelay(attemptNumber) {
+  calculateRetryDelay(attemptNumber: number): number {
     const delay = Math.min(
       this.retryConfig.baseDelay * Math.pow(this.retryConfig.backoffMultiplier, attemptNumber),
       this.retryConfig.maxDelay
@@ -275,7 +340,7 @@ class TDACErrorHandler {
   /**
    * Get recovery suggestions based on error category
    */
-  getRecoverySuggestions(errorCategory, error, context) {
+  getRecoverySuggestions(errorCategory: ErrorCategory & { name: string }, _error: Error, _context: Record<string, unknown>): string[] {
     const suggestions = [];
 
     switch (errorCategory.name) {
@@ -358,7 +423,7 @@ class TDACErrorHandler {
   /**
    * Log error for debugging and analytics
    */
-  async logError(error, context, attemptNumber) {
+  async logError(error: Error, context: Record<string, unknown>, attemptNumber: number): Promise<void> {
     try {
       const errorEntry = {
         id: this.generateErrorId(),
@@ -368,8 +433,8 @@ class TDACErrorHandler {
         name: error.name,
         context,
         attemptNumber,
-        userAgent: context.userAgent || 'unknown',
-        submissionMethod: context.submissionMethod || 'unknown'
+        userAgent: (context.userAgent as string) || 'unknown',
+        submissionMethod: (context.submissionMethod as string) || 'unknown'
       };
 
       // Add to in-memory log
@@ -397,28 +462,28 @@ class TDACErrorHandler {
   /**
    * Generate unique error ID
    */
-  generateErrorId() {
+  generateErrorId(): string {
     return `err_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
   }
 
   /**
    * Get error statistics for monitoring
    */
-  getErrorStatistics() {
-    const stats = {
+  getErrorStatistics(): ErrorStatistics {
+    const stats: ErrorStatistics = {
       totalErrors: this.errorLog.length,
-      errorsByCategory: {},
-      errorsByMethod: {},
+      errorsByCategory: {} as Record<string, number>,
+      errorsByMethod: {} as Record<string, number>,
       recentErrors: this.errorLog.slice(0, 10),
       errorRate: 0
     };
 
     // Count errors by category and method
     for (const error of this.errorLog) {
-      const category = this.categorizeError({ message: error.message }).name;
+      const category = this.categorizeError(new Error(error.message)).name;
       stats.errorsByCategory[category] = (stats.errorsByCategory[category] || 0) + 1;
       
-      const method = error.context?.submissionMethod || 'unknown';
+      const method = String(error.context?.submissionMethod || 'unknown');
       stats.errorsByMethod[method] = (stats.errorsByMethod[method] || 0) + 1;
     }
 
@@ -471,7 +536,7 @@ class TDACErrorHandler {
   /**
    * Create user-friendly error dialog data
    */
-  createErrorDialog(errorResult) {
+  createErrorDialog(errorResult: ErrorResult): ErrorDialog {
     return {
       title: this.getErrorTitle(errorResult.category),
       message: errorResult.userMessage,
@@ -484,8 +549,8 @@ class TDACErrorHandler {
   /**
    * Get error dialog title
    */
-  getErrorTitle(category) {
-    const titles = {
+  getErrorTitle(category: string): string {
+    const titles: Record<string, string> = {
       network: 'Connection Issue',
       validation: 'Information Required',
       cloudflare: 'Security Verification',
@@ -503,7 +568,7 @@ class TDACErrorHandler {
   /**
    * Get error dialog buttons
    */
-  getErrorButtons(errorResult) {
+  getErrorButtons(errorResult: ErrorResult): { text: string; action: string; primary: boolean }[] {
     const buttons = [];
 
     if (errorResult.shouldRetry) {
@@ -542,8 +607,8 @@ class TDACErrorHandler {
   /**
    * Get error icon
    */
-  getErrorIcon(category) {
-    const icons = {
+  getErrorIcon(category: string): string {
+    const icons: Record<string, string> = {
       network: '📶',
       validation: '📝',
       cloudflare: '🔐',
@@ -561,8 +626,8 @@ class TDACErrorHandler {
   /**
    * Get error severity level
    */
-  getErrorSeverity(category) {
-    const severities = {
+  getErrorSeverity(category: string): string {
+    const severities: Record<string, string> = {
       network: 'warning',
       validation: 'info',
       cloudflare: 'warning',

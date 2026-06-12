@@ -30,7 +30,7 @@ const TDACSelectionScreen = ({ navigation, route }) => {
    * Sanitize sensitive data before logging
    * Masks passport numbers, emails, and phone numbers for security
    */
-  const sanitizeForLogging = (data) => {
+  const sanitizeForLogging = (data: Record<string, unknown>) => {
     if (!data) {
 return data;
 }
@@ -83,7 +83,7 @@ return data;
    * This is called when user returns from successful TDAC submission
    * Wrapped with useCallback to prevent stale closures in event listener
    */
-  const handleTDACSubmissionSuccess = useCallback(async (submissionData) => {
+  const handleTDACSubmissionSuccess = useCallback(async (submissionData: any) => {
     const result = await TDACSubmissionService.handleTDACSubmissionSuccess(submissionData, travelerInfo);
 
     if (!result.success) {

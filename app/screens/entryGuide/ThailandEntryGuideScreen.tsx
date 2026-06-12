@@ -96,7 +96,7 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
     }, [completionData?.entryInfoId])
   );
 
-  const handleStepComplete = (stepId) => {
+  const handleStepComplete = (stepId: string) => {
     setCompletedSteps(prev => new Set([...prev, stepId]));
   };
 
@@ -115,14 +115,14 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleStepPress = (stepIndex) => {
+  const handleStepPress = (stepIndex: number) => {
     // 允许跳转到已完成的步骤或当前步骤的前一个步骤
     if (stepIndex <= currentStepIndex || completedSteps.has(THAILAND_ENTRY_STEPS[stepIndex].id)) {
       setCurrentStepIndex(stepIndex);
     }
   };
 
-  const getStepStatus = (stepIndex) => {
+  const getStepStatus = (stepIndex: number) => {
     const step = THAILAND_ENTRY_STEPS[stepIndex];
     if (stepIndex < currentStepIndex) {
       return 'completed';
@@ -135,7 +135,7 @@ const ThailandEntryGuideScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleStepLayout = useCallback((index, layout) => {
+  const handleStepLayout = useCallback((index: number, layout: { x: number; width: number }) => {
     setStepLayouts((prev) => {
       const existing = prev[index];
       if (

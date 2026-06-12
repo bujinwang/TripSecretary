@@ -45,6 +45,18 @@ import { PreviewHaptics } from '../../utils/haptics';
  *   onDismiss={() => console.log('Dismissed')}
  * />
  */
+interface InfoAlertProps {
+  variant?: 'info' | 'warning' | 'error' | 'success';
+  title?: string;
+  message?: string;
+  dismissible?: boolean;
+  onDismiss?: () => void;
+  onActionPress?: () => void;
+  actionLabel?: string;
+  children?: React.ReactNode;
+  style?: object;
+}
+
 const InfoAlert = ({
   variant = 'info',
   title,
@@ -55,7 +67,7 @@ const InfoAlert = ({
   actionLabel,
   children,
   style,
-}) => {
+}: InfoAlertProps) => {
   const { t } = useTranslation();
   const [isDismissed, setIsDismissed] = useState(false);
 

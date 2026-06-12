@@ -115,7 +115,7 @@ const ResultScreen = ({ navigation, route }) => {
         setPdfUri(data.pdfUrl);
       }
     } catch (error) {
-      console.log('Failed to load history, using passed data:', error.message);
+      console.log('Failed to load history, using passed data:', (error as Error).message);
       // If API call fails (e.g., backend not running), use passed parameters
       // This allows the app to work even without backend
     }
@@ -556,7 +556,7 @@ return;
     );
   };
 
-  const handleCopy = (value, field) => {
+  const handleCopy = (value: string, field: string) => {
     Clipboard.setString(value);
     setCopiedField(field);
     setTimeout(() => setCopiedField(null), 2000);
@@ -766,7 +766,7 @@ return;
       other: '其他证明 Other',
     };
 
-    const getFundIcon = (type) => {
+    const getFundIcon = (type: string) => {
       switch (type) {
         case 'cash':
           return '💵';
@@ -781,14 +781,14 @@ return;
       }
     };
 
-    const renderSection = (title, icon, rows) => (
+    const renderSection = (title: string, icon: string, rows: Array<Record<string, unknown>>) => (
       <View key={title} style={styles.japanManualSectionCard}>
         <View style={styles.japanManualSectionHeader}>
           <Text style={styles.japanManualSectionIcon}>{icon}</Text>
           <Text style={styles.japanManualSectionTitle}>{title}</Text>
         </View>
         <View style={styles.japanManualSectionBody}>
-          {rows.map((row, index) => {
+          {rows.map((row: Record<string, unknown>, index: number) => {
             if (!row) {
 return null;
 }

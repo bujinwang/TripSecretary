@@ -28,7 +28,7 @@ describe('PerformanceMonitor', () => {
       // Simulate some work
       await new Promise(resolve => setTimeout(resolve, 10));
       
-      const metrics = PerformanceMonitor.endTiming(operationId, { completed: true });
+      const metrics = PerformanceMonitor.endTiming(operationId!, { completed: true });
       
       expect(metrics).toBeTruthy();
       expect(metrics.operationName).toBe('testOperation');
@@ -101,11 +101,11 @@ describe('PerformanceMonitor', () => {
       for (const op of operations) {
         const id = PerformanceMonitor.startTiming(op.name);
         // Simulate the duration by directly ending with the duration
-        PerformanceMonitor.endTiming(id);
+        PerformanceMonitor.endTiming(id!);
       }
 
       const summary = PerformanceMonitor.getPerformanceSummary();
-      
+       
       expect(summary.totalOperations).toBe(4);
       expect(summary.operationTypes).toHaveProperty('dataLoading');
       expect(summary.operationTypes).toHaveProperty('rendering');
@@ -139,7 +139,7 @@ describe('PerformanceMonitor', () => {
       // Add some slow operations
       for (let i = 0; i < 5; i++) {
         const id = PerformanceMonitor.startTiming('slowLoadData');
-        PerformanceMonitor.endTiming(id);
+        PerformanceMonitor.endTiming(id!);
       }
 
       const recommendations = PerformanceMonitor.getRecommendations();
@@ -152,7 +152,7 @@ describe('PerformanceMonitor', () => {
         const id = PerformanceMonitor.startTiming('loadData');
         // Simulate slow operation by updating thresholds
         PerformanceMonitor.updateThresholds({ dataLoading: 1 }); // Very low threshold
-        PerformanceMonitor.endTiming(id);
+        PerformanceMonitor.endTiming(id!);
       }
 
       const recommendations = PerformanceMonitor.getRecommendations();
@@ -194,9 +194,9 @@ describe('PerformanceMonitor', () => {
     it('should export metrics data', async () => {
       // Add some test data
       const id = PerformanceMonitor.startTiming('testOperation');
-      PerformanceMonitor.endTiming(id);
+      PerformanceMonitor.endTiming(id!);
       PerformanceMonitor.recordMemoryUsage('testContext');
-      
+       
       const exportedData = PerformanceMonitor.exportMetrics();
       
       expect(exportedData).toHaveProperty('metrics');
@@ -212,9 +212,9 @@ describe('PerformanceMonitor', () => {
     it('should clear all metrics', async () => {
       // Add some data
       const id = PerformanceMonitor.startTiming('testOperation');
-      PerformanceMonitor.endTiming(id);
+      PerformanceMonitor.endTiming(id!);
       PerformanceMonitor.recordMemoryUsage('testContext');
-      
+       
       let summary = PerformanceMonitor.getPerformanceSummary();
       expect(summary.totalOperations).toBe(1);
       

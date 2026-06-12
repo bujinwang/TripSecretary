@@ -11,7 +11,51 @@ type CalculationData = Record<string, any>;
 
 import { isTestOrDummyAddress } from './addressValidation';
 
+interface CompletionMetrics {
+  passport: CategoryMetrics;
+  personalInfo: CategoryMetrics;
+  funds: CategoryMetrics;
+  travel: CategoryMetrics;
+}
+
+interface CachedResult {
+  result: CompletionMetrics;
+  timestamp: number;
+}
+
+interface CompletionField {
+  name: string;
+  hasValue: boolean;
+  isValid: boolean;
+}
+
+interface CategoryMetrics {
+  complete: number;
+  total: number;
+  state: 'complete' | 'partial' | 'missing';
+  fields?: CompletionField[];
+  percentage: number;
+  validFundCount?: number;
+  totalFundCount?: number;
+  fundsState?: 'complete' | 'partial' | 'missing';
+  note?: string;
+}
+
+interface EntryInfo {
+  passport?: Record<string, unknown>;
+  personalInfo?: Record<string, unknown>;
+  funds?: Record<string, unknown>[];
+  travel?: Record<string, unknown>;
+  lastUpdatedAt?: string;
+  updatedAt?: string;
+}
+
 class EntryCompletionCalculator {
+  private cache: Map<string, CachedResult>;
+  private cacheTimeout: number;
+  private destinationProgressCache: Map<string, CachedResult>;
+  private destinationCacheTimeout: number;
+
   constructor() {
     // Cache for performance optimization
     this.cache = new Map();
@@ -51,7 +95,7 @@ class EntryCompletionCalculator {
    * @param {string} fieldType - Type of field for validation
    * @returns {Object} - Validation result
    */
-  validateField(value, fieldType = 'text') {
+  validateField(value: unknown, fieldType = 'text') {
     const result = {
       hasValue: false,
       isValid: false,
@@ -80,22 +124,22 @@ class EntryCompletionCalculator {
         break;
       }
       case 'email':
-        result.isValid = this.validateEmail(value);
+        result.isValid = this.validateEmail(value as string);
         break;
       case 'phone':
-        result.isValid = this.validatePhone(value);
+        result.isValid = this.validatePhone(value as string);
         break;
       case 'date':
         result.isValid = this.validateDate(value);
         break;
       case 'passport':
-        result.isValid = this.validatePassportNumber(value);
+        result.isValid = this.validatePassportNumber(value as string);
         break;
       case 'currency':
-        result.isValid = this.validateCurrency(value);
+        result.isValid = this.validateCurrency(value as string | number);
         break;
       case 'number':
-        result.isValid = !isNaN(parseFloat(value)) && isFinite(value);
+        result.isValid = !isNaN(parseFloat(value as string)) && isFinite(value as number);
         break;
       case 'text':
       default:
@@ -111,7 +155,7 @@ class EntryCompletionCalculator {
    * @param {string} email - Email address
    * @returns {boolean} - Is valid email
    */
-  validateEmail(email) {
+  validateEmail(email: string) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
@@ -121,7 +165,7 @@ class EntryCompletionCalculator {
    * @param {string} phone - Phone number
    * @returns {boolean} - Is valid phone
    */
-  validatePhone(phone) {
+  validatePhone(phone: string) {
     // Allow various phone formats
     const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
     const cleanPhone = phone.replace(/[\s\-\(\)]/g, '');
@@ -133,12 +177,12 @@ class EntryCompletionCalculator {
    * @param {string} date - Date string
    * @returns {boolean} - Is valid date
    */
-  validateDate(date) {
+  validateDate(date: unknown) {
     if (!date) {
 return false;
 }
-    const parsedDate = new Date(date);
-    return parsedDate instanceof Date && !isNaN(parsedDate);
+    const parsedDate = new Date(date as string | number | Date);
+    return parsedDate instanceof Date && !isNaN(parsedDate.getTime());
   }
 
   /**
@@ -146,7 +190,7 @@ return false;
    * @param {string} passport - Passport number
    * @returns {boolean} - Is valid passport
    */
-  validatePassportNumber(passport) {
+  validatePassportNumber(passport: string) {
     // Basic passport validation - alphanumeric, 6-12 characters
     const passportRegex = /^[A-Z0-9]{6,12}$/i;
     return passportRegex.test(passport);
@@ -157,8 +201,8 @@ return false;
    * @param {number|string} amount - Currency amount
    * @returns {boolean} - Is valid currency
    */
-  validateCurrency(amount) {
-    const numAmount = parseFloat(amount);
+  validateCurrency(amount: string | number) {
+    const numAmount = parseFloat(String(amount));
     return !isNaN(numAmount) && numAmount > 0;
   }
 
@@ -167,7 +211,7 @@ return false;
    * @param {Object} entryInfo - Complete entry information
    * @returns {Object} - Completion metrics for all categories
    */
-  calculateCompletionMetrics(entryInfo) {
+  calculateCompletionMetrics(entryInfo: EntryInfo): CompletionMetrics {
     const cacheKey = this.generateCacheKey(entryInfo);
     
     // Check cache first
@@ -184,7 +228,7 @@ return false;
     };
 
     // Cache the result
-    this.setCachedResult(cacheKey, metrics);
+    this.setCachedResult(cacheKey, metrics as CompletionMetrics);
 
     return metrics;
   }
@@ -194,7 +238,7 @@ return false;
    * @param {Object} passport - Passport data
    * @returns {Object} - Passport completion metrics
    */
-  calculatePassportCompletion(passport = {}) {
+  calculatePassportCompletion(passport: Record<string, unknown> = {}) {
     // If passport is null or undefined, treat as missing (but allow entry_info creation)
     if (!passport || Object.keys(passport).length === 0) {
       return {
@@ -243,7 +287,7 @@ return false;
    * @param {Object} personalInfo - Personal info data
    * @returns {Object} - Personal info completion metrics
    */
-  calculatePersonalInfoCompletion(personalInfo = {}, passport = {}) {
+  calculatePersonalInfoCompletion(personalInfo: Record<string, unknown> = {}, passport: Record<string, unknown> = {}) {
     // Gender removed from personalInfo - use passport only (single source of truth)
     const genderValueRaw =
       (typeof passport.gender === 'string' && passport.gender.trim())
@@ -284,7 +328,7 @@ return false;
    * @param {Array} funds - Fund items array
    * @returns {Object} - Funds completion metrics
    */
-  calculateFundsCompletion(funds = []) {
+  calculateFundsCompletion(funds: Record<string, unknown>[] = []) {
     // Funds require at least 1 valid fund item with type, amount, and currency
     const validFunds = funds.filter(fund => {
       const typeValid = this.validateField(fund.type, 'text');
@@ -317,8 +361,8 @@ return false;
    * @param {Object} travel - Travel data
    * @returns {Object} - Travel completion metrics
    */
-  calculateTravelCompletion(travel = {}) {
-    const firstNonEmpty = (...candidates) => {
+  calculateTravelCompletion(travel: Record<string, unknown> = {}) {
+    const firstNonEmpty = (...candidates: unknown[]) => {
       for (const candidate of candidates) {
         if (candidate === null || candidate === undefined) {
           continue;
@@ -518,7 +562,7 @@ return false;
    * @param {Object} metrics - Completion metrics from calculateCompletionMetrics
    * @returns {number} - Total completion percentage (0-100)
    */
-  getTotalCompletionPercent(metrics) {
+  getTotalCompletionPercent(metrics: Record<string, CategoryMetrics> | null | undefined) {
     if (!metrics) {
       return 0;
     }
@@ -534,8 +578,8 @@ return false;
    * @param {Object} metrics - Completion metrics
    * @returns {Object} - Missing fields grouped by category
    */
-  getMissingFields(metrics) {
-    const missing = {};
+  getMissingFields(metrics: Record<string, CategoryMetrics> | null | undefined) {
+    const missing: Record<string, string[]> = {};
 
     Object.keys(metrics).forEach(category => {
       const categoryMetrics = metrics[category];
@@ -567,7 +611,7 @@ return false;
    * @param {Object} metrics - Completion metrics
    * @returns {boolean} - Is ready for submission
    */
-  isReadyForSubmission(metrics) {
+  isReadyForSubmission(metrics: Record<string, CategoryMetrics>) {
     // Allow submission even if passport is missing (can be added later)
     // But require all other categories to be complete
     const requiredCategories = ['personalInfo', 'funds', 'travel'];
@@ -586,11 +630,11 @@ return false;
    * @param {Object} entryInfo - Complete entry information
    * @returns {Object} - Completion summary
    */
-  getCompletionSummary(entryInfo) {
+  getCompletionSummary(entryInfo: EntryInfo) {
     const metrics = this.calculateCompletionMetrics(entryInfo);
-    const totalPercent = this.getTotalCompletionPercent(metrics);
-    const missingFields = this.getMissingFields(metrics);
-    const isReady = this.isReadyForSubmission(metrics);
+    const totalPercent = this.getTotalCompletionPercent(metrics as unknown as Record<string, CategoryMetrics>);
+    const missingFields = this.getMissingFields(metrics as unknown as Record<string, CategoryMetrics>);
+    const isReady = this.isReadyForSubmission(metrics as unknown as Record<string, CategoryMetrics>);
 
     return {
       totalPercent,
@@ -631,7 +675,7 @@ return false;
    * @param {Object} entryInfo - Entry information
    * @returns {string} - Cache key
    */
-  generateCacheKey(entryInfo) {
+  generateCacheKey(entryInfo: EntryInfo) {
     // Create a hash-like key based on entry info content
     const keyData = {
       passport: entryInfo.passport || {},
@@ -649,7 +693,7 @@ return false;
    * @param {string} cacheKey - Cache key
    * @returns {Object|null} - Cached result or null
    */
-  getCachedResult(cacheKey) {
+  getCachedResult(cacheKey: string) {
     const cached = this.cache.get(cacheKey);
     
     if (cached && (Date.now() - cached.timestamp) < this.cacheTimeout) {
@@ -669,7 +713,7 @@ return false;
    * @param {string} cacheKey - Cache key
    * @param {Object} result - Result to cache
    */
-  setCachedResult(cacheKey, result) {
+  setCachedResult(cacheKey: string, result: CompletionMetrics) {
     // Limit cache size to prevent memory issues
     if (this.cache.size > 100) {
       // Remove oldest entries
@@ -709,8 +753,8 @@ return false;
    * @param {Object} allDestinationData - Data for all destinations { destinationId: entryInfo }
    * @returns {Object} - Multi-destination completion metrics
    */
-  calculateMultiDestinationMetrics(allDestinationData) {
-    const multiDestinationMetrics = {};
+  calculateMultiDestinationMetrics(allDestinationData: Record<string, EntryInfo | null>) {
+    const multiDestinationMetrics: Record<string, unknown> = {};
     let totalCompletedDestinations = 0;
     let totalDestinations = 0;
     let overallCompletionSum = 0;
@@ -725,13 +769,13 @@ return false;
 
       // Calculate metrics for this destination
       const destinationMetrics = this.calculateCompletionMetrics(entryInfo);
-      const totalPercent = this.getTotalCompletionPercent(destinationMetrics);
+      const totalPercent = this.getTotalCompletionPercent(destinationMetrics as unknown as Record<string, CategoryMetrics>);
       
       multiDestinationMetrics[destinationId] = {
         ...destinationMetrics,
         destinationId,
         totalPercent,
-        isReady: this.isReadyForSubmission(destinationMetrics),
+        isReady: this.isReadyForSubmission(destinationMetrics as unknown as Record<string, CategoryMetrics>),
         lastUpdated: entryInfo.lastUpdatedAt || entryInfo.updatedAt || new Date().toISOString()
       };
 
@@ -766,7 +810,7 @@ return false;
    * @param {string} destinationId - Destination ID
    * @returns {Object} - Empty destination metrics
    */
-  getEmptyDestinationMetrics(destinationId) {
+  getEmptyDestinationMetrics(destinationId: string) {
     return {
       destinationId,
       passport: { complete: 0, total: 5, state: 'missing', percentage: 0 },
@@ -785,7 +829,7 @@ return false;
    * @param {Object} entryInfo - Entry info for the destination
    * @returns {Object} - Destination-specific completion summary
    */
-  getDestinationCompletionSummary(destinationId, entryInfo) {
+  getDestinationCompletionSummary(destinationId: string, entryInfo: EntryInfo) {
     const cacheKey = `destination_${destinationId}_${this.generateCacheKey(entryInfo)}`;
     
     // Check destination cache first
@@ -795,9 +839,9 @@ return false;
     }
 
     const metrics = this.calculateCompletionMetrics(entryInfo);
-    const totalPercent = this.getTotalCompletionPercent(metrics);
-    const missingFields = this.getMissingFields(metrics);
-    const isReady = this.isReadyForSubmission(metrics);
+    const totalPercent = this.getTotalCompletionPercent(metrics as unknown as Record<string, CategoryMetrics>);
+    const missingFields = this.getMissingFields(metrics as unknown as Record<string, CategoryMetrics>);
+    const isReady = this.isReadyForSubmission(metrics as unknown as Record<string, CategoryMetrics>);
 
     const summary = {
       destinationId,
@@ -846,12 +890,12 @@ return false;
    * @param {Array} destinationIds - Array of destination IDs to check
    * @returns {Promise<Object>} - Multi-destination progress summary
    */
-  async getMultiDestinationProgress(userId, destinationIds = []) {
+  async getMultiDestinationProgress(userId: string, destinationIds: string[] = []) {
     try {
       // Import UserDataService dynamically to avoid circular dependencies
       const UserDataService = require('../services/data/UserDataService').default;
       
-      const allDestinationData = {};
+      const allDestinationData: Record<string, unknown> = {};
       
       // Load entry info for each destination
       for (const destinationId of destinationIds) {
@@ -859,7 +903,7 @@ return false;
           const entryInfo = await UserDataService.getEntryInfoByDestination(destinationId);
           allDestinationData[destinationId] = entryInfo;
         } catch (error) {
-          console.log(`Failed to load entry info for destination ${destinationId}:`, error.message);
+          console.log(`Failed to load entry info for destination ${destinationId}:`, (error as Error).message);
           allDestinationData[destinationId] = null;
         }
       }
@@ -878,7 +922,7 @@ return false;
           allDestinationsComplete: false
         },
         calculatedAt: new Date().toISOString(),
-        error: error.message
+        error: (error as Error).message
       };
     }
   }
@@ -888,7 +932,7 @@ return false;
    * @param {string} userId - User ID
    * @returns {Promise<Array>} - Array of destination IDs with progress
    */
-  async getDestinationsWithProgress(userId) {
+  async getDestinationsWithProgress(userId: string) {
     try {
       // Import UserDataService dynamically to avoid circular dependencies
       const UserDataService = require('../services/data/UserDataService').default;
@@ -901,13 +945,13 @@ return false;
       for (const entryInfo of allEntryInfos) {
         if (entryInfo.destinationId) {
           const metrics = this.calculateCompletionMetrics(entryInfo);
-          const totalPercent = this.getTotalCompletionPercent(metrics);
+          const totalPercent = this.getTotalCompletionPercent(metrics as unknown as Record<string, CategoryMetrics>);
           
           if (totalPercent > 0) {
             destinationsWithProgress.push({
               destinationId: entryInfo.destinationId,
               completionPercent: totalPercent,
-              isReady: this.isReadyForSubmission(metrics),
+              isReady: this.isReadyForSubmission(metrics as unknown as Record<string, CategoryMetrics>),
               lastUpdated: entryInfo.lastUpdatedAt || entryInfo.updatedAt
             });
           }
@@ -936,7 +980,7 @@ return false;
    * @param {string} userId - User ID
    * @returns {Promise<Object>} - Switch result with both destination summaries
    */
-  async switchDestinationContext(fromDestinationId, toDestinationId, userId) {
+  async switchDestinationContext(fromDestinationId: string, toDestinationId: string, userId: string) {
     try {
       // Import UserDataService dynamically to avoid circular dependencies
       const UserDataService = require('../services/data/UserDataService').default;
@@ -974,7 +1018,7 @@ return false;
         toDestination: this.getEmptyDestinationMetrics(toDestinationId),
         switchedAt: new Date().toISOString(),
         progressPreserved: false,
-        error: error.message
+        error: (error as Error).message
       };
     }
   }
@@ -984,7 +1028,7 @@ return false;
    * @param {string} cacheKey - Cache key
    * @returns {Object|null} - Cached result or null
    */
-  getDestinationCachedResult(cacheKey) {
+  getDestinationCachedResult(cacheKey: string) {
     const cached = this.destinationProgressCache.get(cacheKey);
     
     if (cached && (Date.now() - cached.timestamp) < this.destinationCacheTimeout) {
@@ -1004,7 +1048,7 @@ return false;
    * @param {string} cacheKey - Cache key
    * @param {Object} result - Result to cache
    */
-  setDestinationCachedResult(cacheKey, result) {
+  setDestinationCachedResult(cacheKey: string, result: Record<string, unknown>) {
     // Limit cache size to prevent memory issues
     if (this.destinationProgressCache.size > 50) {
       // Remove oldest entries
@@ -1022,7 +1066,7 @@ return false;
    * Clear destination progress cache
    * @param {string} destinationId - Optional destination ID to clear specific cache
    */
-  clearDestinationCache(destinationId = null) {
+  clearDestinationCache(destinationId: string | null = null) {
     if (destinationId) {
       // Clear cache entries for specific destination
       const keysToDelete = [];
@@ -1052,7 +1096,7 @@ return false;
    * @param {Array} priorityDestinations - Priority destinations to show first
    * @returns {Promise<Object>} - Home screen completion data
    */
-  async getHomeScreenCompletionData(userId, priorityDestinations = ['th', 'jp', 'sg', 'my']) {
+  async getHomeScreenCompletionData(userId: string, priorityDestinations: string[] = ['th', 'jp', 'sg', 'my']) {
     try {
       // Get destinations with any progress
       const destinationsWithProgress = await this.getDestinationsWithProgress(userId);
@@ -1116,7 +1160,7 @@ return false;
         emptyDestinations: [],
         hasAnyProgress: false,
         calculatedAt: new Date().toISOString(),
-        error: error.message
+        error: (error as Error).message
       };
     }
   }

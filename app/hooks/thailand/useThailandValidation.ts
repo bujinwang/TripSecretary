@@ -19,14 +19,77 @@ import performanceMonitor from '../../utils/PerformanceMonitor';
  * @param {Function} params.saveDataToSecureStorageWithOverride - Save function with field overrides
  * @returns {Object} Validation functions and state
  */
+interface ThailandFormStateForValidation {
+  // Data properties
+  arrivalArrivalDate: string;
+  residentCountry: string;
+  travelPurpose: string;
+  accommodationType: string;
+  isTransitPassenger: boolean;
+  cityOfResidence: string;
+  surname: string;
+  middleName: string;
+  givenName: string;
+  nationality: string;
+  passportNo: string;
+  dob: string;
+  expiryDate: string;
+  sex: string;
+  occupation: string;
+  phoneCode: string;
+  phoneNumber: string;
+  email: string;
+  customTravelPurpose: string;
+  customAccommodationType: string;
+  recentStayCountry: string;
+  boardingCountry: string;
+  arrivalFlightNumber: string;
+  departureFlightNumber: string;
+  departureDepartureDate: string;
+  province: string;
+  district: string;
+  subDistrict: string;
+  postalCode: string;
+  hotelAddress: string;
+  funds: unknown[];
+  isLoading: boolean;
+  errors: Record<string, string>;
+  warnings: Record<string, string>;
+  totalCompletionPercent: number;
+  // Setter methods
+  setLastEditedField: (field: string | null) => void;
+  setCityOfResidence: (value: string) => void;
+  setErrors: (updater: (prev: Record<string, string>) => Record<string, string>) => void;
+  setWarnings: (updater: (prev: Record<string, string>) => Record<string, string>) => void;
+  setLastEditedAt: (date: Date) => void;
+  setTravelPurpose: (value: string) => void;
+  setCustomTravelPurpose: (value: string) => void;
+  setAccommodationType: (value: string) => void;
+  setCustomAccommodationType: (value: string) => void;
+  setBoardingCountry: (value: string) => void;
+  setCompletionMetrics: (metrics: unknown) => void;
+  setTotalCompletionPercent: (percent: number) => void;
+}
+interface ThailandInteractionTrackerForValidation {
+  markFieldAsModified: (fieldName: string, fieldValue: string) => void;
+  isFieldUserModified: (fieldName: string) => boolean;
+  getFieldInteractionDetails: (fieldName: string) => { lastModified: unknown; initialValue: unknown } | null;
+}
+interface UseThailandValidationParams {
+  formState: ThailandFormStateForValidation;
+  userInteractionTracker: ThailandInteractionTrackerForValidation;
+  saveDataToSecureStorageWithOverride: (data: Record<string, unknown>) => Promise<void>;
+  debouncedSaveData: () => void;
+}
+
 export const useThailandValidation = ({
   formState,
   userInteractionTracker,
   saveDataToSecureStorageWithOverride,
   debouncedSaveData,
-}) => {
+}: UseThailandValidationParams) => {
   // Handle field blur with validation
-  const handleFieldBlur = useCallback(async (fieldName, fieldValue) => {
+  const handleFieldBlur = useCallback(async (fieldName: string, fieldValue: string) => {
     try {
       // Mark field as user-modified
       userInteractionTracker.markFieldAsModified(fieldName, fieldValue);
@@ -64,12 +127,12 @@ export const useThailandValidation = ({
       }
 
       // Update errors and warnings state
-      formState.setErrors(prev => ({
+      formState.setErrors((prev: Record<string, string>) => ({
         ...prev,
         [fieldName]: isValid ? '' : (isWarning ? '' : errorMessage)
       }));
 
-      formState.setWarnings(prev => ({
+      formState.setWarnings((prev: Record<string, string>) => ({
         ...prev,
         [fieldName]: isWarning ? errorMessage : ''
       }));
@@ -99,7 +162,7 @@ export const useThailandValidation = ({
   ]);
 
   // Handle user interaction with tracking-enabled inputs
-  const handleUserInteraction = useCallback((fieldName, value) => {
+  const handleUserInteraction = useCallback((fieldName: string, value: string) => {
     // Mark field as user-modified
     userInteractionTracker.markFieldAsModified(fieldName, value);
 
@@ -129,7 +192,7 @@ export const useThailandValidation = ({
   }, [userInteractionTracker, formState, debouncedSaveData]);
 
   // Count filled fields for each section
-  const getFieldCount = useCallback((section) => {
+  const getFieldCount = useCallback((section: string) => {
     // Build interaction state for FieldStateManager
     const interactionState = {};
     const allFieldNames = [
@@ -214,7 +277,7 @@ export const useThailandValidation = ({
           ? (formState.customAccommodationType && formState.customAccommodationType.trim() !== '')
           : (formState.accommodationType && formState.accommodationType.trim() !== '');
 
-        const travelFields = {
+        const travelFields: Record<string, string> = {
           travelPurpose: purposeFilled ? (formState.travelPurpose === 'OTHER' ? formState.customTravelPurpose : formState.travelPurpose) : '',
           recentStayCountry: formState.recentStayCountry,
           boardingCountry: formState.boardingCountry,

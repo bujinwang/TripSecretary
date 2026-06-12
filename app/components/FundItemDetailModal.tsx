@@ -36,6 +36,8 @@ import { colors, typography, spacing, borderRadius, shadows } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';
 import Button from './Button';
 import Input from './Input';
+
+const AnyButton = Button as any;
 import OptimizedImage from './OptimizedImage';
 
 const FundItemDetailModal: React.FC<FundItemDetailModalProps> = ({
@@ -53,7 +55,7 @@ const FundItemDetailModal: React.FC<FundItemDetailModalProps> = ({
   const [slideAnim] = useState(new Animated.Value(0));
   const [mode, setMode] = useState('view'); // 'view', 'edit', 'photo'
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   
   // Photo view state
   const [photoScale] = useState(new Animated.Value(1));
@@ -62,7 +64,7 @@ const FundItemDetailModal: React.FC<FundItemDetailModalProps> = ({
   const lastScale = useRef(1);
   const lastTranslateX = useRef(0);
   const lastTranslateY = useRef(0);
-  const initialDistance = useRef(null);
+  const initialDistance = useRef<number | null>(null);
 
   // PanResponder for photo zoom and pan (must be registered before any early returns)
   const panResponder = useRef(
@@ -71,9 +73,9 @@ const FundItemDetailModal: React.FC<FundItemDetailModalProps> = ({
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
         // Store current values when gesture starts
-        lastScale.current = photoScale._value;
-        lastTranslateX.current = photoTranslateX._value;
-        lastTranslateY.current = photoTranslateY._value;
+        lastScale.current = (photoScale as unknown as { _value: number })._value;
+        lastTranslateX.current = (photoTranslateX as unknown as { _value: number })._value;
+        lastTranslateY.current = (photoTranslateY as unknown as { _value: number })._value;
       },
       onPanResponderMove: (evt, gestureState) => {
         // Handle pinch zoom with two fingers
@@ -103,7 +105,7 @@ const FundItemDetailModal: React.FC<FundItemDetailModalProps> = ({
         initialDistance.current = null;
         
         // Reset zoom if scale is close to 1
-        if (photoScale._value < 1.1) {
+        if ((photoScale as unknown as { _value: number })._value < 1.1) {
           Animated.parallel([
             Animated.spring(photoScale, {
               toValue: 1,
@@ -181,9 +183,10 @@ const FundItemDetailModal: React.FC<FundItemDetailModalProps> = ({
         
         console.log('[FundItemDetailModal] Modal state initialized successfully');
       } catch (err) {
+        const error = err as Error;
         console.error('[FundItemDetailModal] Error initializing modal state:', {
-          error: err.message,
-          stack: err.stack,
+          error: error.message,
+          stack: error.stack,
           fundItemId: fundItem?.id,
         });
         setError(t('fundItem.errors.loadFailed', { 
@@ -231,9 +234,10 @@ const FundItemDetailModal: React.FC<FundItemDetailModalProps> = ({
 
         console.log('[FundItemDetailModal] Create mode initialized successfully');
       } catch (err) {
+        const error = err as Error;
         console.error('[FundItemDetailModal] Error initializing create mode:', {
-          error: err.message,
-          stack: err.stack,
+          error: error.message,
+          stack: error.stack,
           createItemType,
         });
         setError(t('fundItem.errors.loadFailed', {
@@ -306,7 +310,7 @@ return;
     return null;
   }
 
-  const isAmountBasedType = (value) => {
+  const isAmountBasedType = (value: unknown) => {
     if (!value) {
 return false;
 }
@@ -319,7 +323,7 @@ return false;
   };
 
   // Validation functions
-  const validateAmount = (value) => {
+  const validateAmount = (value: string) => {
     if (!value || value.trim() === '') {
       return t('fundItem.validation.amountRequired', { 
         defaultValue: 'Amount is required' 
@@ -339,7 +343,7 @@ return false;
     return '';
   };
 
-  const validateCurrency = (value) => {
+  const validateCurrency = (value: string) => {
     if (!value || value.trim() === '') {
       return t('fundItem.validation.currencyRequired', { 
         defaultValue: 'Currency is required' 
@@ -366,9 +370,10 @@ return false;
       
       console.log('[FundItemDetailModal] Edit mode activated');
     } catch (err) {
+      const error = err as Error;
       console.error('[FundItemDetailModal] Error switching to edit mode:', {
-        error: err.message,
-        stack: err.stack,
+        error: error.message,
+        stack: error.stack,
         fundItemId: fundItem?.id,
       });
       setError(t('fundItem.errors.editModeFailed', { 
@@ -388,16 +393,16 @@ return false;
       setError(null);
       setValidationErrors({ amount: '', currency: '' });
       // Reset to original values
-      setEditedAmount(fundItem.amount ? fundItem.amount.toString() : '');
-      setEditedCurrency(fundItem.currency || 'THB');
+      setEditedAmount(fundItem?.amount ? String(fundItem.amount) : '');
+      setEditedCurrency(fundItem?.currency || 'THB');
       // Handle both 'description' and 'details' fields
       setEditedDescription(fundItem.description || fundItem.details || '');
       
       console.log('[FundItemDetailModal] Edit cancelled, returned to view mode');
     } catch (err) {
       console.error('[FundItemDetailModal] Error cancelling edit mode:', {
-        error: err.message,
-        stack: err.stack,
+        error: (err as Error).message,
+        stack: (err as Error).stack,
         fundItemId: fundItem?.id,
       });
       // Still try to return to view mode even if there's an error
@@ -530,9 +535,10 @@ return false;
         console.log('[FundItemDetailModal] Save operation completed, switched to view mode');
       }
     } catch (err) {
+      const error = err as Error;
       console.error('[FundItemDetailModal] Failed to save fund item:', {
-        error: err.message,
-        stack: err.stack,
+        error: error.message,
+        stack: error.stack,
         fundItemId: fundItem?.id,
         isCreateMode,
         editedData: {
@@ -611,8 +617,8 @@ return false;
               onClose();
             } catch (err) {
               console.error('[FundItemDetailModal] Failed to delete fund item:', {
-                error: err.message,
-                stack: err.stack,
+                error: (err as Error).message,
+                stack: (err as Error).stack,
                 fundItemId: fundItem?.id,
               });
               setError(t('fundItem.errors.deleteFailed', { 
@@ -643,8 +649,8 @@ return false;
       console.log('[FundItemDetailModal] Currency updated successfully');
     } catch (err) {
       console.error('[FundItemDetailModal] Error selecting currency:', {
-        error: err.message,
-        stack: err.stack,
+        error: (err as Error).message,
+        stack: (err as Error).stack,
         currencyCode,
         fundItemId: fundItem?.id,
       });
@@ -675,8 +681,8 @@ return false;
       }
     } catch (err) {
       console.error('[FundItemDetailModal] Error opening photo view:', {
-        error: err.message,
-        stack: err.stack,
+        error: (err as Error).message,
+        stack: (err as Error).stack,
         fundItemId: fundItem?.id,
       });
       setError(t('fundItem.errors.photoViewFailed', { 
@@ -697,8 +703,8 @@ return false;
       console.log('[FundItemDetailModal] Photo view closed');
     } catch (err) {
       console.error('[FundItemDetailModal] Error closing photo view:', {
-        error: err.message,
-        stack: err.stack,
+        error: (err as Error).message,
+        stack: (err as Error).stack,
         fundItemId: fundItem?.id,
       });
       // Still try to return to view mode even if there's an error
@@ -749,8 +755,8 @@ return false;
       );
     } catch (err) {
       console.error('[FundItemDetailModal] Error requesting photo permissions:', {
-        error: err.message,
-        stack: err.stack,
+        error: (err as Error).message,
+        stack: (err as Error).stack,
         fundItemId: fundItem?.id,
       });
       setError(t('fundItem.errors.photoFailed', { 
@@ -798,8 +804,8 @@ return false;
       }
     } catch (err) {
       console.error('[FundItemDetailModal] Error taking photo:', {
-        error: err.message,
-        stack: err.stack,
+        error: (err as Error).message,
+        stack: (err as Error).stack,
         fundItemId: fundItem?.id,
       });
       setError(t('fundItem.errors.photoFailed', { 
@@ -830,8 +836,8 @@ return false;
       }
     } catch (err) {
       console.error('[FundItemDetailModal] Error picking image:', {
-        error: err.message,
-        stack: err.stack,
+        error: (err as Error).message,
+        stack: (err as Error).stack,
         fundItemId: fundItem?.id,
       });
       setError(t('fundItem.errors.photoFailed', { 
@@ -926,8 +932,8 @@ return false;
       }
     } catch (err) {
       console.error('[FundItemDetailModal] Failed to update photo:', {
-        error: err.message,
-        stack: err.stack,
+        error: (err as Error).message,
+        stack: (err as Error).stack,
         fundItemId: fundItem?.id,
         isCreateMode,
       });
@@ -1208,7 +1214,7 @@ return null;
                   accessible={false}
                 />
               </TouchableOpacity>
-              <Button
+              <AnyButton
                 title={t('fundItem.detail.replacePhoto', { defaultValue: 'Replace Photo' })}
                 onPress={handleReplacePhoto}
                 variant="secondary"
@@ -1232,7 +1238,7 @@ return null;
                   }
                 </Text>
               </View>
-              <Button
+              <AnyButton
                 title={t('fundItem.detail.addPhoto', { defaultValue: 'Add Photo' })}
                 onPress={handleAddPhoto}
                 variant="secondary"
@@ -1263,7 +1269,7 @@ return null;
 
         {/* Save Button */}
         <View style={styles.section}>
-          <Button
+          <AnyButton
             title={t('fundItem.detail.save', { defaultValue: 'Save Changes' })}
             onPress={handleSave}
             loading={loading}
@@ -1274,7 +1280,7 @@ return null;
             })}
           />
           <View style={{ height: spacing.sm }} />
-          <Button
+          <AnyButton
             title={t('fundItem.detail.cancel', { defaultValue: 'Cancel' })}
             onPress={handleCancelEdit}
             variant="secondary"
@@ -1480,7 +1486,7 @@ return null;
                   {t('fundItem.detail.viewPhoto', { defaultValue: 'Tap to view full size' })}
                 </Text>
               </TouchableOpacity>
-              <Button
+              <AnyButton
                 title={t('fundItem.detail.replacePhoto', { defaultValue: 'Replace Photo' })}
                 onPress={handleReplacePhoto}
                 variant="secondary"
@@ -1501,7 +1507,7 @@ return null;
                   {t('fundItem.detail.noPhoto', { defaultValue: 'No photo attached' })}
                 </Text>
               </View>
-              <Button
+              <AnyButton
                 title={t('fundItem.detail.addPhoto', { defaultValue: 'Add Photo' })}
                 onPress={handleAddPhoto}
                 variant="secondary"
@@ -1556,7 +1562,7 @@ return null;
         {/* Delete Button - hide in create mode */}
         {!isCreateMode && (
           <View style={styles.actionButtons}>
-            <Button
+            <AnyButton
               title={t('fundItem.detail.delete', { defaultValue: 'Delete' })}
               onPress={handleDelete}
               variant="secondary"

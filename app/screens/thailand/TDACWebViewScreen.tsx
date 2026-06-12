@@ -3,6 +3,7 @@
 type ScreenProps = any;
 // TDAC WebView填写助手 - 浮动复制助手
 import React, { useState, useRef } from 'react';
+import type { WebView as WebViewType } from 'react-native-webview';
 import {
   View,
   Text,
@@ -29,6 +30,7 @@ import UserDataService from '../../services/data/UserDataService';
 import TDACSubmissionLogger from '../../services/tdac/TDACSubmissionLogger';
 import { parsePassportName } from '../../utils/NameParser';
 import { getPreferredLanguage } from '../../utils/tdac/languageDetection';
+import { TDACTravelerInfo } from '../../types/thailand';
 import useQRCodeHandler from '../../hooks/tdac/useQRCodeHandler';
 import HelperModal from '../../components/tdac/HelperModal';
 import QRCodeModal from '../../components/tdac/QRCodeModal';
@@ -36,7 +38,63 @@ import DataComparisonModal from '../../components/tdac/DataComparisonModal';
 import styles from './TDACWebViewScreen.styles';
 import colors from '../../theme/colors';
 
-const TDACWebViewScreen = ({ navigation, route }) => {
+interface TDACWebViewScreenProps {
+  navigation: {
+    goBack: () => void;
+    navigate: (screen: string, params?: Record<string, unknown>) => void;
+  };
+  route: {
+    params?: {
+      passport?: SerializablePassport | null;
+      travelerInfo?: TDACTravelerInfo | null;
+      destination?: { id?: string; name?: string } | null;
+      travelInfo?: TravelInfoData | null;
+    };
+  };
+}
+
+interface FieldMapping {
+  [key: string]: Record<string, unknown>;
+}
+
+interface ComparisonPassport {
+  nameEn?: string;
+  passportNo?: string;
+  birthDate?: string;
+  gender?: string;
+  nationality?: string;
+  [key: string]: unknown;
+}
+
+interface ComparisonPersonalInfo {
+  firstName?: string;
+  familyName?: string;
+  passportNo?: string;
+  birthDate?: string;
+  gender?: string;
+  nationality?: string;
+  [key: string]: unknown;
+}
+
+interface ComparisonTripInfo {
+  arrivalDate?: string;
+  flightNumber?: string;
+  [key: string]: unknown;
+}
+
+interface ComparisonData {
+  passport?: ComparisonPassport;
+  personalInfo?: ComparisonPersonalInfo;
+  tripInfo?: ComparisonTripInfo;
+  travelInfo?: {
+    flightNumber?: string;
+    arrivalDate?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+const TDACWebViewScreen: React.FC<TDACWebViewScreenProps> = ({ navigation, route }) => {
   const { t } = useTranslation();
 
   // Support both old format (passport, destination, travelInfo) and new format (travelerInfo)
@@ -71,17 +129,17 @@ const TDACWebViewScreen = ({ navigation, route }) => {
   const {destination} = params;
 
   const [showHelper, setShowHelper] = useState(false); // 控制浮动助手显示
-  const [copiedField, setCopiedField] = useState(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showCloudflareReminder, setShowCloudflareReminder] = useState(false);
   const [showVisualMask, setShowVisualMask] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState(null); // Track selected language
+  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null); // Track selected language
   const [languageSelectionTriggered, setLanguageSelectionTriggered] = useState(false);
 
   // Data comparison state for DEV mode
   const [showDataComparison, setShowDataComparison] = useState(__DEV__ ? false : false);
-  const [comparisonData, setComparisonData] = useState(null);
-  const webViewRef = useRef(null);
+  const [comparisonData, setComparisonData] = useState<Record<string, unknown> | null>(null);
+  const webViewRef = useRef<WebViewType>(null);
 
   // QR code handling hook
   const { qrCodeData, showQrCode, setShowQrCode, saveQRCode, saveToPhotoAlbum } = useQRCodeHandler({ passport, route });
@@ -109,7 +167,11 @@ const TDACWebViewScreen = ({ navigation, route }) => {
   const lastName = surname || travelerInfo.familyName || '';
   const middleName = parsedMiddleName || travelerInfo.middleName || '';
 
-  const copyToClipboard = (text, fieldName) => {
+  // Declared early to satisfy TS block-scoping rules; assigned below
+  // eslint-disable-next-line prefer-const
+  let formFields: Array<{ section: string; label: string; labelCn: string; value: string; field: string; searchTerms: string[] }>;
+
+  const copyToClipboard = (text: string, fieldName: string) => {
     Clipboard.setString(text);
     setCopiedField(fieldName);
     setTimeout(() => setCopiedField(null), 2000);
@@ -753,9 +815,9 @@ return;
         timestamp: new Date().toISOString(),
         originalEntryData: originalData,
         tdacSubmissionData,
-        fieldMappings: createFieldMappingReport(originalData, tdacSubmissionData),
-        validationResults: validateDataTransformation(originalData, tdacSubmissionData),
-        summary: generateComparisonSummary(originalData, tdacSubmissionData)
+        fieldMappings: createFieldMappingReport(originalData as ComparisonData, tdacSubmissionData as ComparisonData),
+        validationResults: validateDataTransformation(originalData as ComparisonData, tdacSubmissionData as ComparisonData),
+        summary: generateComparisonSummary(originalData as ComparisonData, tdacSubmissionData as ComparisonData)
       };
 
       setComparisonData(comparison);
@@ -770,8 +832,8 @@ return;
   const generateTDACSubmissionPayload = React.useCallback(() => {
     try {
       // Parse form fields into TDAC format
-      const personalInfo = {};
-      const tripInfo = {};
+      const personalInfo: Record<string, unknown> = {};
+      const tripInfo: Record<string, unknown> = {};
 
       formFields.forEach(field => {
         const { field: fieldName, value } = field;
@@ -871,8 +933,8 @@ return;
   }, [formFields]);
 
   // Create detailed field mapping report
-  const createFieldMappingReport = React.useCallback((originalData, tdacData) => {
-    const mappings = {};
+  const createFieldMappingReport = React.useCallback((originalData: ComparisonData, tdacData: ComparisonData) => {
+    const mappings: Record<string, unknown> = {};
 
     // Personal info mappings
     if (originalData.passport) {
@@ -926,11 +988,11 @@ return;
   }, []);
 
   // Validate data transformation
-  const validateDataTransformation = React.useCallback((originalData, tdacData) => {
-    const validations = {
+  const validateDataTransformation = React.useCallback((originalData: ComparisonData, tdacData: ComparisonData) => {
+    const validations: Record<string, Record<string, unknown>> = {
       personalInfo: {},
       tripInfo: {},
-      overall: true
+      overall: true as unknown
     };
 
     // Validate personal info
@@ -955,18 +1017,18 @@ return;
     }
 
     // Check overall validity
-    validations.overall = Object.values(validations.personalInfo).every(v => v.valid) &&
-                         Object.values(validations.tripInfo).every(v => v.valid);
+    validations.overall = Object.values(validations.personalInfo).every((v: { valid: boolean }) => v.valid) &&
+                         Object.values(validations.tripInfo).every((v: { valid: boolean }) => v.valid);
 
     return validations;
   }, []);
 
   // Generate comparison summary
-  const generateComparisonSummary = React.useCallback((originalData, tdacData) => {
+  const generateComparisonSummary = React.useCallback((originalData: ComparisonData, tdacData: ComparisonData) => {
     const totalFields = Object.keys(createFieldMappingReport(originalData, tdacData)).length;
     const validationResults = validateDataTransformation(originalData, tdacData);
-    const validFields = Object.values(validationResults.personalInfo).filter(v => v.valid).length +
-                       Object.values(validationResults.tripInfo).filter(v => v.valid).length;
+    const validFields = Object.values(validationResults.personalInfo).filter((v: { valid: boolean }) => v.valid).length +
+                       Object.values(validationResults.tripInfo).filter((v: { valid: boolean }) => v.valid).length;
 
     return {
       totalFields,
@@ -1351,7 +1413,7 @@ ${index + 1}. ${field.labelCn} (${field.label})
       console.error('❌ 自动填充失败:', error);
       Alert.alert(
         '❌ 自动填充失败',
-        `无法执行自动填充，请使用手动复制方式。\n\n错误信息: ${  error.message}`,
+        `无法执行自动填充，请使用手动复制方式。\n\n错误信息: ${(error as Error).message}`,
         [{ text: '好的' }]
       );
     }
@@ -1551,14 +1613,14 @@ ${index + 1}. ${field.labelCn} (${field.label})
       console.error('❌ 自动填充失败:', error);
       Alert.alert(
         '❌ 自动填充失败',
-        `无法执行自动填充，请使用手动复制方式。\n\n错误信息: ${  error.message}`,
+        `无法执行自动填充，请使用手动复制方式。\n\n错误信息: ${(error as Error).message}`,
         [{ text: '好的' }]
       );
     }
   };
 
   // 字段数据 - 带多个搜索词提高匹配率
-  const formFields = [
+  formFields = [
     // Step 1: Personal Information
     { 
       section: 'personal', 
@@ -1724,7 +1786,7 @@ ${index + 1}. ${field.labelCn} (${field.label})
     },
   ];
 
-  const renderCopyField = (item) => (
+  const renderCopyField = (item: { field: string; label: string; labelCn: string; value: string; searchTerms: string[] }) => (
     <View key={item.field} style={styles.fieldRow}>
       <View style={styles.fieldLeft}>
         <Text style={styles.fieldLabel}>{item.label}</Text>

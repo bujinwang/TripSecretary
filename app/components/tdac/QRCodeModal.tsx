@@ -11,7 +11,16 @@ import { View, Text, Modal, Image, TouchableOpacity } from 'react-native';
 import styles from '../../screens/thailand/TDACWebViewScreen.styles';
 import { useTranslation } from '../../i18n/LocaleContext';
 
-const QRCodeModal = ({ visible, onClose, qrCodeData, passport, saveToPhotoAlbum }) => {
+interface QRCodeModalProps {
+  visible: boolean;
+  onClose: () => void;
+  qrCodeData?: { src: string; timestamp?: number; arrCardNo?: string } | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  passport?: any;
+  saveToPhotoAlbum: (src: string) => void;
+}
+
+const QRCodeModal = ({ visible, onClose, qrCodeData, passport, saveToPhotoAlbum }: QRCodeModalProps) => {
   const { t } = useTranslation();
 
   return (

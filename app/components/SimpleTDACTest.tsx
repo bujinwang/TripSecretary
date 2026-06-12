@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 
 const SimpleTDACTest = () => {
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<Record<string, unknown>[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
   const addResult = (test, success, duration, error = null) => {

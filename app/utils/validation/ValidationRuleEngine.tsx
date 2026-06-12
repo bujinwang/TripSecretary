@@ -10,19 +10,37 @@
  * @module utils/validation/ValidationRuleEngine
  */
 
-/**
- * @typedef {Object} ValidationResult
- * @property {boolean} isValid - Whether the field value is valid
- * @property {boolean} isWarning - Whether to show as warning (soft validation)
- * @property {string} errorMessage - Error/warning message to display
- */
+interface ValidationResult {
+  isValid: boolean;
+  isWarning: boolean;
+  errorMessage: string;
+}
 
-/**
- * @typedef {Function} ValidationRule
- * @param {*} value - Field value to validate
- * @param {Object} context - Additional context (other field values, config, etc.)
- * @returns {ValidationResult} Validation result
- */
+interface ValidationContext {
+  required?: boolean;
+  fieldLabel?: string;
+  minLength?: number;
+  maxLength?: number;
+  minDate?: string;
+  maxDate?: string;
+  beforeToday?: boolean;
+  afterToday?: boolean;
+  beforeTodayMessage?: string;
+  afterTodayMessage?: string;
+  minDateMessage?: string;
+  maxDateMessage?: string;
+  pattern?: RegExp;
+  patternMessage?: string;
+  allowChinese?: boolean;
+  [key: string]: unknown;
+}
+
+type ValidationRule = (value: unknown, context: ValidationContext) => ValidationResult;
+
+interface CountryRuleConfig {
+  ruleType: string;
+  [key: string]: unknown;
+}
 
 /**
  * Common regex patterns for validation
@@ -47,14 +65,10 @@ export const PATTERNS = {
 
 /**
  * Default validation rules for common field types
- * These provide baseline validation that can be overridden by country-specific rules
  */
-export const DEFAULT_RULES = {
-  /**
-   * Email validation
-   */
-  email: (value, context) => {
-    if (!value || !value.trim()) {
+export const DEFAULT_RULES: Record<string, ValidationRule> = {
+  email: (value: unknown, context: ValidationContext): ValidationResult => {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: context.required !== false,
@@ -62,7 +76,7 @@ export const DEFAULT_RULES = {
       };
     }
 
-    if (!PATTERNS.EMAIL.test(value.trim())) {
+    if (!PATTERNS.EMAIL.test((value as string).trim())) {
       return {
         isValid: false,
         isWarning: false,
@@ -73,13 +87,10 @@ export const DEFAULT_RULES = {
     return { isValid: true, isWarning: false, errorMessage: '' };
   },
 
-  /**
-   * Phone number validation
-   */
-  phoneNumber: (value, context) => {
+  phoneNumber: (value: unknown, context: ValidationContext): ValidationResult => {
     const { minLength = 7, maxLength = 15, required = true } = context;
 
-    if (!value || !value.trim()) {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: required,
@@ -87,7 +98,7 @@ export const DEFAULT_RULES = {
       };
     }
 
-    const cleanPhone = value.replace(/[^\d+]/g, '');
+    const cleanPhone = (value as string).replace(/[^\d+]/g, '');
 
     if (cleanPhone.length < minLength) {
       return {
@@ -105,7 +116,7 @@ export const DEFAULT_RULES = {
       };
     }
 
-    if (!PATTERNS.PHONE.test(value)) {
+    if (!PATTERNS.PHONE.test(value as string)) {
       return {
         isValid: false,
         isWarning: false,
@@ -116,11 +127,8 @@ export const DEFAULT_RULES = {
     return { isValid: true, isWarning: false, errorMessage: '' };
   },
 
-  /**
-   * Phone country code validation
-   */
-  phoneCode: (value, context) => {
-    if (!value || !value.trim()) {
+  phoneCode: (value: unknown, context: ValidationContext): ValidationResult => {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: context.required !== false,
@@ -128,7 +136,7 @@ export const DEFAULT_RULES = {
       };
     }
 
-    if (!PATTERNS.COUNTRY_CODE.test(value.trim())) {
+    if (!PATTERNS.COUNTRY_CODE.test((value as string).trim())) {
       return {
         isValid: false,
         isWarning: false,
@@ -139,21 +147,18 @@ export const DEFAULT_RULES = {
     return { isValid: true, isWarning: false, errorMessage: '' };
   },
 
-  /**
-   * Date validation (ISO format)
-   */
-  date: (value, context) => {
+  date: (value: unknown, context: ValidationContext): ValidationResult => {
     const { required = true, minDate, maxDate, beforeToday, afterToday } = context;
 
-    if (!value || !value.trim()) {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: required,
-        errorMessage: required ? `${context.fieldLabel || 'Date'  } is required` : ''
+        errorMessage: required ? `${context.fieldLabel || 'Date'} is required` : ''
       };
     }
 
-    if (!PATTERNS.DATE_ISO.test(value)) {
+    if (!PATTERNS.DATE_ISO.test(value as string)) {
       return {
         isValid: false,
         isWarning: false,
@@ -161,7 +166,7 @@ export const DEFAULT_RULES = {
       };
     }
 
-    const date = new Date(value);
+    const date = new Date(value as string);
     if (isNaN(date.getTime())) {
       return {
         isValid: false,
@@ -214,10 +219,7 @@ export const DEFAULT_RULES = {
     return { isValid: true, isWarning: false, errorMessage: '' };
   },
 
-  /**
-   * Text validation (name, occupation, etc.)
-   */
-  text: (value, context) => {
+  text: (value: unknown, context: ValidationContext): ValidationResult => {
     const {
       required = true,
       minLength = 2,
@@ -227,15 +229,15 @@ export const DEFAULT_RULES = {
       allowChinese = false
     } = context;
 
-    if (!value || !value.trim()) {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: required,
-        errorMessage: required ? `${context.fieldLabel || 'This field'  } is required` : ''
+        errorMessage: required ? `${context.fieldLabel || 'This field'} is required` : ''
       };
     }
 
-    const trimmed = value.trim();
+    const trimmed = (value as string).trim();
 
     if (!allowChinese && PATTERNS.CHINESE_CHARS.test(trimmed)) {
       return {
@@ -272,10 +274,7 @@ export const DEFAULT_RULES = {
     return { isValid: true, isWarning: false, errorMessage: '' };
   },
 
-  /**
-   * Alphanumeric validation (passport, visa, etc.)
-   */
-  alphanumeric: (value, context) => {
+  alphanumeric: (value: unknown, context: ValidationContext): ValidationResult => {
     const {
       required = true,
       minLength = 6,
@@ -283,21 +282,21 @@ export const DEFAULT_RULES = {
       pattern = PATTERNS.ALPHANUMERIC
     } = context;
 
-    if (!value || !value.trim()) {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: required,
-        errorMessage: required ? `${context.fieldLabel || 'This field'  } is required` : ''
+        errorMessage: required ? `${context.fieldLabel || 'This field'} is required` : ''
       };
     }
 
-    const cleaned = value.replace(/\s/g, '');
+    const cleaned = (value as string).replace(/\s/g, '');
 
     if (!pattern.test(cleaned)) {
       return {
         isValid: false,
         isWarning: false,
-        errorMessage: context.patternMessage || `Must contain only letters and numbers`
+        errorMessage: context.patternMessage || 'Must contain only letters and numbers'
       };
     }
 
@@ -312,11 +311,8 @@ export const DEFAULT_RULES = {
     return { isValid: true, isWarning: false, errorMessage: '' };
   },
 
-  /**
-   * Country code validation (3-letter ISO code)
-   */
-  countryCode: (value, context) => {
-    if (!value || !value.trim()) {
+  countryCode: (value: unknown, context: ValidationContext): ValidationResult => {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: context.required !== false,
@@ -324,7 +320,7 @@ export const DEFAULT_RULES = {
       };
     }
 
-    if (!PATTERNS.COUNTRY_CODE_3LETTER.test(value.trim())) {
+    if (!PATTERNS.COUNTRY_CODE_3LETTER.test((value as string).trim())) {
       return {
         isValid: false,
         isWarning: false,
@@ -335,11 +331,8 @@ export const DEFAULT_RULES = {
     return { isValid: true, isWarning: false, errorMessage: '' };
   },
 
-  /**
-   * Flight number validation
-   */
-  flightNumber: (value, context) => {
-    if (!value || !value.trim()) {
+  flightNumber: (value: unknown, context: ValidationContext): ValidationResult => {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: context.required !== false,
@@ -347,7 +340,7 @@ export const DEFAULT_RULES = {
       };
     }
 
-    if (!PATTERNS.FLIGHT_NUMBER.test(value.trim())) {
+    if (!PATTERNS.FLIGHT_NUMBER.test((value as string).trim())) {
       return {
         isValid: false,
         isWarning: false,
@@ -363,29 +356,25 @@ export const DEFAULT_RULES = {
  * Validation Rule Engine Class
  */
 export class ValidationRuleEngine {
-  constructor(countryRules = {}) {
+  private countryRules: Record<string, ValidationRule | CountryRuleConfig>;
+  private defaultRules: Record<string, ValidationRule>;
+
+  constructor(countryRules: Record<string, ValidationRule | CountryRuleConfig> = {}) {
     this.countryRules = countryRules;
     this.defaultRules = DEFAULT_RULES;
   }
 
   /**
    * Validate a field using appropriate rule
-   * @param {string} fieldName - Name of the field
-   * @param {*} value - Value to validate
-   * @param {Object} context - Additional context
-   * @returns {ValidationResult} Validation result
    */
-  validate(fieldName, value, context = {}) {
-    // Check if there's a country-specific rule
+  validate(fieldName: string, value: unknown, context: ValidationContext = {}): ValidationResult {
     const countryRule = this.countryRules[fieldName];
 
     if (countryRule) {
-      // Country-specific rule exists - use it
       if (typeof countryRule === 'function') {
         return countryRule(value, context);
       }
 
-      // If it's a configuration object, use it to configure default rule
       const { ruleType, ...ruleConfig } = countryRule;
       const defaultRule = this.defaultRules[ruleType];
 
@@ -394,13 +383,11 @@ export class ValidationRuleEngine {
       }
     }
 
-    // No country rule - check if field name matches a default rule type
     const defaultRule = this.defaultRules[fieldName];
     if (defaultRule) {
       return defaultRule(value, context);
     }
 
-    // Generic fallback for unknown fields
     return this._genericValidation(value, context);
   }
 
@@ -408,7 +395,7 @@ export class ValidationRuleEngine {
    * Generic fallback validation
    * @private
    */
-  _genericValidation(value, context) {
+  _genericValidation(value: unknown, context: ValidationContext): ValidationResult {
     const { required = false } = context;
 
     if (!value || (typeof value === 'string' && !value.trim())) {
@@ -424,18 +411,15 @@ export class ValidationRuleEngine {
 
   /**
    * Add or override a country-specific rule
-   * @param {string} fieldName - Field name
-   * @param {ValidationRule|Object} rule - Validation rule or configuration
    */
-  addRule(fieldName, rule) {
+  addRule(fieldName: string, rule: ValidationRule | CountryRuleConfig): void {
     this.countryRules[fieldName] = rule;
   }
 
   /**
    * Get all available field rules
-   * @returns {Array<string>} List of field names with rules
    */
-  getAvailableFields() {
+  getAvailableFields(): string[] {
     return [
       ...Object.keys(this.defaultRules),
       ...Object.keys(this.countryRules)

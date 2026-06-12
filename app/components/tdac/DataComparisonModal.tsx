@@ -11,7 +11,23 @@ import { View, Text, Modal, ScrollView, TouchableOpacity, Alert, Clipboard } fro
 import { SafeAreaView } from 'react-native-safe-area-context';
 import styles from '../../screens/thailand/TDACWebViewScreen.styles';
 
-const DataComparisonModal = ({ visible, onClose, comparisonData, onRefresh }) => {
+interface FieldMapping {
+  status: 'mapped' | 'transformed' | 'error';
+  source: string;
+  originalValue: unknown;
+  tdacValue: unknown;
+  transformation?: string;
+  notes?: string;
+}
+
+interface DataComparisonModalProps {
+  visible: boolean;
+  onClose: () => void;
+  comparisonData?: Record<string, unknown> | null;
+  onRefresh: () => void;
+}
+
+const DataComparisonModal = ({ visible, onClose, comparisonData, onRefresh }: DataComparisonModalProps) => {
   const handleExport = () => {
     if (!comparisonData) {
 return;
@@ -83,7 +99,7 @@ return;
             {/* Field Mappings */}
             <View style={styles.comparisonSection}>
               <Text style={styles.comparisonSectionTitle}>🔄 Field Mappings</Text>
-              {Object.entries(comparisonData.fieldMappings).map(([fieldName, mapping]) => (
+              {Object.entries(comparisonData.fieldMappings).map(([fieldName, mapping]: [string, FieldMapping]) => (
                 <View key={fieldName} style={[
                   styles.comparisonFieldItem,
                   mapping.status === 'error' && styles.comparisonFieldItemError,

@@ -6,7 +6,7 @@ import DebouncedSave from '../../utils/DebouncedSave';
 /**
  * Normalizes a fund item to ensure consistent data structure
  */
-const normalizeFundItem = (item) => {
+const normalizeFundItem = (item: Record<string, unknown> | null | undefined) => {
   if (!item) {
 return null;
 }
@@ -36,7 +36,7 @@ export const useThailandFundManagement = ({
   /**
    * Opens the fund item modal for adding a new fund item
    */
-  const addFund = useCallback((type) => {
+  const addFund = useCallback((type: string) => {
     formState.setCurrentFundItem(null);
     formState.setNewFundItemType(type);
     formState.setFundItemModalVisible(true);
@@ -45,7 +45,7 @@ export const useThailandFundManagement = ({
   /**
    * Opens the fund item modal for editing an existing fund item
    */
-  const handleFundItemPress = useCallback((fund) => {
+  const handleFundItemPress = useCallback((fund: Record<string, unknown>) => {
     formState.setNewFundItemType(null);
     formState.setCurrentFundItem(fund);
     formState.setFundItemModalVisible(true);
@@ -64,7 +64,7 @@ export const useThailandFundManagement = ({
    * Handles updating an existing fund item
    * Refreshes the fund items list and triggers save
    */
-  const handleFundItemUpdate = useCallback(async (updatedItem) => {
+  const handleFundItemUpdate = useCallback(async (updatedItem: Record<string, unknown>) => {
     try {
       if (updatedItem) {
         formState.setSelectedFundItem(normalizeFundItem(updatedItem));
@@ -103,9 +103,9 @@ export const useThailandFundManagement = ({
    * Handles deleting a fund item
    * Removes from state, refreshes list, triggers save, and closes modal
    */
-  const handleFundItemDelete = useCallback(async (id) => {
+  const handleFundItemDelete = useCallback(async (id: string) => {
     try {
-      formState.setFunds((prev) => prev.filter((fund) => fund.id !== id));
+      formState.setFunds((prev: Array<Record<string, unknown>>) => prev.filter((fund: Record<string, unknown>) => fund.id !== id));
       await refreshFundItems({ forceRefresh: true });
 
       // Trigger save to update entry_info after fund item deletion

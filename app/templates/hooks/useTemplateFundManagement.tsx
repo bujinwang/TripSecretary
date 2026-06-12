@@ -19,6 +19,14 @@ interface FundItem {
   [key: string]: any;
 }
 
+interface FundFormState {
+  funds?: FundItem[];
+  fundItemModalVisible?: boolean;
+  currentFundItem?: FundItem | null;
+  newFundItemType?: string | null;
+  [key: string]: unknown;
+}
+
 interface FundManagementResult {
   addFund: (fundType: string) => void;
   handleFundItemPress: (fundItem: FundItem) => void;
@@ -39,7 +47,7 @@ export const useTemplateFundManagement = ({
   /**
    * Add new fund (opens modal)
    */
-  const addFund = useCallback((fundType) => {
+  const addFund = useCallback((fundType: string) => {
     if (__DEV__) {
       logger.info('[FundManagement] addFund called with type:', fundType);
     }
@@ -69,7 +77,7 @@ export const useTemplateFundManagement = ({
   /**
    * Edit existing fund (opens modal)
    */
-  const handleFundItemPress = useCallback((fundItem) => {
+  const handleFundItemPress = useCallback((fundItem: FundItem) => {
     if (!config.sections?.funds?.enabled) {
 return;
 }
@@ -95,14 +103,14 @@ return;
   /**
    * Update existing fund item
    */
-  const handleFundItemUpdate = useCallback(async (updatedFundItem) => {
+  const handleFundItemUpdate = useCallback(async (updatedFundItem: FundItem) => {
     try {
       // Update in UserDataService using saveFundItem (it handles both create and update)
       const saved = await UserDataService.saveFundItem(updatedFundItem, userId);
 
       // Update local state
       setFormState({
-        funds: (formState.funds || []).map(f => f.id === updatedFundItem.id ? saved : f),
+        funds: (formState.funds || []).map((f: FundItem) => f.id === updatedFundItem.id ? saved : f),
         fundItemModalVisible: false,
         currentFundItem: null,
       });
@@ -117,7 +125,7 @@ return;
   /**
    * Create new fund item
    */
-  const handleFundItemCreate = useCallback(async (newFundItem) => {
+  const handleFundItemCreate = useCallback(async (newFundItem: FundItem) => {
     try {
       // Create in UserDataService using saveFundItem
       const created = await UserDataService.saveFundItem(newFundItem, userId);
@@ -139,14 +147,14 @@ return;
   /**
    * Delete fund item
    */
-  const handleFundItemDelete = useCallback(async (fundItemId) => {
+  const handleFundItemDelete = useCallback(async (fundItemId: string) => {
     try {
       // Delete from UserDataService
       await UserDataService.deleteFundItem(fundItemId, userId);
 
       // Update local state
       setFormState({
-        funds: (formState.funds || []).filter(f => f.id !== fundItemId),
+        funds: (formState.funds || []).filter((f: FundItem) => f.id !== fundItemId),
         fundItemModalVisible: false,
         currentFundItem: null,
       });
@@ -166,7 +174,7 @@ return;
       await UserDataService.initialize(userId);
       const funds = await UserDataService.getFundItems(userId);
 
-      setFormState(prev => ({
+      setFormState((prev: FundFormState) => ({
         ...prev,
         funds: funds || [],
       }));

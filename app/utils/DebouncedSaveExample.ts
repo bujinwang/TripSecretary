@@ -12,7 +12,12 @@ import UserDataService from '../services/data/UserDataService';
  * in a React Native screen for auto-saving form data
  */
 class AutoSaveExample {
-  constructor(userId) {
+  private userId: string;
+  private savePassport: ReturnType<typeof DebouncedSave.debouncedSave>;
+  private savePersonalInfo: ReturnType<typeof DebouncedSave.debouncedSave>;
+  private saveTravelInfo: ReturnType<typeof DebouncedSave.debouncedSave>;
+
+  constructor(userId: string) {
     this.userId = userId;
     
     // Create debounced save functions for different data types
@@ -36,7 +41,7 @@ class AutoSaveExample {
   }
 
   // Example: Handle passport field changes with auto-save
-  handlePassportFieldChange(fieldName, value) {
+  handlePassportFieldChange(fieldName: string, value: string) {
     const passportData = {
       [fieldName]: value
     };
@@ -50,7 +55,7 @@ class AutoSaveExample {
   }
 
   // Example: Handle personal info field changes
-  handlePersonalInfoFieldChange(fieldName, value) {
+  handlePersonalInfoFieldChange(fieldName: string, value: string) {
     const personalData = {
       [fieldName]: value
     };
@@ -79,7 +84,7 @@ class AutoSaveExample {
   }
 
   // Example: Get save state for UI indicators
-  getSaveStateForField(fieldType) {
+  getSaveStateForField(fieldType: string) {
     const key = `${fieldType  }_${  this.userId}`;
     return DebouncedSave.getSaveState(key);
   }

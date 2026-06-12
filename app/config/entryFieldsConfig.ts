@@ -14,7 +14,7 @@ const FieldValidators = {
    * @param {string} value - Field value
    * @returns {Object} - Validation result
    */
-  requiredText: (value) => ({
+  requiredText: (value: string) => ({
     isValid: typeof value === 'string' && value.trim().length > 0,
     message: value ? null : 'This field is required'
   }),
@@ -24,7 +24,7 @@ const FieldValidators = {
    * @param {string} value - Passport number
    * @returns {Object} - Validation result
    */
-  passportNumber: (value) => {
+  passportNumber: (value: string) => {
     if (!value || typeof value !== 'string') {
       return { isValid: false, message: 'Passport number is required' };
     }
@@ -43,7 +43,7 @@ const FieldValidators = {
    * @param {string} value - Full name
    * @returns {Object} - Validation result
    */
-  fullName: (value) => {
+  fullName: (value: string) => {
     if (!value || typeof value !== 'string') {
       return { isValid: false, message: 'Full name is required' };
     }
@@ -61,7 +61,7 @@ const FieldValidators = {
    * @param {string} value - Nationality
    * @returns {Object} - Validation result
    */
-  nationality: (value) => {
+  nationality: (value: string) => {
     if (!value || typeof value !== 'string') {
       return { isValid: false, message: 'Nationality is required' };
     }
@@ -79,7 +79,7 @@ const FieldValidators = {
    * @param {string} value - Date of birth
    * @returns {Object} - Validation result
    */
-  dateOfBirth: (value) => {
+  dateOfBirth: (value: string) => {
     if (!value) {
       return { isValid: false, message: 'Date of birth is required' };
     }
@@ -88,7 +88,7 @@ const FieldValidators = {
     const now = new Date();
     const age = (now - date) / (1000 * 60 * 60 * 24 * 365.25);
     
-    const isValid = date instanceof Date && !isNaN(date) && age >= 0 && age <= 120;
+    const isValid = date instanceof Date && !isNaN(date.getTime()) && age >= 0 && age <= 120;
     
     return {
       isValid,
@@ -101,7 +101,7 @@ const FieldValidators = {
    * @param {string} value - Expiry date
    * @returns {Object} - Validation result
    */
-  expiryDate: (value) => {
+  expiryDate: (value: string) => {
     if (!value) {
       return { isValid: false, message: 'Passport expiry date is required' };
     }
@@ -109,7 +109,7 @@ const FieldValidators = {
     const date = new Date(value);
     const now = new Date();
     
-    const isValid = date instanceof Date && !isNaN(date) && date > now;
+    const isValid = date instanceof Date && !isNaN(date.getTime()) && date > now;
     
     return {
       isValid,
@@ -122,7 +122,7 @@ const FieldValidators = {
    * @param {string} value - Email address
    * @returns {Object} - Validation result
    */
-  email: (value) => {
+  email: (value: string) => {
     if (!value || typeof value !== 'string') {
       return { isValid: false, message: 'Email address is required' };
     }
@@ -141,7 +141,7 @@ const FieldValidators = {
    * @param {string} value - Phone number
    * @returns {Object} - Validation result
    */
-  phoneNumber: (value) => {
+  phoneNumber: (value: string) => {
     if (!value || typeof value !== 'string') {
       return { isValid: false, message: 'Phone number is required' };
     }
@@ -160,7 +160,7 @@ const FieldValidators = {
    * @param {string} value - Gender
    * @returns {Object} - Validation result
    */
-  gender: (value) => {
+  gender: (value: string) => {
     if (!value || typeof value !== 'string') {
       return { isValid: false, message: 'Gender is required' };
     }
@@ -190,7 +190,7 @@ const FieldValidators = {
    * @param {string} value - Arrival date
    * @returns {Object} - Validation result
    */
-  arrivalDate: (value) => {
+  arrivalDate: (value: string) => {
     if (!value) {
       return { isValid: false, message: 'Arrival date is required' };
     }
@@ -198,7 +198,7 @@ const FieldValidators = {
     const date = new Date(value);
     const now = new Date();
     
-    const isValid = date instanceof Date && !isNaN(date) && date >= now;
+    const isValid = date instanceof Date && !isNaN(date.getTime()) && date >= now;
     
     return {
       isValid,
@@ -212,7 +212,7 @@ const FieldValidators = {
    * @param {string} arrivalDate - Arrival date for comparison
    * @returns {Object} - Validation result
    */
-  departureDate: (value, arrivalDate) => {
+  departureDate: (value: string, arrivalDate: string) => {
     if (!value) {
       return { isValid: false, message: 'Departure date is required' };
     }
@@ -220,9 +220,9 @@ const FieldValidators = {
     const depDate = new Date(value);
     const arrDate = arrivalDate ? new Date(arrivalDate) : null;
     
-    let isValid = depDate instanceof Date && !isNaN(depDate);
+    let isValid = depDate instanceof Date && !isNaN(depDate.getTime());
     
-    if (isValid && arrDate && !isNaN(arrDate)) {
+    if (isValid && arrDate && !isNaN(arrDate.getTime())) {
       isValid = depDate > arrDate;
     }
     
@@ -237,7 +237,7 @@ const FieldValidators = {
    * @param {string} value - Flight number
    * @returns {Object} - Validation result
    */
-  flightNumber: (value) => {
+  flightNumber: (value: string) => {
     if (!value || typeof value !== 'string') {
       return { isValid: false, message: 'Flight number is required' };
     }
@@ -256,13 +256,13 @@ const FieldValidators = {
    * @param {Object} fundItem - Fund item object
    * @returns {Object} - Validation result
    */
-  fundItem: (fundItem) => {
+  fundItem: (fundItem: Record<string, unknown>) => {
     if (!fundItem || typeof fundItem !== 'object') {
       return { isValid: false, message: 'Fund item is required' };
     }
     
     const hasType = fundItem.type && typeof fundItem.type === 'string';
-    const hasAmount = fundItem.amount && !isNaN(parseFloat(fundItem.amount));
+    const hasAmount = fundItem.amount && !isNaN(parseFloat(String(fundItem.amount)));
     const hasCurrency = fundItem.currency && typeof fundItem.currency === 'string';
     
     const isValid = hasType && hasAmount && hasCurrency;
@@ -436,12 +436,12 @@ export const FundsCategory = {
       labelKey: 'funds.fundItems',
       type: 'required',
       inputType: 'array',
-      validator: (fundItems) => {
+      validator: (fundItems: unknown[]) => {
         if (!Array.isArray(fundItems) || fundItems.length === 0) {
           return { isValid: false, message: 'At least one fund item is required' };
         }
         
-        const validItems = fundItems.filter(item => FieldValidators.fundItem(item).isValid);
+        const validItems = (fundItems as Record<string, unknown>[]).filter(item => FieldValidators.fundItem(item).isValid);
         const isValid = validItems.length > 0;
         
         return {
@@ -472,7 +472,7 @@ export const FundsCategory = {
           labelKey: 'funds.amount',
           type: 'required',
           inputType: 'number',
-          validator: (value) => {
+          validator: (value: string) => {
             const num = parseFloat(value);
             const isValid = !isNaN(num) && num > 0;
             return {
@@ -537,7 +537,7 @@ export const TravelCategory = {
       labelKey: 'travel.departureDate',
       type: 'required',
       inputType: 'date',
-      validator: (value, allData) => FieldValidators.departureDate(value, allData?.arrivalArrivalDate),
+      validator: (value: string, allData: Record<string, unknown>) => FieldValidators.departureDate(value, allData?.arrivalArrivalDate as string),
       helpText: 'Enter your departure date from Thailand'
     },
     {
@@ -581,13 +581,13 @@ export const EntryFieldsConfig = {
  * @param {string} fieldName - Field name
  * @returns {Object|null} - Field configuration
  */
-export function getFieldConfig(category, fieldName) {
+export function getFieldConfig(category: string, fieldName: string) {
   const categoryConfig = EntryFieldsConfig[category];
   if (!categoryConfig) {
 return null;
 }
 
-  return categoryConfig.fields.find(field => field.name === fieldName) || null;
+  return categoryConfig.fields.find((field: Record<string, unknown>) => field.name === fieldName) || null;
 }
 
 /**
@@ -595,13 +595,13 @@ return null;
  * @param {string} category - Category name
  * @returns {Array} - Array of required field configurations
  */
-export function getRequiredFields(category) {
+export function getRequiredFields(category: string) {
   const categoryConfig = EntryFieldsConfig[category];
   if (!categoryConfig) {
 return [];
 }
 
-  return categoryConfig.fields.filter(field => field.type === 'required');
+  return categoryConfig.fields.filter((field: Record<string, unknown>) => field.type === 'required');
 }
 
 /**
@@ -612,7 +612,7 @@ return [];
  * @param {Object} allData - All form data (for cross-field validation)
  * @returns {Object} - Validation result
  */
-export function validateFieldValue(category, fieldName, value, allData = {}) {
+export function validateFieldValue(category: string, fieldName: string, value: string, allData: Record<string, unknown> = {}) {
   const fieldConfig = getFieldConfig(category, fieldName);
   if (!fieldConfig) {
     return { isValid: false, message: 'Unknown field' };
@@ -626,7 +626,7 @@ export function validateFieldValue(category, fieldName, value, allData = {}) {
  * @param {string} category - Category name
  * @returns {Object} - Category summary
  */
-export function getCategorySummary(category) {
+export function getCategorySummary(category: string) {
   const categoryConfig = EntryFieldsConfig[category];
   if (!categoryConfig) {
 return null;

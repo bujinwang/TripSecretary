@@ -19,7 +19,7 @@ class TDACSubmissionLogger {
    * @param {Object} travelerData - 旅行者数据
    * @param {string} cloudflareToken - Cloudflare token
    */
-  static async logHybridSubmission(travelerData, cloudflareToken) {
+  static async logHybridSubmission(travelerData: Record<string, unknown>, cloudflareToken: string) {
     try {
       console.log('\n🔍 ===== TDAC 闪电提交详细日志 =====');
       console.log('⏰ 提交时间:', new Date().toLocaleString('zh-CN'));
@@ -64,7 +64,7 @@ class TDACSubmissionLogger {
    * 记录WebView模式填充的详细日志
    * @param {Array} formFields - 表单字段数组
    */
-  static async logWebViewFill(formFields) {
+  static async logWebViewFill(formFields: Record<string, unknown>[]) {
     try {
       console.log('\n🔍 ===== TDAC WebView 自动填充详细日志 =====');
       console.log('⏰ 填充时间:', new Date().toLocaleString('zh-CN'));
@@ -72,9 +72,9 @@ class TDACSubmissionLogger {
       console.log('🎯 目标网站: https://tdac.immigration.go.th');
       
       // 按分组记录字段
-      const personalFields = formFields.filter(f => f.section === 'personal');
-      const tripFields = formFields.filter(f => f.section === 'trip');
-      const accommodationFields = formFields.filter(f => f.section === 'accommodation');
+      const personalFields = formFields.filter((f: Record<string, unknown>) => f.section === 'personal');
+      const tripFields = formFields.filter((f: Record<string, unknown>) => f.section === 'trip');
+      const accommodationFields = formFields.filter((f: Record<string, unknown>) => f.section === 'accommodation');
       
       this.logWebViewFieldGroup('👤 个人信息字段', personalFields);
       this.logWebViewFieldGroup('✈️ 旅行信息字段', tripFields);
@@ -102,7 +102,7 @@ class TDACSubmissionLogger {
   /**
    * 记录个人信息
    */
-  static logPersonalInfo(travelerData) {
+  static logPersonalInfo(travelerData: Record<string, unknown>) {
     console.log('\n📋 === 个人信息 Personal Information ===');
     console.log('👤 姓名 (Name):');
     console.log('  - 姓 (Family Name):', travelerData.familyName, '→ TDAC字段: familyName');
@@ -124,7 +124,7 @@ class TDACSubmissionLogger {
   /**
    * 记录旅行信息
    */
-  static logTravelInfo(travelerData) {
+  static logTravelInfo(travelerData: Record<string, unknown>) {
     console.log('\n✈️ === 旅行信息 Travel Information ===');
     console.log('📅 日期 (Dates):');
     console.log('  - 到达日期 (Arrival Date):', travelerData.arrivalDate, '→ TDAC字段: arrivalDate');
@@ -141,7 +141,7 @@ class TDACSubmissionLogger {
   /**
    * 记录住宿信息
    */
-  static logAccommodationInfo(travelerData) {
+  static logAccommodationInfo(travelerData: Record<string, unknown>) {
     console.log('\n🏨 === 住宿信息 Accommodation Information ===');
     const accommodationDisplay = travelerData.accommodationTypeDisplay || travelerData.accommodationType;
     console.log(
@@ -179,7 +179,7 @@ class TDACSubmissionLogger {
   /**
    * 记录联系信息
    */
-  static logContactInfo(travelerData) {
+  static logContactInfo(travelerData: Record<string, unknown>) {
     console.log('\n📞 === 联系信息 Contact Information ===');
     console.log('📧 邮箱 (Email):', travelerData.email, '→ TDAC字段: email');
     console.log('📱 电话 (Phone):');
@@ -190,7 +190,7 @@ class TDACSubmissionLogger {
   /**
    * 记录技术信息
    */
-  static logTechnicalInfo(travelerData, cloudflareToken) {
+  static logTechnicalInfo(travelerData: Record<string, unknown>, cloudflareToken: string) {
     console.log('\n🔧 === 技术信息 Technical Information ===');
     console.log('🔑 Cloudflare Token 预览:', `${cloudflareToken?.substring(0, 50)  }...`);
     console.log('⚙️ 传输模式ID (Trans Mode ID):', travelerData.tranModeId || '(自动)', '→ TDAC字段: tranModeId');
@@ -205,14 +205,14 @@ class TDACSubmissionLogger {
    * @param {Object} payload - 提交给TDAC的最终payload
    * @param {Object} dynamicData - TDACAPIService匹配到的行数据
    */
-  static async logResolvedSelectMappings(originalTravelerData, payload, dynamicData = {}) {
+  static async logResolvedSelectMappings(originalTravelerData: Record<string, unknown>, payload: Record<string, unknown>, dynamicData: Record<string, Record<string, string>> = {}) {
     try {
       if (!payload) {
         console.log('ℹ️ logResolvedSelectMappings called without payload, skipping');
         return;
       }
 
-      const tripInfo = payload.tripInfo || {};
+      const tripInfo = (payload.tripInfo || {}) as Record<string, string>;
       const resolvedInfo = {
         tranModeId: tripInfo.tranModeId || '',
         tranModeDesc: dynamicData.tranModeRow?.value || '',
@@ -257,7 +257,7 @@ class TDACSubmissionLogger {
   /**
    * 记录字段映射
    */
-  static logFieldMappings(travelerData) {
+  static logFieldMappings(travelerData: Record<string, unknown>) {
     console.log('\n📊 === 表单字段映射 Form Field Mappings ===');
     const fieldMappings = [
       { label: '姓氏', field: 'familyName', value: travelerData.familyName, tdacId: 'familyName' },
@@ -301,9 +301,9 @@ class TDACSubmissionLogger {
   /**
    * 记录WebView字段组
    */
-  static logWebViewFieldGroup(title, fields) {
+  static logWebViewFieldGroup(title: string, fields: Record<string, unknown>[]) {
     console.log(`\n${title}:`);
-    fields.forEach((field, index) => {
+    fields.forEach((field: Record<string, unknown>, index: number) => {
       console.log(`  ${index + 1}. ${field.label} (${field.labelCn})`);
       console.log(`     值: "${field.value}"`);
       console.log(`     搜索词: [${field.searchTerms.join(', ')}]`);
@@ -329,7 +329,7 @@ class TDACSubmissionLogger {
   /**
    * 记录WebView统计信息
    */
-  static logWebViewStatistics(formFields, personalFields, tripFields, accommodationFields) {
+  static logWebViewStatistics(formFields: Record<string, unknown>[], personalFields: Record<string, unknown>[], tripFields: Record<string, unknown>[], accommodationFields: Record<string, unknown>[]) {
     console.log('\n📊 === 填充统计 ===');
     console.log(`📝 总字段数: ${formFields.length}`);
     console.log(`👤 个人信息: ${personalFields.length} 个字段`);
@@ -351,7 +351,7 @@ class TDACSubmissionLogger {
   /**
    * 保存提交日志到本地存储
    */
-  static async saveSubmissionLog(method, travelerData, additionalInfo = {}) {
+  static async saveSubmissionLog(method: string, travelerData: Record<string, unknown>, additionalInfo: Record<string, unknown> = {}) {
     try {
       const logData = {
         timestamp: new Date().toISOString(),
@@ -391,17 +391,17 @@ class TDACSubmissionLogger {
   /**
    * 保存WebView填充日志
    */
-  static async saveWebViewFillLog(formFields) {
+  static async saveWebViewFillLog(formFields: Record<string, unknown>[]) {
     try {
-      const personalFields = formFields.filter(f => f.section === 'personal');
-      const tripFields = formFields.filter(f => f.section === 'trip');
-      const accommodationFields = formFields.filter(f => f.section === 'accommodation');
+      const personalFields = formFields.filter((f: Record<string, unknown>) => f.section === 'personal');
+      const tripFields = formFields.filter((f: Record<string, unknown>) => f.section === 'trip');
+      const accommodationFields = formFields.filter((f: Record<string, unknown>) => f.section === 'accommodation');
       
       const logData = {
         timestamp: new Date().toISOString(),
         fillMethod: 'webview_autofill',
         targetUrl: 'https://tdac.immigration.go.th',
-        fields: formFields.map(field => ({
+        fields: formFields.map((field: Record<string, unknown>) => ({
           label: field.label,
           labelCn: field.labelCn,
           value: field.value,
@@ -438,7 +438,7 @@ class TDACSubmissionLogger {
   /**
    * 保存到通用日志历史
    */
-  static async saveToGeneralLog(logData) {
+  static async saveToGeneralLog(logData: Record<string, unknown>) {
     try {
       const historyKey = 'tdac_submission_history';
       const historyJson = await AsyncStorage.getItem(historyKey);
@@ -482,7 +482,7 @@ class TDACSubmissionLogger {
       cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
       
       const history = await this.getSubmissionHistory();
-      const filteredHistory = history.filter(log => {
+      const filteredHistory = history.filter((log: Record<string, unknown>) => {
         const logDate = new Date(log.timestamp);
         return logDate > cutoffDate;
       });

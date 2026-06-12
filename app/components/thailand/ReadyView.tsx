@@ -12,6 +12,16 @@ import ProgressRing from './ProgressRing';
 import ActionButton from './ActionButton';
 import SubmissionCountdown from '../SubmissionCountdown';
 
+interface ReadyViewProps {
+  arrivalDate?: string;
+  primaryActionState: { title: string; variant: string; disabled: boolean };
+  onPrimaryAction?: () => void;
+  onPreviewGuide?: () => void;
+  onPreviewEntryCard?: () => void;
+  onEditInformation?: () => void;
+  language?: string;
+}
+
 const ReadyView = ({
   arrivalDate,
   primaryActionState,
@@ -20,7 +30,7 @@ const ReadyView = ({
   onPreviewEntryCard,
   onEditInformation,
   language,
-}) => {
+}: ReadyViewProps) => {
   // Animation refs
   const fadeAnim = useRef(createAnimationValue(0)).current;
   const slideAnim = useRef(createAnimationValue(30)).current;

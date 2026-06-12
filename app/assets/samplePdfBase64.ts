@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Sample Thailand Arrival Card PDF (Base64)
  *

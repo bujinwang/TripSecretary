@@ -2,25 +2,30 @@
  * Thailand-Specific Validation Rules
  *
  * Defines validation rules for Thailand digital arrival card (TDAC) submission.
- * These rules extend the base validation engine with Thailand-specific requirements.
- *
- * @module destinations/thailand/validationRules
  */
 
 import { PATTERNS } from '../../../utils/validation/ValidationRuleEngine';
 import { findChinaProvince } from '../../../utils/validation/chinaProvinceValidator';
 
-/**
- * Thailand-specific validation rules
- * Each rule can be:
- * - A function: (value, context) => { isValid, isWarning, errorMessage }
- * - A configuration object: { ruleType, ...options } to use default rule with custom config
- */
-export const THAILAND_VALIDATION_RULES = {
-  /**
-   * Full name validation
-   * TDAC requires English letters only, no Chinese characters
-   */
+interface ValidationResult {
+  isValid: boolean;
+  isWarning: boolean;
+  errorMessage: string;
+}
+
+interface ValidationContext {
+  required?: boolean;
+  arrivalArrivalDate?: string;
+  residentCountry?: string;
+  travelPurpose?: string;
+  accommodationType?: string;
+  isTransitPassenger?: boolean;
+  [key: string]: unknown;
+}
+
+type ValidationRule = (value: unknown, context: ValidationContext) => ValidationResult;
+
+export const THAILAND_VALIDATION_RULES: Record<string, ValidationRule | { ruleType: string; [key: string]: unknown }> = {
   fullName: {
     ruleType: 'text',
     required: true,
@@ -32,9 +37,6 @@ export const THAILAND_VALIDATION_RULES = {
     fieldLabel: 'Full name'
   },
 
-  /**
-   * Passport number validation
-   */
   passportNo: {
     ruleType: 'alphanumeric',
     required: true,
@@ -45,9 +47,6 @@ export const THAILAND_VALIDATION_RULES = {
     fieldLabel: 'Passport number'
   },
 
-  /**
-   * Visa number validation (optional)
-   */
   visaNumber: {
     ruleType: 'alphanumeric',
     required: false,
@@ -56,9 +55,6 @@ export const THAILAND_VALIDATION_RULES = {
     fieldLabel: 'Visa number'
   },
 
-  /**
-   * Date of birth validation
-   */
   dob: {
     ruleType: 'date',
     required: true,
@@ -68,9 +64,6 @@ export const THAILAND_VALIDATION_RULES = {
     fieldLabel: 'Birth date'
   },
 
-  /**
-   * Passport expiry date validation
-   */
   expiryDate: {
     ruleType: 'date',
     required: true,
@@ -79,9 +72,6 @@ export const THAILAND_VALIDATION_RULES = {
     fieldLabel: 'Passport expiry date'
   },
 
-  /**
-   * Arrival date validation
-   */
   arrivalArrivalDate: {
     ruleType: 'date',
     required: true,
@@ -90,14 +80,10 @@ export const THAILAND_VALIDATION_RULES = {
     fieldLabel: 'Arrival date'
   },
 
-  /**
-   * Departure date validation
-   * Must be after arrival date (context-aware)
-   */
-  departureDepartureDate: (value, context) => {
+  departureDepartureDate: (value: unknown, context: ValidationContext): ValidationResult => {
     const { required = true, arrivalArrivalDate } = context;
 
-    if (!value || !value.trim()) {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: required,
@@ -105,7 +91,7 @@ export const THAILAND_VALIDATION_RULES = {
       };
     }
 
-    if (!PATTERNS.DATE_ISO.test(value)) {
+    if (!PATTERNS.DATE_ISO.test(value as string)) {
       return {
         isValid: false,
         isWarning: false,
@@ -113,7 +99,7 @@ export const THAILAND_VALIDATION_RULES = {
       };
     }
 
-    const date = new Date(value);
+    const date = new Date(value as string);
     if (isNaN(date.getTime())) {
       return {
         isValid: false,
@@ -122,7 +108,6 @@ export const THAILAND_VALIDATION_RULES = {
       };
     }
 
-    // Check against arrival date
     if (arrivalArrivalDate) {
       const arrivalDate = new Date(arrivalArrivalDate);
       if (date <= arrivalDate) {
@@ -137,18 +122,12 @@ export const THAILAND_VALIDATION_RULES = {
     return { isValid: true, isWarning: false, errorMessage: '' };
   },
 
-  /**
-   * Email validation
-   */
   email: {
     ruleType: 'email',
     required: true,
     fieldLabel: 'Email address'
   },
 
-  /**
-   * Phone number validation
-   */
   phoneNumber: {
     ruleType: 'phoneNumber',
     required: true,
@@ -157,18 +136,12 @@ export const THAILAND_VALIDATION_RULES = {
     fieldLabel: 'Phone number'
   },
 
-  /**
-   * Phone country code validation
-   */
   phoneCode: {
     ruleType: 'phoneCode',
     required: true,
     fieldLabel: 'Country code'
   },
 
-  /**
-   * Occupation validation
-   */
   occupation: {
     ruleType: 'text',
     required: true,
@@ -178,14 +151,10 @@ export const THAILAND_VALIDATION_RULES = {
     fieldLabel: 'Occupation'
   },
 
-  /**
-   * City of residence validation
-   * Special handling for China - requires province name
-   */
-  cityOfResidence: (value, context) => {
+  cityOfResidence: (value: unknown, context: ValidationContext): ValidationResult => {
     const { required = true, residentCountry } = context;
 
-    if (!value || !value.trim()) {
+    if (!value || !(value as string).trim()) {
       const label = residentCountry === 'CHN' ? 'Province' : 'Province or city';
       return {
         isValid: true,
@@ -194,7 +163,7 @@ export const THAILAND_VALIDATION_RULES = {
       };
     }
 
-    const trimmed = value.trim();
+    const trimmed = (value as string).trim();
 
     if (!PATTERNS.ALPHA_SPACE_DASH.test(trimmed)) {
       return {
@@ -212,7 +181,6 @@ export const THAILAND_VALIDATION_RULES = {
       };
     }
 
-    // Special validation for China - must be a valid province
     if (residentCountry === 'CHN') {
       const provinceMatch = findChinaProvince(trimmed);
       if (!provinceMatch) {
@@ -227,46 +195,32 @@ export const THAILAND_VALIDATION_RULES = {
     return { isValid: true, isWarning: false, errorMessage: '' };
   },
 
-  /**
-   * Recent stay country validation
-   */
   recentStayCountry: {
     ruleType: 'countryCode',
     required: true,
     fieldLabel: '过去14天停留国家或地区'
   },
 
-  /**
-   * Arrival flight number validation
-   */
   arrivalFlightNumber: {
     ruleType: 'flightNumber',
     required: true,
     fieldLabel: 'Arrival flight number'
   },
 
-  /**
-   * Departure flight number validation
-   */
   departureFlightNumber: {
     ruleType: 'flightNumber',
     required: true,
     fieldLabel: 'Departure flight number'
   },
 
-  /**
-   * Custom travel purpose (when purpose is 'OTHER')
-   * Context-aware: only required if travelPurpose is 'OTHER'
-   */
-  customTravelPurpose: (value, context) => {
+  customTravelPurpose: (value: unknown, context: ValidationContext): ValidationResult => {
     const { travelPurpose } = context;
 
-    // Only validate if purpose is OTHER
     if (travelPurpose !== 'OTHER') {
       return { isValid: true, isWarning: false, errorMessage: '' };
     }
 
-    if (!value || !value.trim()) {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: true,
@@ -274,7 +228,7 @@ export const THAILAND_VALIDATION_RULES = {
       };
     }
 
-    const trimmed = value.trim();
+    const trimmed = (value as string).trim();
 
     if (!PATTERNS.ALPHA_SPACE_DASH.test(trimmed)) {
       return {
@@ -295,19 +249,14 @@ export const THAILAND_VALIDATION_RULES = {
     return { isValid: true, isWarning: false, errorMessage: '' };
   },
 
-  /**
-   * Custom accommodation type (when type is 'OTHER')
-   * Context-aware: only required if accommodationType is 'OTHER'
-   */
-  customAccommodationType: (value, context) => {
+  customAccommodationType: (value: unknown, context: ValidationContext): ValidationResult => {
     const { accommodationType } = context;
 
-    // Only validate if type is OTHER
     if (accommodationType !== 'OTHER') {
       return { isValid: true, isWarning: false, errorMessage: '' };
     }
 
-    if (!value || !value.trim()) {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: true,
@@ -315,7 +264,7 @@ export const THAILAND_VALIDATION_RULES = {
       };
     }
 
-    const trimmed = value.trim();
+    const trimmed = (value as string).trim();
 
     if (!PATTERNS.ALPHA_SPACE_DASH.test(trimmed)) {
       return {
@@ -336,19 +285,14 @@ export const THAILAND_VALIDATION_RULES = {
     return { isValid: true, isWarning: false, errorMessage: '' };
   },
 
-  /**
-   * Hotel address validation
-   * Context-aware: not required for transit passengers
-   */
-  hotelAddress: (value, context) => {
+  hotelAddress: (value: unknown, context: ValidationContext): ValidationResult => {
     const { isTransitPassenger } = context;
 
-    // Not required for transit passengers
     if (isTransitPassenger) {
       return { isValid: true, isWarning: false, errorMessage: '' };
     }
 
-    if (!value || !value.trim()) {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: true,
@@ -356,7 +300,7 @@ export const THAILAND_VALIDATION_RULES = {
       };
     }
 
-    if (value.trim().length < 10) {
+    if ((value as string).trim().length < 10) {
       return {
         isValid: false,
         isWarning: false,
@@ -367,19 +311,14 @@ export const THAILAND_VALIDATION_RULES = {
     return { isValid: true, isWarning: false, errorMessage: '' };
   },
 
-  /**
-   * District validation
-   * Context-aware: required for non-HOTEL accommodation (except transit passengers)
-   */
-  district: (value, context) => {
+  district: (value: unknown, context: ValidationContext): ValidationResult => {
     const { isTransitPassenger, accommodationType } = context;
 
-    // Not required for transit passengers or HOTEL
     if (isTransitPassenger || accommodationType === 'HOTEL') {
       return { isValid: true, isWarning: false, errorMessage: '' };
     }
 
-    if (!value || !value.trim()) {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: true,
@@ -387,7 +326,7 @@ export const THAILAND_VALIDATION_RULES = {
       };
     }
 
-    if (!PATTERNS.ALPHA_SPACE_DASH.test(value.trim())) {
+    if (!PATTERNS.ALPHA_SPACE_DASH.test((value as string).trim())) {
       return {
         isValid: false,
         isWarning: false,
@@ -398,19 +337,14 @@ export const THAILAND_VALIDATION_RULES = {
     return { isValid: true, isWarning: false, errorMessage: '' };
   },
 
-  /**
-   * Sub-district validation
-   * Context-aware: required for non-HOTEL accommodation (except transit passengers)
-   */
-  subDistrict: (value, context) => {
+  subDistrict: (value: unknown, context: ValidationContext): ValidationResult => {
     const { isTransitPassenger, accommodationType } = context;
 
-    // Not required for transit passengers or HOTEL
     if (isTransitPassenger || accommodationType === 'HOTEL') {
       return { isValid: true, isWarning: false, errorMessage: '' };
     }
 
-    if (!value || !value.trim()) {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: true,
@@ -418,7 +352,7 @@ export const THAILAND_VALIDATION_RULES = {
       };
     }
 
-    if (!PATTERNS.ALPHA_SPACE_DASH.test(value.trim())) {
+    if (!PATTERNS.ALPHA_SPACE_DASH.test((value as string).trim())) {
       return {
         isValid: false,
         isWarning: false,
@@ -429,20 +363,14 @@ export const THAILAND_VALIDATION_RULES = {
     return { isValid: true, isWarning: false, errorMessage: '' };
   },
 
-  /**
-   * Postal code validation
-   * Context-aware: required for non-HOTEL accommodation (except transit passengers)
-   * Thailand postal codes are 5 digits
-   */
-  postalCode: (value, context) => {
+  postalCode: (value: unknown, context: ValidationContext): ValidationResult => {
     const { isTransitPassenger, accommodationType } = context;
 
-    // Not required for transit passengers or HOTEL
     if (isTransitPassenger || accommodationType === 'HOTEL') {
       return { isValid: true, isWarning: false, errorMessage: '' };
     }
 
-    if (!value || !value.trim()) {
+    if (!value || !(value as string).trim()) {
       return {
         isValid: true,
         isWarning: true,
@@ -450,7 +378,7 @@ export const THAILAND_VALIDATION_RULES = {
       };
     }
 
-    if (!PATTERNS.POSTAL_CODE_5DIGIT.test(value.trim())) {
+    if (!PATTERNS.POSTAL_CODE_5DIGIT.test((value as string).trim())) {
       return {
         isValid: false,
         isWarning: false,
@@ -462,7 +390,4 @@ export const THAILAND_VALIDATION_RULES = {
   }
 };
 
-/**
- * Default export
- */
 export default THAILAND_VALIDATION_RULES;

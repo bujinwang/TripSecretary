@@ -93,7 +93,8 @@ return '';
    */
   static formatRelativeTime(date: string | Date, locale: string): string {
     const now = new Date();
-    const diffMs = date.getTime() - now.getTime();
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    const diffMs = dateObj.getTime() - now.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
@@ -118,37 +119,47 @@ return '';
    * Fallback relative time formatting for unsupported locales
    */
   static formatRelativeTimeFallback(diffDays: number, diffHours: number, diffMinutes: number, locale: string): string {
-    const templates = {
+    interface RelativeTimeTemplate {
+      daysAgo: (n: number) => string;
+      daysLater: (n: number) => string;
+      hoursAgo: (n: number) => string;
+      hoursLater: (n: number) => string;
+      minutesAgo: (n: number) => string;
+      minutesLater: (n: number) => string;
+      now: string;
+    }
+
+    const templates: Record<string, RelativeTimeTemplate> = {
       'zh-CN': {
-        daysAgo: (n) => `${Math.abs(n)}天前`,
-        daysLater: (n) => `${n}天后`,
-        hoursAgo: (n) => `${Math.abs(n)}小时前`,
-        hoursLater: (n) => `${n}小时后`,
-        minutesAgo: (n) => `${Math.abs(n)}分钟前`,
-        minutesLater: (n) => `${n}分钟后`,
+        daysAgo: (n: number) => `${Math.abs(n)}天前`,
+        daysLater: (n: number) => `${n}天后`,
+        hoursAgo: (n: number) => `${Math.abs(n)}小时前`,
+        hoursLater: (n: number) => `${n}小时后`,
+        minutesAgo: (n: number) => `${Math.abs(n)}分钟前`,
+        minutesLater: (n: number) => `${n}分钟后`,
         now: '刚刚'
       },
       'en': {
-        daysAgo: (n) => `${Math.abs(n)} day${Math.abs(n) !== 1 ? 's' : ''} ago`,
-        daysLater: (n) => `in ${n} day${n !== 1 ? 's' : ''}`,
-        hoursAgo: (n) => `${Math.abs(n)} hour${Math.abs(n) !== 1 ? 's' : ''} ago`,
-        hoursLater: (n) => `in ${n} hour${n !== 1 ? 's' : ''}`,
-        minutesAgo: (n) => `${Math.abs(n)} minute${Math.abs(n) !== 1 ? 's' : ''} ago`,
-        minutesLater: (n) => `in ${n} minute${n !== 1 ? 's' : ''}`,
+        daysAgo: (n: number) => `${Math.abs(n)} day${Math.abs(n) !== 1 ? 's' : ''} ago`,
+        daysLater: (n: number) => `in ${n} day${n !== 1 ? 's' : ''}`,
+        hoursAgo: (n: number) => `${Math.abs(n)} hour${Math.abs(n) !== 1 ? 's' : ''} ago`,
+        hoursLater: (n: number) => `in ${n} hour${n !== 1 ? 's' : ''}`,
+        minutesAgo: (n: number) => `${Math.abs(n)} minute${Math.abs(n) !== 1 ? 's' : ''} ago`,
+        minutesLater: (n: number) => `in ${n} minute${n !== 1 ? 's' : ''}`,
         now: 'just now'
       },
       'es': {
-        daysAgo: (n) => `hace ${Math.abs(n)} día${Math.abs(n) !== 1 ? 's' : ''}`,
-        daysLater: (n) => `en ${n} día${n !== 1 ? 's' : ''}`,
-        hoursAgo: (n) => `hace ${Math.abs(n)} hora${Math.abs(n) !== 1 ? 's' : ''}`,
-        hoursLater: (n) => `en ${n} hora${n !== 1 ? 's' : ''}`,
-        minutesAgo: (n) => `hace ${Math.abs(n)} minuto${Math.abs(n) !== 1 ? 's' : ''}`,
-        minutesLater: (n) => `en ${n} minuto${n !== 1 ? 's' : ''}`,
+        daysAgo: (n: number) => `hace ${Math.abs(n)} día${Math.abs(n) !== 1 ? 's' : ''}`,
+        daysLater: (n: number) => `en ${n} día${n !== 1 ? 's' : ''}`,
+        hoursAgo: (n: number) => `hace ${Math.abs(n)} hora${Math.abs(n) !== 1 ? 's' : ''}`,
+        hoursLater: (n: number) => `en ${n} hora${n !== 1 ? 's' : ''}`,
+        minutesAgo: (n: number) => `hace ${Math.abs(n)} minuto${Math.abs(n) !== 1 ? 's' : ''}`,
+        minutesLater: (n: number) => `en ${n} minuto${n !== 1 ? 's' : ''}`,
         now: 'ahora mismo'
       }
     };
 
-    const template = templates[locale] || templates['en'];
+    const template: RelativeTimeTemplate = templates[locale] || templates['en'];
 
     if (Math.abs(diffDays) >= 1) {
       return diffDays < 0 ? template.daysAgo(diffDays) : template.daysLater(diffDays);
@@ -205,7 +216,8 @@ return '';
   static formatTimePeriod(date: string | Date, locale: string): string {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    const dateOnly = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
     
     const diffMs = dateOnly.getTime() - today.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -358,13 +370,13 @@ return '';
 
     // If less than 1 hour ago, show minutes
     if (diffHours < 1) {
-      const minuteTemplates = {
-        'zh-CN': (n) => `${n}分钟前`,
-        'zh-TW': (n) => `${n}分鐘前`,
-        'en': (n) => `${n} minute${n !== 1 ? 's' : ''} ago`,
-        'es': (n) => `hace ${n} minuto${n !== 1 ? 's' : ''}`,
-        'fr': (n) => `il y a ${n} minute${n !== 1 ? 's' : ''}`,
-        'de': (n) => `vor ${n} Minute${n !== 1 ? 'n' : ''}`
+      const minuteTemplates: Record<string, (n: number) => string> = {
+        'zh-CN': (n: number) => `${n}分钟前`,
+        'zh-TW': (n: number) => `${n}分鐘前`,
+        'en': (n: number) => `${n} minute${n !== 1 ? 's' : ''} ago`,
+        'es': (n: number) => `hace ${n} minuto${n !== 1 ? 's' : ''}`,
+        'fr': (n: number) => `il y a ${n} minute${n !== 1 ? 's' : ''}`,
+        'de': (n: number) => `vor ${n} Minute${n !== 1 ? 'n' : ''}`
       };
       const template = minuteTemplates[locale] || minuteTemplates['en'];
       return template(diffMinutes);
@@ -372,13 +384,13 @@ return '';
 
     // If less than 24 hours ago, show hours
     if (diffDays < 1) {
-      const hourTemplates = {
-        'zh-CN': (n) => `${n}小时前`,
-        'zh-TW': (n) => `${n}小時前`,
-        'en': (n) => `${n} hour${n !== 1 ? 's' : ''} ago`,
-        'es': (n) => `hace ${n} hora${n !== 1 ? 's' : ''}`,
-        'fr': (n) => `il y a ${n} heure${n !== 1 ? 's' : ''}`,
-        'de': (n) => `vor ${n} Stunde${n !== 1 ? 'n' : ''}`
+      const hourTemplates: Record<string, (n: number) => string> = {
+        'zh-CN': (n: number) => `${n}小时前`,
+        'zh-TW': (n: number) => `${n}小時前`,
+        'en': (n: number) => `${n} hour${n !== 1 ? 's' : ''} ago`,
+        'es': (n: number) => `hace ${n} hora${n !== 1 ? 's' : ''}`,
+        'fr': (n: number) => `il y a ${n} heure${n !== 1 ? 's' : ''}`,
+        'de': (n: number) => `vor ${n} Stunde${n !== 1 ? 'n' : ''}`
       };
       const template = hourTemplates[locale] || hourTemplates['en'];
       return template(diffHours);
@@ -386,15 +398,15 @@ return '';
 
     // If less than 7 days ago, show days
     if (diffDays < 7) {
-      const dayTemplates = {
-        'zh-CN': (n) => `${n}天前`,
-        'zh-TW': (n) => `${n}天前`,
-        'en': (n) => `${n} day${n !== 1 ? 's' : ''} ago`,
-        'es': (n) => `hace ${n} día${n !== 1 ? 's' : ''}`,
-        'fr': (n) => `il y a ${n} jour${n !== 1 ? 's' : ''}`,
-        'de': (n) => `vor ${n} Tag${n !== 1 ? 'en' : ''}`
+      const dayTemplates: Record<string, (n: number) => string> = {
+        'zh-CN': (n: number) => `${n}天前`,
+        'zh-TW': (n: number) => `${n}天前`,
+        'en': (n: number) => `${n} day${n !== 1 ? 's' : ''} ago`,
+        'es': (n: number) => `hace ${n} día${n !== 1 ? 's' : ''}`,
+        'fr': (n: number) => `il y a ${n} jour${n !== 1 ? 's' : ''}`,
+        'de': (n: number) => `vor ${n} Tag${n !== 1 ? 'en' : ''}`
       };
-      const template = dayTemplates[locale] || dayTemplates['en'];
+      const template: (n: number) => string = dayTemplates[locale] || dayTemplates['en'];
       return template(diffDays);
     }
 
@@ -408,7 +420,7 @@ return '';
    * @param {string} locale - Locale code
    * @returns {Object} Formatted countdown with color hint
    */
-  static formatCountdown(milliseconds: number, locale = 'en'): string {
+  static formatCountdown(milliseconds: number, locale = 'en'): { text: string; color: string } {
     if (milliseconds <= 0) {
       const expiredText = {
         'zh-CN': '已过期',
@@ -418,8 +430,9 @@ return '';
         'fr': 'Expiré',
         'de': 'Abgelaufen'
       };
+      const text: string = expiredText[locale as keyof typeof expiredText] || expiredText['en'];
       return {
-        text: expiredText[locale] || expiredText['en'],
+        text,
         color: 'red'
       };
     }
@@ -436,15 +449,15 @@ return '';
 
     if (totalDays > 0) {
       // More than 1 day remaining
-      const dayTemplates = {
-        'zh-CN': (d, h, m) => `${d}天 ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
-        'zh-TW': (d, h, m) => `${d}天 ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
-        'en': (d, h, m) => `${d} day${d !== 1 ? 's' : ''} ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
-        'es': (d, h, m) => `${d} día${d !== 1 ? 's' : ''} ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
-        'fr': (d, h, m) => `${d} jour${d !== 1 ? 's' : ''} ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
-        'de': (d, h, m) => `${d} Tag${d !== 1 ? 'e' : ''} ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
+      const countdownDayTemplates: Record<string, (d: number, h: number, m: number) => string> = {
+        'zh-CN': (d: number, h: number, m: number) => `${d}天 ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
+        'zh-TW': (d: number, h: number, m: number) => `${d}天 ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
+        'en': (d: number, h: number, m: number) => `${d} day${d !== 1 ? 's' : ''} ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
+        'es': (d: number, h: number, m: number) => `${d} día${d !== 1 ? 's' : ''} ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
+        'fr': (d: number, h: number, m: number) => `${d} jour${d !== 1 ? 's' : ''} ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
+        'de': (d: number, h: number, m: number) => `${d} Tag${d !== 1 ? 'e' : ''} ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`
       };
-      const template = dayTemplates[locale] || dayTemplates['en'];
+      const template = countdownDayTemplates[locale] || countdownDayTemplates['en'];
       text = template(totalDays, hours, minutes);
       color = totalDays > 2 ? 'green' : 'yellow';
     } else if (totalHours > 0) {
@@ -453,16 +466,16 @@ return '';
       color = totalHours > 12 ? 'yellow' : 'red';
     } else {
       // Less than 1 hour remaining
-      const minuteTemplates = {
-        'zh-CN': (m) => `${m}分钟`,
-        'zh-TW': (m) => `${m}分鐘`,
-        'en': (m) => `${m} minute${m !== 1 ? 's' : ''}`,
-        'es': (m) => `${m} minuto${m !== 1 ? 's' : ''}`,
-        'fr': (m) => `${m} minute${m !== 1 ? 's' : ''}`,
-        'de': (m) => `${m} Minute${m !== 1 ? 'n' : ''}`
+      const minuteCountdownTemplates: Record<string, (m: number) => string> = {
+        'zh-CN': (m: number) => `${m}分钟`,
+        'zh-TW': (m: number) => `${m}分鐘`,
+        'en': (m: number) => `${m} minute${m !== 1 ? 's' : ''}`,
+        'es': (m: number) => `${m} minuto${m !== 1 ? 's' : ''}`,
+        'fr': (m: number) => `${m} minute${m !== 1 ? 's' : ''}`,
+        'de': (m: number) => `${m} Minute${m !== 1 ? 'n' : ''}`
       };
-      const template = minuteTemplates[locale] || minuteTemplates['en'];
-      text = template(totalMinutes);
+      const templateC = minuteCountdownTemplates[locale] || minuteCountdownTemplates['en'];
+      text = templateC(totalMinutes);
       color = 'red';
     }
 

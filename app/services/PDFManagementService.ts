@@ -45,7 +45,7 @@ class PDFManagementService {
    * @param {string} submissionMethod - Method used (api, webview, hybrid)
    * @returns {string} - Standardized filename
    */
-  static generatePDFFilename(arrCardNo, submissionMethod = 'api') {
+  static generatePDFFilename(arrCardNo: string, submissionMethod = 'api'): string {
     const timestamp = Date.now();
     const sanitizedCardNo = arrCardNo.replace(/[^a-zA-Z0-9]/g, '_');
     return `TDAC_${sanitizedCardNo}_${timestamp}.pdf`;
@@ -58,7 +58,7 @@ class PDFManagementService {
    * @param {string} arrCardNo - Arrival card number
    * @returns {string} - Standardized filename
    */
-  static generateQRFilename(arrCardNo) {
+  static generateQRFilename(arrCardNo: string): string {
     const timestamp = Date.now();
     const sanitizedCardNo = arrCardNo.replace(/[^a-zA-Z0-9]/g, '_');
     return `TDAC_QR_${sanitizedCardNo}_${timestamp}.png`;
@@ -71,7 +71,7 @@ class PDFManagementService {
    * @param {string} filename - Filename
    * @returns {string} - Full file path (URI)
    */
-  static getFilePath(filename) {
+  static getFilePath(filename: string): string {
     const file = new File(Paths.document, `${this.PDF_SUBDIR}/${filename}`);
     return file.uri;
   }
@@ -84,7 +84,7 @@ class PDFManagementService {
    * @param {Object} metadata - Additional metadata
    * @returns {Promise<Object>} - Save result with filepath, filename, size, savedAt
    */
-  static async savePDF(arrCardNo, pdfBlob, metadata = {}) {
+  static async savePDF(arrCardNo: string, pdfBlob: Blob, metadata: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
     try {
       await this.initialize();
 
@@ -138,7 +138,7 @@ class PDFManagementService {
    * @param {string} base64Data - Base64 encoded image data (with or without prefix)
    * @returns {Promise<Object>} - Save result
    */
-  static async saveQRImage(arrCardNo, base64Data) {
+  static async saveQRImage(arrCardNo: string, base64Data: string): Promise<Record<string, unknown>> {
     try {
       await this.initialize();
 
@@ -180,7 +180,7 @@ class PDFManagementService {
    * @param {string} filepath - Full file path
    * @returns {Promise<Object>} - File info (exists, uri, size, modificationTime)
    */
-  static async getPDFInfo(filepath) {
+  static async getPDFInfo(filepath: string): Promise<Record<string, unknown>> {
     try {
       const file = new File(filepath);
 
@@ -207,7 +207,7 @@ class PDFManagementService {
    * @param {string} filepath - Full file path
    * @returns {Promise<void>}
    */
-  static async deletePDF(filepath) {
+  static async deletePDF(filepath: string): Promise<void> {
     try {
       const file = new File(filepath);
       if (file.exists) {
@@ -232,8 +232,8 @@ class PDFManagementService {
       const items = dir.list();
       // Filter for .pdf files and extract just the names
       return items
-        .filter(item => item instanceof File && item.name.endsWith('.pdf'))
-        .map(item => item.name);
+        .filter((item: File | Directory) => item instanceof File && item.name.endsWith('.pdf'))
+        .map((item: File | Directory) => (item as File).name);
     } catch (error) {
       console.error('❌ Failed to list PDFs:', error);
       return [];
@@ -281,7 +281,7 @@ class PDFManagementService {
       console.error('❌ Failed to cleanup old PDFs:', error);
       return {
         success: false,
-        error: error.message
+        error: (error as Error).message
       };
     }
   }
@@ -292,7 +292,7 @@ class PDFManagementService {
    * @param {string} filepath - Full file path or filename
    * @returns {Promise<Object>} - Share result
    */
-  static async sharePDF(filepath) {
+  static async sharePDF(filepath: string): Promise<Record<string, unknown>> {
     try {
       // If only filename provided, construct full path
       const fullPath = filepath.includes('/')
@@ -326,7 +326,7 @@ class PDFManagementService {
       console.error('❌ Failed to share PDF:', error);
       return {
         success: false,
-        error: error.message
+        error: (error as Error).message
       };
     }
   }
@@ -337,7 +337,7 @@ class PDFManagementService {
    * @param {string} filepath - Full file path or filename
    * @returns {Promise<Object>} - Share result
    */
-  static async shareQRImage(filepath) {
+  static async shareQRImage(filepath: string): Promise<Record<string, unknown>> {
     try {
       // If only filename provided, construct full path
       const fullPath = filepath.includes('/')
@@ -370,7 +370,7 @@ class PDFManagementService {
       console.error('❌ Failed to share QR image:', error);
       return {
         success: false,
-        error: error.message
+        error: (error as Error).message
       };
     }
   }

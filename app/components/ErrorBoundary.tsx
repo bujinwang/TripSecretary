@@ -15,8 +15,28 @@ import {
 } from 'react-native';
 import { colors, typography, spacing } from '../theme';
 
-class ErrorBoundary extends React.Component {
-  constructor(props) {
+interface ErrorBoundaryProps {
+  children?: React.ReactNode;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+  onRetry?: (retryCount: number) => void;
+  fallback?: React.ReactNode;
+  retryCount?: number;
+  hasError?: boolean;
+  showErrorDetails?: boolean;
+  showRetryButton?: boolean;
+  containerStyle?: Record<string, unknown>;
+  [extra: string]: unknown;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+  errorInfo: React.ErrorInfo | null;
+  retryCount: number;
+}
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {
       hasError: false,

@@ -24,26 +24,25 @@ const SGArrivalGuideScreen: React.FC<SGArrivalGuideProps> = ({ navigation, route
     travelInfo = null,
   } = route.params ?? {};
   const passport = UserDataService.toSerializablePassport(rawPassport) as SerializablePassport | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { t } = useLocale() as any;
+  const { t } = useLocale();
 
   const steps = useMemo(
     () =>
-      t('singapore.guide.steps', {
+      (t('singapore.guide.steps', {
         returnObjects: true,
         defaultValue: [],
         passport,
         travelInfo,
-      }),
+      }) as unknown[]),
     [t, passport, travelInfo]
   );
 
   const quickActions = useMemo(
     () =>
-      t('singapore.guide.quickActions.items', {
+      (t('singapore.guide.quickActions.items', {
         returnObjects: true,
         defaultValue: [],
-      }),
+      }) as unknown[]),
     [t]
   );
 
@@ -74,7 +73,7 @@ const SGArrivalGuideScreen: React.FC<SGArrivalGuideProps> = ({ navigation, route
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('singapore.guide.stepSectionTitle')}</Text>
-          {steps.map((step, index) => (
+          {steps.map((step: Record<string, unknown>, index: number) => (
             <View key={`sg-step-${index}`} style={styles.stepCard}>
               <View style={styles.stepHeader}>
                 <View style={styles.stepNumber}>
@@ -86,7 +85,7 @@ const SGArrivalGuideScreen: React.FC<SGArrivalGuideProps> = ({ navigation, route
                 </View>
               </View>
               <View style={styles.stepBody}>
-                {step.details?.map((detail, detailIndex) => (
+                {step.details?.map((detail: string, detailIndex: number) => (
                   <Text key={`sg-step-${index}-detail-${detailIndex}`} style={styles.stepBullet}>
                     • {detail}
                   </Text>
@@ -99,7 +98,7 @@ const SGArrivalGuideScreen: React.FC<SGArrivalGuideProps> = ({ navigation, route
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('singapore.guide.quickActions.title')}</Text>
           <View style={styles.quickActions}>
-            {quickActions.map((action, index) => (
+            {quickActions.map((action: Record<string, unknown>, index: number) => (
               <View key={`sg-action-${index}`} style={styles.quickActionCard}>
                 <Text style={styles.quickActionIcon}>{action.icon}</Text>
                 <Text style={styles.quickActionTitle}>{action.title}</Text>

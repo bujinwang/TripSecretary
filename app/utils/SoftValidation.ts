@@ -11,45 +11,96 @@
 
 import { EntryFieldsConfig, validateFieldValue } from '../config/entryFieldsConfig';
 
-/**
- * Validation result types
- */
+interface CategoryValidationResult {
+  category: string;
+  warnings: unknown[];
+  errors: unknown[];
+  completedCount: number;
+  totalCount: number;
+  completionPercent: number;
+  isComplete: boolean;
+  hasErrors: boolean;
+  hasWarnings: boolean;
+}
+
+export interface FieldValidationResult {
+  type: string;
+  severity: string;
+  isValid: boolean;
+  message: string | null;
+  fieldName: string;
+  category: string | null;
+  helpText?: string;
+  error?: string;
+}
+
+interface CategoryConfig {
+  label?: string;
+  icon?: string;
+  isArray?: boolean;
+  requiredFieldCount: number;
+  fields: Array<{
+    name: string;
+    type?: string;
+    validator?: (value: unknown) => { isValid: boolean; message: string };
+    inputType?: string;
+    maxLength?: number;
+    helpText?: string;
+    placeholder?: string;
+    label?: string;
+    itemFields?: Array<{ name: string }>;
+  }>;
+}
+
+interface ValidationSummary {
+  isValid: boolean;
+  canSubmit: boolean;
+  canNavigate: boolean;
+  warnings: unknown[];
+  errors: unknown[];
+  categoryResults: Record<string, CategoryValidationResult>;
+  summary: {
+    totalFields: number;
+    completedFields: number;
+    completionPercent: number;
+    warningCount: number;
+    errorCount: number;
+  };
+}
+
+interface DisplaySummary {
+  completionPercent: number;
+  status: string;
+  message: string;
+  categories: Array<{
+    name: string;
+    label: string;
+    icon: string;
+    status: string;
+    completedCount: number;
+    totalCount: number;
+    completionPercent: number;
+  }>;
+  canSubmit: boolean;
+  canNavigate: boolean;
+}
+
 export const ValidationTypes = {
-  ERROR: 'error',     // Format error - blocks submission
-  WARNING: 'warning', // Missing field - shows warning but allows navigation
-  SUCCESS: 'success'  // Valid field
-};
+  ERROR: 'error',
+  WARNING: 'warning',
+  SUCCESS: 'success'
+} as const;
 
-/**
- * Validation severity levels
- */
 export const ValidationSeverity = {
-  CRITICAL: 'critical', // Must be fixed before submission
-  HIGH: 'high',        // Should be fixed but not blocking
-  MEDIUM: 'medium',    // Recommended to fix
-  LOW: 'low'          // Optional improvement
-};
+  CRITICAL: 'critical',
+  HIGH: 'high',
+  MEDIUM: 'medium',
+  LOW: 'low'
+} as const;
 
-/**
- * @class SoftValidation
- * @classdesc Provides soft validation for progressive entry flow
- * 
- * Distinguishes between:
- * - Errors: Format/validation errors that prevent submission
- * - Warnings: Missing required fields that show warnings but allow navigation
- */
 class SoftValidation {
-  /**
-   * Validate a single field value
-   * @param {string} fieldName - Field name (e.g., 'passportNumber', 'email')
-   * @param {*} value - Field value to validate
-   * @param {Object} rules - Validation rules (optional, uses config if not provided)
-   * @param {Object} allData - All form data for cross-field validation
-   * @returns {Object} Validation result
-   */
-  static validateField(fieldName, value, rules = null, allData = {}) {
+  static validateField(fieldName: string, value: unknown, rules: { validator?: (value: unknown, allData?: Record<string, unknown>) => { isValid: boolean; message: string } } | null = null, allData: Record<string, unknown> = {}): FieldValidationResult {
     try {
-      // Find field configuration across all categories
       const fieldConfig = SoftValidation._findFieldConfig(fieldName);
       
       if (!fieldConfig) {
@@ -63,7 +114,6 @@ class SoftValidation {
         };
       }
 
-      // Use provided rules or field configuration validator
       const validator = rules?.validator || fieldConfig.validator;
       
       if (!validator) {
@@ -77,7 +127,6 @@ class SoftValidation {
         };
       }
 
-      // Handle empty/null values
       if (SoftValidation._isEmpty(value)) {
         if (fieldConfig.type === 'required') {
           return {
@@ -101,8 +150,7 @@ class SoftValidation {
         }
       }
 
-      // Validate format using field validator
-      let validationResult;
+      let validationResult: { isValid: boolean; message: string };
       try {
         validationResult = validator(value, allData);
       } catch (error) {
@@ -132,26 +180,20 @@ class SoftValidation {
         message: 'Validation error occurred',
         fieldName,
         category: null,
-        error: error.message
+        error: (error as Error).message
       };
     }
   }
 
-  /**
-   * Collect all validation warnings and errors for entry info
-   * @param {Object} entryInfo - Complete entry information object
-   * @returns {Object} Validation summary with warnings and errors
-   */
-  static collectWarnings(entryInfo) {
+  static collectWarnings(entryInfo: Record<string, unknown>): ValidationSummary {
     try {
-      const warnings = [];
-      const errors = [];
-      const categoryResults = {};
+      const warnings: unknown[] = [];
+      const errors: unknown[] = [];
+      const categoryResults: Record<string, CategoryValidationResult> = {};
 
-      // Validate each category
       Object.keys(EntryFieldsConfig).forEach(categoryName => {
-        const categoryConfig = EntryFieldsConfig[categoryName];
-        const categoryData = entryInfo[categoryName] || {};
+        const categoryConfig = (EntryFieldsConfig as Record<string, CategoryConfig>)[categoryName];
+        const categoryData = (entryInfo[categoryName] as Record<string, unknown>) || {};
         
         const categoryResult = SoftValidation._validateCategory(
           categoryName, 
@@ -165,8 +207,7 @@ class SoftValidation {
         errors.push(...categoryResult.errors);
       });
 
-      // Calculate overall completion
-      const totalFields = Object.values(EntryFieldsConfig)
+      const totalFields = Object.values(EntryFieldsConfig as Record<string, CategoryConfig>)
         .reduce((sum, config) => sum + config.requiredFieldCount, 0);
       
       const completedFields = Object.values(categoryResults)
@@ -177,7 +218,7 @@ class SoftValidation {
       return {
         isValid: errors.length === 0,
         canSubmit: errors.length === 0 && warnings.length === 0,
-        canNavigate: true, // Always allow navigation in soft validation
+        canNavigate: true,
         warnings,
         errors,
         categoryResults,
@@ -216,30 +257,18 @@ class SoftValidation {
     }
   }
 
-  /**
-   * Validate a specific category of data
-   * @param {string} categoryName - Category name (passport, personalInfo, funds, travel)
-   * @param {Object} categoryConfig - Category configuration
-   * @param {Object} categoryData - Category data to validate
-   * @param {Object} allData - All entry info data for cross-validation
-   * @returns {Object} Category validation result
-   * @private
-   */
-  static _validateCategory(categoryName, categoryConfig, categoryData, allData) {
-    const warnings = [];
-    const errors = [];
+  static _validateCategory(categoryName: string, categoryConfig: CategoryConfig, categoryData: Record<string, unknown>, allData: Record<string, unknown>): CategoryValidationResult {
+    const warnings: unknown[] = [];
+    const errors: unknown[] = [];
     let completedCount = 0;
 
-    // Handle array-type categories (like funds)
     if (categoryConfig.isArray) {
-      const arrayData = categoryData[categoryConfig.fields[0].name] || [];
+      const arrayData = (categoryData[categoryConfig.fields[0].name] as unknown[]) || [];
       
-      // Use the array field's validator directly
-      const arrayResult = categoryConfig.fields[0].validator(arrayData);
+      const arrayResult = categoryConfig.fields[0].validator ? categoryConfig.fields[0].validator(arrayData) : { isValid: false, message: 'No validator' };
       
       if (!arrayResult.isValid) {
         if (arrayData.length === 0) {
-          // Empty array is a warning (missing data)
           warnings.push({
             type: ValidationTypes.WARNING,
             severity: ValidationSeverity.HIGH,
@@ -250,7 +279,6 @@ class SoftValidation {
             helpText: categoryConfig.fields[0].helpText
           });
         } else {
-          // Invalid data format is an error
           errors.push({
             type: ValidationTypes.ERROR,
             severity: ValidationSeverity.CRITICAL,
@@ -262,11 +290,9 @@ class SoftValidation {
           });
         }
       } else {
-        // Valid array data
         completedCount = 1;
       }
     } else {
-      // Handle regular field categories
       categoryConfig.fields.forEach(fieldConfig => {
         const fieldValue = categoryData[fieldConfig.name];
         const fieldResult = SoftValidation.validateField(
@@ -299,15 +325,8 @@ class SoftValidation {
     };
   }
 
-  /**
-   * Find field configuration across all categories
-   * @param {string} fieldName - Field name to find
-   * @returns {Object|null} Field configuration with category info
-   * @private
-   */
-  static _findFieldConfig(fieldName) {
-    for (const [categoryName, categoryConfig] of Object.entries(EntryFieldsConfig)) {
-      // Handle array-type categories
+  static _findFieldConfig(fieldName: string): (CategoryConfig['fields'][0] & { category: string; parentField?: string }) | null {
+    for (const [categoryName, categoryConfig] of Object.entries(EntryFieldsConfig as Record<string, CategoryConfig>)) {
       if (categoryConfig.isArray) {
         const arrayField = categoryConfig.fields[0];
         if (arrayField.name === fieldName) {
@@ -317,7 +336,6 @@ class SoftValidation {
           };
         }
         
-        // Check item fields within array
         if (arrayField.itemFields) {
           const itemField = arrayField.itemFields.find(field => field.name === fieldName);
           if (itemField) {
@@ -329,7 +347,6 @@ class SoftValidation {
           }
         }
       } else {
-        // Handle regular fields
         const field = categoryConfig.fields.find(field => field.name === fieldName);
         if (field) {
           return {
@@ -343,38 +360,27 @@ class SoftValidation {
     return null;
   }
 
-  /**
-   * Check if a value is empty
-   * @param {*} value - Value to check
-   * @returns {boolean} True if value is empty
-   * @private
-   */
-  static _isEmpty(value) {
+  static _isEmpty(value: unknown): boolean {
     if (value === null || value === undefined) {
-return true;
-}
+      return true;
+    }
     if (typeof value === 'string') {
-return value.trim().length === 0;
-}
+      return value.trim().length === 0;
+    }
     if (Array.isArray(value)) {
-return value.length === 0;
-}
+      return value.length === 0;
+    }
     if (typeof value === 'object') {
-return Object.keys(value).length === 0;
-}
+      return Object.keys(value as object).length === 0;
+    }
     return false;
   }
 
-  /**
-   * Get validation rules for a specific field
-   * @param {string} fieldName - Field name
-   * @returns {Object|null} Validation rules
-   */
-  static getFieldRules(fieldName) {
+  static getFieldRules(fieldName: string): Record<string, unknown> | null {
     const fieldConfig = SoftValidation._findFieldConfig(fieldName);
     if (!fieldConfig) {
-return null;
-}
+      return null;
+    }
 
     return {
       required: fieldConfig.type === 'required',
@@ -386,15 +392,10 @@ return null;
     };
   }
 
-  /**
-   * Format validation message for display
-   * @param {Object} validationResult - Validation result object
-   * @returns {string} Formatted message
-   */
-  static formatMessage(validationResult) {
+  static formatMessage(validationResult: FieldValidationResult): string {
     if (!validationResult.message) {
-return '';
-}
+      return '';
+    }
 
     const prefix = validationResult.type === ValidationTypes.ERROR ? '❌' : 
                    validationResult.type === ValidationTypes.WARNING ? '⚠️' : '✅';
@@ -402,12 +403,7 @@ return '';
     return `${prefix} ${validationResult.message}`;
   }
 
-  /**
-   * Get validation summary for UI display
-   * @param {Object} validationResult - Result from collectWarnings()
-   * @returns {Object} UI-friendly summary
-   */
-  static getDisplaySummary(validationResult) {
+  static getDisplaySummary(validationResult: ValidationSummary): DisplaySummary {
     const { summary, categoryResults } = validationResult;
     
     return {
@@ -415,10 +411,10 @@ return '';
       status: summary.completionPercent === 100 ? 'complete' : 
               summary.errorCount > 0 ? 'error' : 'incomplete',
       message: SoftValidation._getStatusMessage(summary),
-      categories: Object.entries(categoryResults).map(([name, result]) => ({
+      categories: (Object.entries(categoryResults) as [string, CategoryValidationResult][]).map(([name, result]) => ({
         name,
-        label: EntryFieldsConfig[name].label,
-        icon: EntryFieldsConfig[name].icon,
+        label: (EntryFieldsConfig as Record<string, CategoryConfig>)[name].label || name,
+        icon: (EntryFieldsConfig as Record<string, CategoryConfig>)[name].icon || '',
         status: result.hasErrors ? 'error' : 
                 result.isComplete ? 'complete' : 'incomplete',
         completedCount: result.completedCount,
@@ -430,13 +426,7 @@ return '';
     };
   }
 
-  /**
-   * Get status message based on validation summary
-   * @param {Object} summary - Validation summary
-   * @returns {string} Status message
-   * @private
-   */
-  static _getStatusMessage(summary) {
+  static _getStatusMessage(summary: ValidationSummary['summary']): string {
     if (summary.errorCount > 0) {
       return `${summary.errorCount} error${summary.errorCount > 1 ? 's' : ''} need to be fixed`;
     }

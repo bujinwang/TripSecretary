@@ -37,7 +37,7 @@ export async function scheduleSimpleReminder() {
 /**
  * Example 2: Schedule a submission window notification
  */
-export async function scheduleSubmissionWindowNotification(arrivalDate) {
+export async function scheduleSubmissionWindowNotification(arrivalDate: Date) {
   try {
     // Calculate 72 hours before arrival
     const submissionDate = new Date(arrivalDate.getTime() - (72 * 60 * 60 * 1000));
@@ -68,7 +68,7 @@ export async function scheduleSubmissionWindowNotification(arrivalDate) {
           }
         ],
         categoryIdentifier: 'submission_reminder'
-      }
+      } as any
     );
     
     console.log('Submission window notification scheduled:', notificationId);
@@ -82,7 +82,7 @@ export async function scheduleSubmissionWindowNotification(arrivalDate) {
 /**
  * Example 3: Schedule urgent deadline notification
  */
-export async function scheduleUrgentDeadlineNotification(arrivalDate) {
+export async function scheduleUrgentDeadlineNotification(arrivalDate: Date) {
   try {
     // Calculate 24 hours before arrival
     const urgentDate = new Date(arrivalDate.getTime() - (24 * 60 * 60 * 1000));
@@ -109,7 +109,7 @@ export async function scheduleUrgentDeadlineNotification(arrivalDate) {
           }
         ],
         categoryIdentifier: 'urgent_reminder'
-      }
+      } as any
     );
     
     console.log('Urgent deadline notification scheduled:', notificationId);
@@ -123,7 +123,7 @@ export async function scheduleUrgentDeadlineNotification(arrivalDate) {
 /**
  * Example 4: Schedule arrival reminder notification
  */
-export async function scheduleArrivalReminder(arrivalDate, entryPackId) {
+export async function scheduleArrivalReminder(arrivalDate: Date, entryPackId: string) {
   try {
     // Calculate 1 day before arrival
     const reminderDate = new Date(arrivalDate.getTime() - (24 * 60 * 60 * 1000));
@@ -155,7 +155,7 @@ export async function scheduleArrivalReminder(arrivalDate, entryPackId) {
           }
         ],
         categoryIdentifier: 'arrival_reminder'
-      }
+      } as any
     );
     
     console.log('Arrival reminder scheduled:', notificationId);
@@ -169,7 +169,7 @@ export async function scheduleArrivalReminder(arrivalDate, entryPackId) {
 /**
  * Example 5: Schedule data change notification
  */
-export async function scheduleDataChangeNotification(entryPackId, changedFields) {
+export async function scheduleDataChangeNotification(entryPackId: string, changedFields: string[]) {
   try {
     const fieldsList = changedFields.join(', ');
     
@@ -204,7 +204,7 @@ export async function scheduleDataChangeNotification(entryPackId, changedFields)
           }
         ],
         categoryIdentifier: 'data_change'
-      }
+      } as any
     );
     
     console.log('Data change notification scheduled:', notificationId);
@@ -218,7 +218,7 @@ export async function scheduleDataChangeNotification(entryPackId, changedFields)
 /**
  * Example 6: Cancel notifications for a specific entry pack
  */
-export async function cancelEntryPackNotifications(entryPackId) {
+export async function cancelEntryPackNotifications(entryPackId: string) {
   try {
     const scheduledNotifications = await NotificationService.getScheduledNotifications();
     

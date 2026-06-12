@@ -192,7 +192,7 @@ export const useQRCodeHandler = ({ passport, route }) => {
               { submissionMethod: 'webview' }
             );
             
-            pdfUrl = pdfSaveResult.filepath;
+            pdfUrl = (pdfSaveResult as { filepath: string }).filepath;
             
             if (__DEV__) {
               console.log('✅ PDF downloaded and saved:', pdfUrl);
@@ -253,7 +253,7 @@ export const useQRCodeHandler = ({ passport, route }) => {
         if (__DEV__) {
           Alert.alert(
             '⚠️ Database Save Error',
-            `Failed to save to digital_arrival_cards table: ${dacError.message}\n\nThe QR code was saved to photos but may not appear in your entry pack.`
+            `Failed to save to digital_arrival_cards table: ${(dacError as Error).message}\n\nThe QR code was saved to photos but may not appear in your entry pack.`
           );
         }
         // Don't block user flow - continue with remaining operations

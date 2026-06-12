@@ -8,142 +8,119 @@
  * Last updated: 2025-01-26
  */
 
-// Exchange rates to THB (Thai Baht)
-// These are approximate rates and should be updated periodically
-const EXCHANGE_RATES_TO_THB = {
-  THB: 1.0,      // Thai Baht (base currency)
-  USD: 33.50,    // US Dollar
-  EUR: 36.80,    // Euro
-  GBP: 42.50,    // British Pound
-  CNY: 4.65,     // Chinese Yuan
-  JPY: 0.23,     // Japanese Yen
-  SGD: 24.80,    // Singapore Dollar
-  HKD: 4.28,     // Hong Kong Dollar
-  KRW: 0.025,    // South Korean Won
-  AUD: 22.10,    // Australian Dollar
-  CAD: 24.50,    // Canadian Dollar
+const EXCHANGE_RATES_TO_THB: Record<string, number> = {
+  THB: 1.0,
+  USD: 33.50,
+  EUR: 36.80,
+  GBP: 42.50,
+  CNY: 4.65,
+  JPY: 0.23,
+  SGD: 24.80,
+  HKD: 4.28,
+  KRW: 0.025,
+  AUD: 22.10,
+  CAD: 24.50,
 };
 
-// Exchange rates to MYR (Malaysian Ringgit)
-const EXCHANGE_RATES_TO_MYR = {
-  MYR: 1.0,      // Malaysian Ringgit (base currency)
-  USD: 4.72,     // US Dollar
-  EUR: 5.18,     // Euro
-  GBP: 5.98,     // British Pound
-  CNY: 0.65,     // Chinese Yuan
-  JPY: 0.032,    // Japanese Yen
-  THB: 0.14,     // Thai Baht
-  SGD: 3.49,     // Singapore Dollar
-  HKD: 0.60,     // Hong Kong Dollar
-  KRW: 0.0035,   // South Korean Won
-  AUD: 3.11,     // Australian Dollar
-  CAD: 3.45,     // Canadian Dollar
+const EXCHANGE_RATES_TO_MYR: Record<string, number> = {
+  MYR: 1.0,
+  USD: 4.72,
+  EUR: 5.18,
+  GBP: 5.98,
+  CNY: 0.65,
+  JPY: 0.032,
+  THB: 0.14,
+  SGD: 3.49,
+  HKD: 0.60,
+  KRW: 0.0035,
+  AUD: 3.11,
+  CAD: 3.45,
 };
 
-// Exchange rates to HKD (Hong Kong Dollar)
-const EXCHANGE_RATES_TO_HKD = {
-  HKD: 1.0,      // Hong Kong Dollar (base currency)
-  USD: 7.82,     // US Dollar
-  EUR: 8.59,     // Euro
-  GBP: 9.92,     // British Pound
-  CNY: 1.08,     // Chinese Yuan
-  JPY: 0.053,    // Japanese Yen
-  THB: 0.23,     // Thai Baht
-  SGD: 5.79,     // Singapore Dollar
-  MYR: 1.66,     // Malaysian Ringgit
-  KRW: 0.0058,   // South Korean Won
-  AUD: 5.16,     // Australian Dollar
-  CAD: 5.73,     // Canadian Dollar
+const EXCHANGE_RATES_TO_HKD: Record<string, number> = {
+  HKD: 1.0,
+  USD: 7.82,
+  EUR: 8.59,
+  GBP: 9.92,
+  CNY: 1.08,
+  JPY: 0.053,
+  THB: 0.23,
+  SGD: 5.79,
+  MYR: 1.66,
+  KRW: 0.0058,
+  AUD: 5.16,
+  CAD: 5.73,
 };
 
-// Exchange rates to SGD (Singapore Dollar)
-const EXCHANGE_RATES_TO_SGD = {
-  SGD: 1.0,      // Singapore Dollar (base currency)
-  USD: 1.35,     // US Dollar
-  EUR: 1.48,     // Euro
-  GBP: 1.71,     // British Pound
-  CNY: 0.19,     // Chinese Yuan
-  JPY: 0.0092,   // Japanese Yen
-  THB: 0.040,    // Thai Baht
-  HKD: 0.17,     // Hong Kong Dollar
-  MYR: 0.29,     // Malaysian Ringgit
-  KRW: 0.0010,   // South Korean Won
-  AUD: 0.89,     // Australian Dollar
-  CAD: 0.99,     // Canadian Dollar
+const EXCHANGE_RATES_TO_SGD: Record<string, number> = {
+  SGD: 1.0,
+  USD: 1.35,
+  EUR: 1.48,
+  GBP: 1.71,
+  CNY: 0.19,
+  JPY: 0.0092,
+  THB: 0.040,
+  HKD: 0.17,
+  MYR: 0.29,
+  KRW: 0.0010,
+  AUD: 0.89,
+  CAD: 0.99,
 };
 
-// Exchange rates to TWD (Taiwan Dollar)
-const EXCHANGE_RATES_TO_TWD = {
-  TWD: 1.0,      // Taiwan Dollar (base currency)
-  USD: 31.50,    // US Dollar
-  EUR: 34.60,    // Euro
-  GBP: 40.00,    // British Pound
-  CNY: 4.37,     // Chinese Yuan
-  JPY: 0.21,     // Japanese Yen
-  THB: 0.94,     // Thai Baht
-  SGD: 23.30,    // Singapore Dollar
-  HKD: 4.02,     // Hong Kong Dollar
-  MYR: 6.68,     // Malaysian Ringgit
-  KRW: 0.024,    // South Korean Won
-  AUD: 20.80,    // Australian Dollar
-  CAD: 23.00,    // Canadian Dollar
+const EXCHANGE_RATES_TO_TWD: Record<string, number> = {
+  TWD: 1.0,
+  USD: 31.50,
+  EUR: 34.60,
+  GBP: 40.00,
+  CNY: 4.37,
+  JPY: 0.21,
+  THB: 0.94,
+  SGD: 23.30,
+  HKD: 4.02,
+  MYR: 6.68,
+  KRW: 0.024,
+  AUD: 20.80,
+  CAD: 23.00,
 };
 
-// Exchange rates to USD (US Dollar)
-const EXCHANGE_RATES_TO_USD = {
-  USD: 1.0,      // US Dollar (base currency)
-  EUR: 1.10,     // Euro
-  GBP: 1.27,     // British Pound
-  CNY: 0.14,     // Chinese Yuan
-  JPY: 0.0067,   // Japanese Yen
-  THB: 0.030,    // Thai Baht
-  SGD: 0.74,     // Singapore Dollar
-  HKD: 0.13,     // Hong Kong Dollar
-  MYR: 0.21,     // Malaysian Ringgit
-  TWD: 0.032,    // Taiwan Dollar
-  KRW: 0.00075,  // South Korean Won
-  AUD: 0.66,     // Australian Dollar
-  CAD: 0.73,     // Canadian Dollar
+const EXCHANGE_RATES_TO_USD: Record<string, number> = {
+  USD: 1.0,
+  EUR: 1.10,
+  GBP: 1.27,
+  CNY: 0.14,
+  JPY: 0.0067,
+  THB: 0.030,
+  SGD: 0.74,
+  HKD: 0.13,
+  MYR: 0.21,
+  TWD: 0.032,
+  KRW: 0.00075,
+  AUD: 0.66,
+  CAD: 0.73,
 };
 
-// Map country codes to their exchange rate tables
-const COUNTRY_EXCHANGE_RATES = {
-  thailand: EXCHANGE_RATES_TO_THB,
-  malaysia: EXCHANGE_RATES_TO_MYR,
-  hongkong: EXCHANGE_RATES_TO_HKD,
-  singapore: EXCHANGE_RATES_TO_SGD,
-  taiwan: EXCHANGE_RATES_TO_TWD,
-  usa: EXCHANGE_RATES_TO_USD,
-  // Add more countries as needed
-};
+interface FundItem {
+  amount?: number | string;
+  currency?: string;
+  [key: string]: unknown;
+}
 
-/**
- * Convert an amount from one currency to another
- *
- * @param {number} amount - The amount to convert
- * @param {string} fromCurrency - The source currency code (e.g., 'USD', 'EUR')
- * @param {string} toCurrency - The target currency code (e.g., 'THB', 'MYR')
- * @returns {number} The converted amount
- */
-export const convertCurrency = (amount, fromCurrency, toCurrency) => {
+export const convertCurrency = (amount: number, fromCurrency: string, toCurrency: string): number => {
   if (!amount || amount === 0) {
-return 0;
-}
+    return 0;
+  }
   if (!fromCurrency || !toCurrency) {
-return amount;
-}
+    return amount;
+  }
 
-  // Normalize currency codes to uppercase
   const from = fromCurrency.toUpperCase();
   const to = toCurrency.toUpperCase();
 
-  // If same currency, no conversion needed
   if (from === to) {
-return amount;
-}
+    return amount;
+  }
 
-  // Get the appropriate exchange rate table based on target currency
-  let ratesTable;
+  let ratesTable: Record<string, number>;
   switch (to) {
     case 'THB':
       ratesTable = EXCHANGE_RATES_TO_THB;
@@ -168,7 +145,6 @@ return amount;
       ratesTable = EXCHANGE_RATES_TO_THB;
   }
 
-  // Get the exchange rate for the source currency
   const rate = ratesTable[from];
 
   if (!rate) {
@@ -176,23 +152,11 @@ return amount;
     return amount;
   }
 
-  // Convert the amount
-  const convertedAmount = amount * rate;
-
-  return convertedAmount;
+  return amount * rate;
 };
 
-/**
- * Convert an amount to a country's local currency
- *
- * @param {number} amount - The amount to convert
- * @param {string} fromCurrency - The source currency code
- * @param {string} country - The country code (e.g., 'thailand', 'malaysia')
- * @returns {number} The converted amount in the country's currency
- */
-export const convertToCountryCurrency = (amount, fromCurrency, country) => {
-  // Map country to its currency
-  const countryCurrencyMap = {
+export const convertToCountryCurrency = (amount: number, fromCurrency: string, country: string): number => {
+  const countryCurrencyMap: Record<string, string> = {
     th: 'THB',
     my: 'MYR',
     hk: 'HKD',
@@ -208,23 +172,16 @@ export const convertToCountryCurrency = (amount, fromCurrency, country) => {
   return convertCurrency(amount, fromCurrency, toCurrency);
 };
 
-/**
- * Calculate total funds by converting all amounts to a target currency
- *
- * @param {Array} funds - Array of fund objects with amount and currency
- * @param {string} targetCurrency - The target currency code (e.g., 'THB', 'MYR')
- * @returns {number} The total amount in the target currency
- */
-export const calculateTotalFundsInCurrency = (funds, targetCurrency) => {
+export const calculateTotalFundsInCurrency = (funds: FundItem[], targetCurrency: string): number => {
   if (!Array.isArray(funds)) {
-return 0;
-}
+    return 0;
+  }
 
   return funds.reduce((total, fund) => {
     const amount = Number(fund?.amount);
     if (Number.isNaN(amount) || amount === 0) {
-return total;
-}
+      return total;
+    }
 
     const currency = fund?.currency || targetCurrency;
     const convertedAmount = convertCurrency(amount, currency, targetCurrency);
@@ -233,16 +190,8 @@ return total;
   }, 0);
 };
 
-/**
- * Calculate total funds for a specific country (converts to country's currency)
- *
- * @param {Array} funds - Array of fund objects with amount and currency
- * @param {string} country - The country code (e.g., 'thailand', 'malaysia')
- * @returns {number} The total amount in the country's currency
- */
-export const calculateTotalFundsForCountry = (funds, country = 'th') => {
-  // Map country to its currency
-  const countryCurrencyMap = {
+export const calculateTotalFundsForCountry = (funds: FundItem[], country = 'th'): number => {
+  const countryCurrencyMap: Record<string, string> = {
     th: 'THB',
     my: 'MYR',
     hk: 'HKD',
@@ -258,14 +207,8 @@ export const calculateTotalFundsForCountry = (funds, country = 'th') => {
   return calculateTotalFundsInCurrency(funds, targetCurrency);
 };
 
-/**
- * Get the currency code for a country
- *
- * @param {string} country - The country code
- * @returns {string} The currency code
- */
-export const getCountryCurrency = (country) => {
-  const countryCurrencyMap = {
+export const getCountryCurrency = (country: string): string => {
+  const countryCurrencyMap: Record<string, string> = {
     th: 'THB',
     my: 'MYR',
     hk: 'HKD',

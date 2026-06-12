@@ -46,19 +46,19 @@ const EntryRequirementsTemplate = ({ navigation, route, config }: EntryRequireme
   const passport = UserDataService.toSerializablePassport(rawPassport);
 
   const headerTitle = config?.headerTitleKey
-    ? t(config.headerTitleKey, { defaultValue: config.headerTitleDefault })
+    ? t(config.headerTitleKey, { defaultValue: config.headerTitleDefault as string | undefined })
     : config?.headerTitle || '';
 
   const backLabel = config?.backLabelKey
-    ? t(config.backLabelKey, { defaultValue: config.backLabelDefault || t('common.back') })
+    ? t(config.backLabelKey, { defaultValue: (config.backLabelDefault as string) || t('common.back') })
     : config?.backLabel || t('common.back');
 
   const introTitle = config?.introTitleKey
-    ? t(config.introTitleKey, { defaultValue: config.introTitleDefault })
+    ? t(config.introTitleKey, { defaultValue: config.introTitleDefault as string | undefined })
     : config?.introTitle || '';
 
   const introSubtitle = config?.introSubtitleKey
-    ? t(config.introSubtitleKey, { defaultValue: config.introSubtitleDefault })
+    ? t(config.introSubtitleKey, { defaultValue: config.introSubtitleDefault as string | undefined })
     : config?.introSubtitle || '';
 
   interface ResolvedRequirement {
@@ -82,17 +82,17 @@ const EntryRequirementsTemplate = ({ navigation, route, config }: EntryRequireme
         : req.description || '',
       details: normalizeItems(
         req.detailsKey
-          ? t(req.detailsKey, { defaultValue: req.detailsDefault || [] })
+          ? t(req.detailsKey, { defaultValue: (req.detailsDefault as any) || [] })
           : req.details || []
       ),
     }));
   }, [config?.requirements, t]);
 
   const infoBoxTitle = config?.infoBox?.titleKey
-    ? t(config.infoBox.titleKey, { defaultValue: config.infoBox.titleDefault })
+    ? t(config.infoBox.titleKey, { defaultValue: config.infoBox.titleDefault as string })
     : config?.infoBox?.title || '';
   const infoBoxSubtitle = config?.infoBox?.subtitleKey
-    ? t(config.infoBox.subtitleKey, { defaultValue: config.infoBox.subtitleDefault })
+    ? t(config.infoBox.subtitleKey, { defaultValue: config.infoBox.subtitleDefault as string })
     : config?.infoBox?.subtitle || '';
   const infoBoxIcon = config?.infoBox?.icon || '📝';
 
@@ -153,7 +153,7 @@ const EntryRequirementsTemplate = ({ navigation, route, config }: EntryRequireme
           <TouchableOpacity style={styles.continueButton} onPress={handlePrimaryAction}>
             <Text style={styles.continueButtonText}>
               {config?.primaryAction?.labelKey
-                ? t(config.primaryAction.labelKey, { defaultValue: config.primaryAction.labelDefault })
+                ? t(config.primaryAction.labelKey, { defaultValue: config.primaryAction.labelDefault as string | undefined })
                 : config?.primaryAction?.label || t('common.continue', { defaultValue: 'Continue' })}
             </Text>
           </TouchableOpacity>

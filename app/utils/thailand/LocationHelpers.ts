@@ -23,7 +23,7 @@ import { getDistrictsByProvince, getSubDistrictsByDistrictId } from '../../data/
  * normalizeLocationValue(null)
  * // Returns: ""
  */
-export const normalizeLocationValue = (value) => (value || '').toString().trim().toLowerCase();
+export const normalizeLocationValue = (value: string | number | null | undefined) => (value || '').toString().trim().toLowerCase();
 
 /**
  * Finds a district option by matching against English, Thai, and Chinese names.
@@ -40,7 +40,7 @@ export const normalizeLocationValue = (value) => (value || '').toString().trim()
  * findDistrictOption("10", "บางรัก")
  * // Returns: { id: "1001", nameEn: "Bang Rak", nameTh: "บางรัก", nameZh: "邦拉", provinceCode: "10" }
  */
-export const findDistrictOption = (provinceCode, targetValue) => {
+export const findDistrictOption = (provinceCode: string, targetValue: string) => {
   if (!provinceCode || !targetValue) {
     return null;
   }
@@ -83,7 +83,7 @@ return false;
  * findSubDistrictOption("1001", "สีลม")
  * // Returns: { id: "100101", nameEn: "Silom", nameTh: "สีลม", nameZh: "是隆", districtId: "1001" }
  */
-export const findSubDistrictOption = (districtId, targetValue) => {
+export const findSubDistrictOption = (districtId: string, targetValue: string) => {
   if (!districtId || !targetValue) {
     return null;
   }
@@ -122,7 +122,7 @@ return false;
  * getLocalizedDistrictName({ nameEn: "Bang Rak", nameTh: "บางรัก", nameZh: "邦拉" }, "zh")
  * // Returns: "邦拉"
  */
-export const getLocalizedDistrictName = (district, locale = 'en') => {
+export const getLocalizedDistrictName = (district: Record<string, string> | null | undefined, locale = 'en') => {
   if (!district) {
 return '';
 }
@@ -147,7 +147,7 @@ return '';
  * getLocalizedSubDistrictName({ nameEn: "Silom", nameTh: "สีลม", nameZh: "是隆" }, "zh")
  * // Returns: "是隆"
  */
-export const getLocalizedSubDistrictName = (subDistrict, locale = 'en') => {
+export const getLocalizedSubDistrictName = (subDistrict: Record<string, string> | null | undefined, locale = 'en') => {
   if (!subDistrict) {
 return '';
 }

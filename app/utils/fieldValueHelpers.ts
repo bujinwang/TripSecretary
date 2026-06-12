@@ -19,7 +19,7 @@
  * - Array: valid if has at least one element
  * - Object: valid if has at least one property
  */
-export const hasValidValue = (value) => {
+export const hasValidValue = (value: unknown) => {
   // null or undefined are not valid values
   if (value === null || value === undefined) {
     return false;
@@ -66,7 +66,7 @@ export const hasValidValue = (value) => {
  * - Empty string vs null/undefined
  * - Arrays and objects (shallow comparison)
  */
-export const hasValueChanged = (value1, value2) => {
+export const hasValueChanged = (value1: unknown, value2: unknown) => {
   // Same reference or strict equality
   if (value1 === value2) {
     return false;
@@ -119,7 +119,7 @@ return true;
  * - Boolean/Number → unchanged
  * - Array/Object → unchanged
  */
-export const normalizeFieldValue = (value) => {
+export const normalizeFieldValue = (value: unknown) => {
   // null or undefined → null
   if (value === null || value === undefined) {
     return null;

@@ -70,45 +70,45 @@ export const useThailandFormState = (passport) => {
   const [customAccommodationType, setCustomAccommodationType] = useState('');
   const [province, setProvince] = useState('');
   const [district, setDistrict] = useState('');
-  const [districtId, setDistrictId] = useState(null);
+  const [districtId, setDistrictId] = useState<number | null>(null);
   const [subDistrict, setSubDistrict] = useState('');
-  const [subDistrictId, setSubDistrictId] = useState(null);
+  const [subDistrictId, setSubDistrictId] = useState<number | null>(null);
   const [postalCode, setPostalCode] = useState('');
   const [hotelAddress, setHotelAddress] = useState('');
 
   // ========== Document Photos State ==========
-  const [flightTicketPhoto, setFlightTicketPhoto] = useState(null);
-  const [departureFlightTicketPhoto, setDepartureFlightTicketPhoto] = useState(null);
-  const [hotelReservationPhoto, setHotelReservationPhoto] = useState(null);
+  const [flightTicketPhoto, setFlightTicketPhoto] = useState<string | null>(null);
+  const [departureFlightTicketPhoto, setDepartureFlightTicketPhoto] = useState<string | null>(null);
+  const [hotelReservationPhoto, setHotelReservationPhoto] = useState<string | null>(null);
 
   // ========== Funds State ==========
   const [funds, setFunds] = useState([]);
   const [fundItemModalVisible, setFundItemModalVisible] = useState(false);
-  const [selectedFundItem, setSelectedFundItem] = useState(null);
-  const [currentFundItem, setCurrentFundItem] = useState(null);
-  const [newFundItemType, setNewFundItemType] = useState(null);
+  const [selectedFundItem, setSelectedFundItem] = useState<Record<string, unknown> | null>(null);
+  const [currentFundItem, setCurrentFundItem] = useState<Record<string, unknown> | null>(null);
+  const [newFundItemType, setNewFundItemType] = useState<string | null>(null);
 
   // ========== Data Model State ==========
-  const [passportData, setPassportData] = useState(null);
-  const [personalInfoData, setPersonalInfoData] = useState(null);
-  const [entryData, setEntryData] = useState(null);
-  const [entryInfoId, setEntryInfoId] = useState(null);
+  const [passportData, setPassportData] = useState<Record<string, unknown> | null>(null);
+  const [personalInfoData, setPersonalInfoData] = useState<Record<string, unknown> | null>(null);
+  const [entryData, setEntryData] = useState<Record<string, unknown> | null>(null);
+  const [entryInfoId, setEntryInfoId] = useState<string | null>(null);
   const [entryInfoInitialized, setEntryInfoInitialized] = useState(false);
 
   // ========== UI State ==========
   const [errors, setErrors] = useState({});
   const [warnings, setWarnings] = useState({});
   const [isLoading, setIsLoading] = useState(true);
-  const [expandedSection, setExpandedSection] = useState(null);
-  const [lastEditedField, setLastEditedField] = useState(null);
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [lastEditedField, setLastEditedField] = useState<string | null>(null);
   const [scrollPosition, setScrollPosition] = useState(0);
 
   // ========== Save State ==========
-  const [saveStatus, setSaveStatus] = useState(null);
-  const [lastEditedAt, setLastEditedAt] = useState(null);
+  const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const [lastEditedAt, setLastEditedAt] = useState<Date | null>(null);
 
   // ========== Completion Tracking State ==========
-  const [completionMetrics, setCompletionMetrics] = useState(null);
+  const [completionMetrics, setCompletionMetrics] = useState<Record<string, unknown> | null>(null);
   const [totalCompletionPercent, setTotalCompletionPercent] = useState(0);
 
   // Computed values

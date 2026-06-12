@@ -27,8 +27,8 @@ const generateSessionId = () => `session_${Date.now()}_${Math.random().toString(
  * @param {string} screenId - Unique identifier for the screen/form
  * @returns {Object} Hook interface with tracking methods
  */
-export const useUserInteractionTracker = (screenId) => {
-  const [interactionState, setInteractionState] = useState({});
+export const useUserInteractionTracker = (screenId: string) => {
+  const [interactionState, setInteractionState] = useState<Record<string, unknown>>({});
   const [isInitialized, setIsInitialized] = useState(false);
   const sessionIdRef = useRef(generateSessionId());
   const storageKey = `${STORAGE_KEY_PREFIX}${screenId}`;
@@ -48,7 +48,7 @@ export const useUserInteractionTracker = (screenId) => {
             const fieldInteractions = parsedState.fieldInteractions || {};
             
             // Validate each field interaction
-            const validatedInteractions = {};
+            const validatedInteractions: Record<string, unknown> = {};
             let hasCorruption = false;
             
             Object.keys(fieldInteractions).forEach(fieldName => {
@@ -104,7 +104,7 @@ export const useUserInteractionTracker = (screenId) => {
   /**
    * Save interaction state to AsyncStorage with error recovery
    */
-  const saveInteractionState = useCallback(async (newState) => {
+  const saveInteractionState = useCallback(async (newState: Record<string, unknown>) => {
     try {
       // Validate state before saving
       if (!newState || typeof newState !== 'object') {
@@ -159,7 +159,7 @@ export const useUserInteractionTracker = (screenId) => {
    * @param {string} fieldName - Name of the field
    * @param {any} value - Current value of the field
    */
-  const markFieldAsModified = useCallback((fieldName, value) => {
+  const markFieldAsModified = useCallback((fieldName: string, value: unknown) => {
     try {
       if (!fieldName || typeof fieldName !== 'string') {
         console.warn('Invalid fieldName provided to markFieldAsModified:', fieldName);
@@ -197,7 +197,7 @@ export const useUserInteractionTracker = (screenId) => {
    * @param {string} fieldName - Name of the field
    * @returns {boolean} True if field has been user-modified
    */
-  const isFieldUserModified = useCallback((fieldName) => interactionState[fieldName]?.isUserModified || false, [interactionState]);
+  const isFieldUserModified = useCallback((fieldName: string) => (interactionState[fieldName] as Record<string, unknown> | undefined)?.isUserModified || false, [interactionState]);
 
   /**
    * Get list of all user-modified field names
@@ -213,7 +213,7 @@ export const useUserInteractionTracker = (screenId) => {
    * 
    * @param {string} fieldName - Name of the field to reset
    */
-  const resetField = useCallback((fieldName) => {
+  const resetField = useCallback((fieldName: string) => {
     setInteractionState(prevState => {
       const newState = { ...prevState };
       delete newState[fieldName];
@@ -231,7 +231,7 @@ export const useUserInteractionTracker = (screenId) => {
    * 
    * @param {Object} existingData - Object containing existing field values
    */
-  const initializeWithExistingData = useCallback((existingData) => {
+  const initializeWithExistingData = useCallback((existingData: Record<string, unknown>) => {
     try {
       if (!existingData || typeof existingData !== 'object') {
         console.warn('Invalid existingData provided to initializeWithExistingData');
@@ -283,7 +283,7 @@ export const useUserInteractionTracker = (screenId) => {
    * @param {string} fieldName - Name of the field
    * @returns {Object|null} Interaction details or null if not tracked
    */
-  const getFieldInteractionDetails = useCallback((fieldName) => interactionState[fieldName] || null, [interactionState]);
+  const getFieldInteractionDetails = useCallback((fieldName: string) => interactionState[fieldName] || null, [interactionState]);
 
   /**
    * Clear all interaction state

@@ -158,7 +158,7 @@ export const hongkongSubDistricts = {};
  * @param {string} regionCode - Region code/ID (HONG_KONG_ISLAND, KOWLOON, NEW_TERRITORIES)
  * @returns {Array} - Array of district objects with proper structure
  */
-export function getDistrictsByProvince(regionCode) {
+export function getDistrictsByProvince(regionCode: string) {
   if (!regionCode) {
 return [];
 }
@@ -166,7 +166,7 @@ return [];
   const districts = hongkongDistricts[normalizedRegion] || [];
 
   // Add regionCode and proper structure for LocationHierarchySelector
-  return districts.map((district) => ({
+  return districts.map((district: Record<string, unknown>) => ({
     ...district,
     code: `HK-${district.id}`,
     name: district.nameEn,
@@ -181,7 +181,7 @@ return [];
  * @param {number} districtId - District ID
  * @returns {Array} - Empty array (no sub-districts in Hong Kong)
  */
-export function getSubDistrictsByDistrictId(districtId) {
+export function getSubDistrictsByDistrictId(districtId: number) {
   // Hong Kong doesn't have sub-districts
   return [];
 }
@@ -191,7 +191,7 @@ export function getSubDistrictsByDistrictId(districtId) {
  * @param {string} regionCode - Region code
  * @returns {string} Region display name
  */
-export function getRegionDisplayName(regionCode) {
+export function getRegionDisplayName(regionCode: string) {
   const region = hongkongRegions.find((r) => r.code === regionCode || r.id === regionCode);
   if (!region) {
 return '';
@@ -204,10 +204,10 @@ return '';
  * @param {number|string} districtId - District ID
  * @returns {string} District display name
  */
-export function getDistrictDisplayName(districtId) {
+export function getDistrictDisplayName(districtId: number | string) {
   // Search through all regions for the district
   for (const regionKey in hongkongDistricts) {
-    const district = hongkongDistricts[regionKey].find((d) => d.id.toString() === districtId.toString());
+    const district = hongkongDistricts[regionKey].find((d: Record<string, unknown>) => String(d.id) === String(districtId));
     if (district) {
       return `${district.nameEn} - ${district.nameZh}`;
     }

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 /**
  * Progressive Entry Flow Performance Tests
  * End-to-end performance tests for complete user flows
@@ -64,14 +62,14 @@ describe('Progressive Entry Flow Performance Tests', () => {
     jest.clearAllMocks();
     
     // Setup default mock responses
-    UserDataService.initialize.mockResolvedValue(true);
-    UserDataService.getPrimaryPassport.mockResolvedValue({
+    (UserDataService.initialize as jest.Mock).mockResolvedValue(true);
+    (UserDataService.getPrimaryPassport as jest.Mock).mockResolvedValue({
       fullName: 'John Doe',
       passportNumber: 'A12345678',
       expiryDate: '2025-12-31'
     });
     
-    EntryInfoService.getHomeScreenData.mockResolvedValue({
+    (EntryInfoService.getHomeScreenData as jest.Mock).mockResolvedValue({
       submittedEntryPacks: [],
       inProgressDestinations: [],
       summary: {
@@ -131,7 +129,7 @@ describe('Progressive Entry Flow Performance Tests', () => {
         }
       };
       
-      EntryInfoService.getHomeScreenData.mockResolvedValue(largeEntryPackData);
+      (EntryInfoService.getHomeScreenData as jest.Mock).mockResolvedValue(largeEntryPackData);
       
       const startTime = performance.now();
       
@@ -213,7 +211,8 @@ describe('Progressive Entry Flow Performance Tests', () => {
     });
 
     it('should optimize FlatList performance with proper configuration', async () => {
-      const optimizedProps = LazyLoadingHelper.getOptimizedFlatListProps({
+      const lazyHelper = new LazyLoadingHelper();
+      const optimizedProps = lazyHelper.getOptimizedFlatListProps({
         itemHeight: 120,
         windowSize: 10,
         initialNumToRender: 8
@@ -371,7 +370,8 @@ describe('Progressive Entry Flow Performance Tests', () => {
     });
 
     it('should provide list optimization recommendations', () => {
-      const recommendations = LazyLoadingHelper.getListOptimizationRecommendations({
+      const lazyHelper2 = new LazyLoadingHelper();
+      const recommendations = (lazyHelper2 as LazyLoadingHelper & { getListOptimizationRecommendations: (opts: Record<string, unknown>) => Array<{ type: string; priority: string; message: string; category: string }> }).getListOptimizationRecommendations({
         itemCount: 1000,
         averageItemHeight: 120,
         renderTime: 150,
@@ -392,7 +392,7 @@ describe('Progressive Entry Flow Performance Tests', () => {
   describe('Error Handling Performance', () => {
     it('should handle errors without significant performance impact', async () => {
       // Mock service to throw error
-      EntryInfoService.getHomeScreenData.mockRejectedValue(new Error('Network error'));
+      (EntryInfoService.getHomeScreenData as jest.Mock).mockRejectedValue(new Error('Network error'));
       
       const startTime = performance.now();
       

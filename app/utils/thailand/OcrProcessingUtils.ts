@@ -8,7 +8,7 @@
  * @param {string} dateString - Date string from OCR
  * @returns {string|null} - Formatted date or null
  */
-export const formatDateForInput = (dateString) => {
+export const formatDateForInput = (dateString: string): string | null => {
   if (!dateString) {
 return null;
 }
@@ -67,12 +67,12 @@ return null;
  * @param {string} cityName - City name from OCR
  * @returns {string|null} - Country code or null
  */
-export const mapCityToCountryCode = (cityName) => {
+export const mapCityToCountryCode = (cityName: string): string | null => {
   if (!cityName) {
 return null;
 }
 
-  const cityToCountry = {
+  const cityToCountry: Record<string, string> = {
     // Major Chinese cities
     '北京': 'CHN', '上海': 'CHN', '广州': 'CHN', '深圳': 'CHN', '成都': 'CHN',
     '杭州': 'CHN', '南京': 'CHN', '武汉': 'CHN', '西安': 'CHN', '重庆': 'CHN',
@@ -115,7 +115,7 @@ return null;
  * @param {string} address - Address string
  * @returns {string|null} - Province name or null
  */
-export const extractProvinceFromAddress = (address) => {
+export const extractProvinceFromAddress = (address: string): string | null => {
   if (!address) {
 return null;
 }
@@ -157,7 +157,14 @@ return null;
  * @param {Function} setters - State setter functions
  * @param {Object} t - Translation function
  */
-export const processTicketOCRResult = async (ocrResult, currentState, setters, t) => {
+interface TicketOCRResult {
+  flightNumber?: string;
+  arrivalDate?: string;
+  departureCity?: string;
+  [key: string]: unknown;
+}
+
+export const processTicketOCRResult = async (ocrResult: TicketOCRResult, currentState: Record<string, string>, setters: Record<string, any>, t: (key: string, options?: Record<string, unknown>) => string) => {
   const { arrivalFlightNumber, departureFlightNumber } = currentState;
   const { setArrivalFlightNumber, setDepartureFlightNumber, setArrivalArrivalDate, setBoardingCountry, setLastEditedField, Alert } = setters;
 
@@ -228,7 +235,7 @@ export const processTicketOCRResult = async (ocrResult, currentState, setters, t
  * @param {Object} currentState - Current state values
  * @param {Function} setters - State setter functions
  */
-export const processHotelOCRResult = async (ocrResult, currentState, setters) => {
+export const processHotelOCRResult = async (ocrResult: Record<string, unknown>, currentState: Record<string, string>, setters: Record<string, any>) => {
   const { arrivalArrivalDate, departureDepartureDate, province } = currentState;
   const { setHotelAddress, setArrivalArrivalDate, setDepartureDepartureDate, setProvince, setLastEditedField } = setters;
 

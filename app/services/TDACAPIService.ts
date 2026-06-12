@@ -1,6 +1,50 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ApiPayload = Record<string, any>;
 
+interface TravelerData {
+  nationality?: string;
+  countryResidence?: string;
+  countryBoarded?: string;
+  nationalityDesc?: string;
+  phoneCode?: string;
+  cityResidence?: string;
+  purpose?: string;
+  travelMode?: string;
+  tranModeId?: string;
+  province?: string;
+  accommodationType?: string;
+  accommodationTypeDisplay?: string;
+  district?: string;
+  subDistrict?: string;
+  postCode?: string;
+  departureTravelMode?: string;
+  departureTransportModeId?: string;
+  departureFlightNo?: string;
+  departureFlightNumber?: string;
+  familyName?: string;
+  middleName?: string;
+  firstName?: string;
+  passportNo?: string;
+  birthDate?: string | { day?: string; month?: string; year?: string };
+  occupation?: string;
+  gender?: string;
+  phoneNo?: string;
+  visaNo?: string;
+  flightNo?: string;
+  address?: string;
+  cloudflareToken?: string;
+  email?: string;
+  arrivalDate?: string;
+  departureDate?: string;
+}
+
+interface SelectItem {
+  key?: string;
+  value?: string;
+  code?: string;
+  id?: string | number;
+}
+
 /**
  * TDAC (Thailand Digital Arrival Card) API Service
  * Complete API implementation for submitting arrival cards directly
@@ -103,27 +147,29 @@ const ID_MAPS = {
 };
 
 class TDACAPIService {
-  constructor() {
-    this.submitId = null;
-    this.cloudflareToken = null;
-    this.actionToken = null; // JWT token from Step 1
-    this.selectItemCache = {
-      gender: {},
-      travelMode: {},
-      accommodation: {},
-      purpose: {}
-    };
-    this.selectItemRows = {
-      gender: [],
-      travelMode: [],
-      accommodation: [],
-      purpose: [],
-      purposeCodeMap: {}
-    };
-    this.dynamicData = {};
-  }
+  // Class properties
+  private submitId: string | null = null;
+  private cloudflareToken: string | null = null;
+  private actionToken: string | null = null; // JWT token from Step 1
+  private selectItemCache: Record<string, Record<string, string>> = {
+    gender: {},
+    travelMode: {},
+    accommodation: {},
+    purpose: {},
+  };
+  private selectItemRows: Record<string, unknown> = {
+    gender: [],
+    travelMode: [],
+    accommodation: [],
+    purpose: [],
+    purposeCodeMap: {} as Record<string, string>,
+  };
+  private dynamicData: Record<string, unknown> = {};
+  private inFormTempId: string | null = null;
 
-  async fetchSelectItems(apiName, body = {}) {
+  constructor() {}
+
+  async fetchSelectItems(apiName: string, body: Record<string, unknown> = {}): Promise<SelectItem[]> {
     console.log(`📤 fetchSelectItems: Calling ${apiName} with body:`, JSON.stringify(body));
     const url = `${BASE_URL}/selectitem/${apiName}?submitId=${this.submitId}`;
     console.log(`   URL: ${url}`);
@@ -154,8 +200,8 @@ class TDACAPIService {
   /**
    * Get common headers for authenticated requests
    */
-  getAuthHeaders() {
-        const headers = {
+  getAuthHeaders(): Record<string, string> {
+        const headers: Record<string, string> = {
           'Content-Type': 'application/json',
           'Accept': '*/*',
           'User-Agent': 'PostmanRuntime/7.49.0',
@@ -173,7 +219,7 @@ class TDACAPIService {
    * Generate submitId
    * Format: mgh4r + 18 random alphanumeric characters
    */
-  generateSubmitId() {
+  generateSubmitId(): string {
     const prefix = 'mgh4r';
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
     let random = '';
@@ -187,7 +233,7 @@ class TDACAPIService {
   /**
    * Step 1: Initialize action token
    */
-  async initActionToken(cloudflareToken) {
+  async initActionToken(cloudflareToken: string): Promise<unknown> {
     this.cloudflareToken = cloudflareToken;
     this.generateSubmitId();
 
@@ -236,19 +282,20 @@ class TDACAPIService {
         try {
           console.log('⏳ Starting fetch request...');
           response = await fetch(fetchUrl, fetchOptions);
-        } catch (error) {
+        } catch (error: unknown) {
+          const err = error as Record<string, unknown>;
           const actualDuration = Date.now() - requestStartTime;
           console.error(`❌ Request failed after ${actualDuration}ms (${Math.round(actualDuration/1000)}s)`);
           console.error('🔍 Error analysis:');
-          console.error('   Error name:', error.name);
-          console.error('   Error message:', error.message);
+          console.error('   Error name:', err.name);
+          console.error('   Error message:', err.message);
           console.error('   Error type:', typeof error);
-          console.error('   Error stack:', `${error.stack?.substring(0, 200)  }...`);
+          console.error('   Error stack:', `${String(err.stack ?? '').substring(0, 200)}...`);
           
-          if (error.name === 'AbortError') {
+          if (err.name === 'AbortError') {
             console.error('⏰ TIMEOUT DETECTED:');
-            console.error('   Configured timeout:', `${timeoutMs  }ms (${  timeoutSeconds  }s)`);
-            console.error('   Actual duration:', `${actualDuration  }ms (${  Math.round(actualDuration/1000)  }s)`);
+            console.error('   Configured timeout:', `${timeoutMs}ms (${timeoutSeconds}s)`);
+            console.error('   Actual duration:', `${actualDuration}ms (${Math.round(actualDuration/1000)}s)`);
             
             // Check if timeout is close to our configured timeout
             const timeoutDiff = Math.abs(actualDuration - timeoutMs);
@@ -261,7 +308,7 @@ class TDACAPIService {
               console.error('   ❓ Timeout timing is unexpected');
             }
             
-            const timeoutError = new Error(`initActionToken request timed out after ${Math.round(actualDuration/1000)} seconds (configured: ${timeoutSeconds}s)`);
+            const timeoutError = new Error(`initActionToken request timed out after ${Math.round(actualDuration/1000)} seconds (configured: ${timeoutSeconds}s)`) as Error & { actualDuration: number; configuredTimeout: number; isExternalTimeout: boolean };
             timeoutError.name = 'TimeoutError';
             timeoutError.actualDuration = actualDuration;
             timeoutError.configuredTimeout = timeoutMs;
@@ -270,10 +317,10 @@ class TDACAPIService {
           }
           
           // Analyze other types of errors
-          if (error.message.includes('Network request failed')) {
+          if (String(err.message ?? '').includes('Network request failed')) {
             console.error('🌐 NETWORK ERROR: Request failed to reach server');
             console.error('   Possible causes: No internet, DNS issues, server down, firewall blocking');
-          } else if (error.message.includes('fetch')) {
+          } else if (String(err.message ?? '').includes('fetch')) {
             console.error('🔧 FETCH ERROR: JavaScript fetch API issue');
             console.error('   Possible causes: React Native fetch polyfill, CORS, invalid URL');
           }
@@ -312,10 +359,11 @@ class TDACAPIService {
         let data;
         try {
           data = JSON.parse(responseText);
-        } catch (parseError) {
+        } catch (parseError: unknown) {
+          const pe = parseError as Error;
           console.error('❌ Step 1: JSON parse error');
           console.error('   response text:', responseText);
-          throw new Error(`initActionToken returned invalid JSON: ${  parseError.message}`);
+          throw new Error(`initActionToken returned invalid JSON: ${pe.message}`);
         }
     
         console.log('✅ Step 1: initActionToken success');
@@ -368,10 +416,11 @@ class TDACAPIService {
     let data;
     try {
       data = JSON.parse(responseText);
-    } catch (parseError) {
+    } catch (parseError: unknown) {
+      const pe = parseError as Error;
       console.error('❌ Step 2: JSON parse error');
       console.error('   response text:', responseText);
-      throw new Error(`gotoAdd returned invalid JSON: ${  parseError.message}`);
+      throw new Error(`gotoAdd returned invalid JSON: ${pe.message}`);
     }
 
     if (data?.messageCode !== 'X00000') {
@@ -403,14 +452,14 @@ class TDACAPIService {
   /**
    * Step 3: Load all select items (parallel)
    */
-  async loadAllSelectItems() {
+  async loadAllSelectItems(_travelerData?: Record<string, unknown>): Promise<unknown[]> {
     console.log('⏳ Step 3: Loading all select items...');
 
     console.log('✅ Step 3: All select items loaded (legacy no-op)');
     return [];
   }
 
-  async prepareDynamicLookups(traveler) {
+  async prepareDynamicLookups(traveler: TravelerData): Promise<void> {
     const normalizedNationality = this.normalizeInput(traveler.nationality) || 'CHN';
     const normalizedResidence = this.normalizeInput(traveler.countryResidence) || normalizedNationality;
     const normalizedBoard = this.normalizeInput(traveler.countryBoarded) || normalizedResidence;
@@ -458,7 +507,7 @@ class TDACAPIService {
       traveler.purpose && traveler.purpose.toString().replace(/\s+/g, '_'),
       traveler.purpose && traveler.purpose.toString().replace(/\s+/g, ' ')
     ];
-    const purposeRow = this.findBestMatch('purposeOfTravel', purposeRowsFromGotoAdd, {
+    const purposeRow = this.findBestMatch('purposeOfTravel', purposeRowsFromGotoAdd as SelectItem[], {
       valueCandidates: purposeInputs,
       allowFallback: true
     });
@@ -546,14 +595,14 @@ class TDACAPIService {
       console.log('✅ Hotel accommodation type detected - skipping district/subDistrict validation');
     }
 
-    const registerRow = (map, keys, row) => {
+    const registerRow = (map: Record<string, unknown>, keys: unknown[], row: Record<string, unknown> | SelectItem | null) => {
       if (!row) {
 return;
 }
       const candidateKeys = (keys || [])
-        .map((k) => this.normalizeInput(k))
-        .filter(Boolean);
-      const valuePrefix = this.normalizeInput((row.value || '').split(':')[0]);
+        .map((k: unknown) => this.normalizeInput(k))
+        .filter(Boolean) as string[];
+      const valuePrefix = this.normalizeInput((String((row as Record<string, unknown>).value ?? '')).split(':')[0]);
       if (valuePrefix) {
 candidateKeys.push(valuePrefix);
 }
@@ -600,7 +649,7 @@ map[key] = row;
   /**
    * Step 4: Check health declaration
    */
-  async checkHealthDeclaration() {
+  async checkHealthDeclaration(): Promise<unknown> {
     console.log('📤 Step 4: Sending checkHealthDeclaration request...');
     
     const response = await fetch(
@@ -632,10 +681,11 @@ map[key] = row;
     let data;
     try {
       data = JSON.parse(responseText);
-    } catch (parseError) {
+    } catch (parseError: unknown) {
+      const pe = parseError as Error;
       console.error('❌ Step 4: JSON parse error');
       console.error('   response text:', responseText.substring(0, 500));
-      throw new Error(`checkHealthDeclaration returned invalid JSON: ${  parseError.message}`);
+      throw new Error(`checkHealthDeclaration returned invalid JSON: ${pe.message}`);
     }
 
     console.log('✅ Step 4: checkHealthDeclaration success');
@@ -646,7 +696,7 @@ map[key] = row;
    * Step 5: Submit form data (next API)
    * This is called for each page of the form
    */
-  async next(formData) {
+  async next(formData: Record<string, unknown>): Promise<unknown> {
     const response = await fetch(
       `${BASE_URL}/arrivalcard/next?submitId=${this.submitId}`,
       {
@@ -676,14 +726,14 @@ map[key] = row;
   /**
    * Step 6: Go to preview (generates hiddenToken!)
    */
-  async gotoPreview(nextResponseData) {
+  async gotoPreview(nextResponseData: Record<string, unknown>): Promise<{ data: unknown; hiddenToken: string }> {
     console.log('📤 Step 6: Sending gotoPreview request...');
     console.log('   nextResponseData:', JSON.stringify(nextResponseData?.data || {}).substring(0, 300));
     
     // The hiddenToken from next() response might need to be set in headers or used differently
     // Try sending hiddenToken in the body as it's the only ID we have
-    const hiddenToken = nextResponseData?.data?.hiddenToken;
-    console.log('   Using hiddenToken from next():', hiddenToken);
+    const token = ((nextResponseData as Record<string, unknown>)?.data as Record<string, unknown> | undefined)?.hiddenToken as string | undefined;
+    console.log('   Using hiddenToken from next():', token);
     
     const response = await fetch(
       `${BASE_URL}/arrivalcard/gotoPreview?submitId=${this.submitId}`,
@@ -691,8 +741,8 @@ map[key] = row;
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify({
-          hiddenToken: hiddenToken || "",
-          relateKey: hiddenToken || ""  // Try using hiddenToken as relateKey
+          hiddenToken: token || "",
+          relateKey: token || ""  // Try using hiddenToken as relateKey
         })
       }
     );
@@ -720,7 +770,7 @@ map[key] = row;
   /**
    * Step 7: Submit the arrival card
    */
-  async submit(hiddenToken, email) {
+  async submit(hiddenToken: string, email: string): Promise<{ data: unknown; hiddenToken: string }> {
     const response = await fetch(
       `${BASE_URL}/arrivalcard/submit?submitId=${this.submitId}`,
       {
@@ -750,7 +800,7 @@ map[key] = row;
   /**
    * Step 8: Get submitted result
    */
-  async gotoSubmitted(hiddenToken) {
+  async gotoSubmitted(hiddenToken: string): Promise<{ data: unknown; arrCardNo: string }> {
     const response = await fetch(
       `${BASE_URL}/arrivalcard/gotoSubmitted?submitId=${this.submitId}`,
       {
@@ -775,7 +825,7 @@ map[key] = row;
   /**
    * Step 9: Download PDF with QR code
    */
-  async downloadPdf(hiddenToken) {
+  async downloadPdf(hiddenToken: string): Promise<Blob> {
     const response = await fetch(
       `${BASE_URL}/arrivalcard/downloadPdf?submitId=${this.submitId}`,
       {
@@ -794,7 +844,7 @@ map[key] = row;
   /**
    * 🚀 MAIN METHOD: Complete submission flow with enhanced validation and error handling
    */
-  async submitArrivalCard(travelerData, attemptNumber = 0) {
+  async submitArrivalCard(travelerData: TravelerData, attemptNumber: number = 0): Promise<Record<string, unknown>> {
     const maxRetries = 3;
     
     try {
@@ -808,12 +858,12 @@ map[key] = row;
 
       // Enhanced pre-submission validation
       console.log('🔍 Validating traveler data...');
-      const travelerValidation = TDACValidationService.validateTravelerData(travelerData);
+      const travelerValidation = TDACValidationService.validateTravelerData(travelerData as Record<string, unknown>);
       
       if (!travelerValidation.isValid) {
-        const validationError = new Error('Traveler data validation failed');
+        const validationError = new Error('Traveler data validation failed') as Error & { details: Record<string, unknown> };
         validationError.name = 'ValidationError';
-        validationError.details = travelerValidation;
+        validationError.details = travelerValidation as Record<string, unknown>;
         throw validationError;
       }
 
@@ -822,7 +872,7 @@ map[key] = row;
       }
 
       // Step 1: Init action token with retry logic
-      await this.initActionTokenWithRetry(travelerData.cloudflareToken, attemptNumber);
+      await this.initActionTokenWithRetry(travelerData.cloudflareToken ?? '', attemptNumber);
 
       // Step 2: Go to add page
       await this.gotoAdd();
@@ -831,7 +881,7 @@ map[key] = row;
       await this.prepareDynamicLookups(travelerData);
 
       // Step 3: Load all select items (required for province/district matching)
-      await this.loadAllSelectItems(travelerData);
+      await this.loadAllSelectItems(travelerData as unknown as Record<string, unknown>);
 
       // Step 4: Check health declaration
       await this.checkHealthDeclaration();
@@ -845,15 +895,15 @@ map[key] = row;
         throw new Error('Form data validation failed');
       }
       
-      const nextResponse = await this.next(formData);
+      const nextResponse = await this.next(formData as Record<string, unknown>);
 
       // Step 6: Go to preview (generates hiddenToken)
-      const { hiddenToken: previewToken } = await this.gotoPreview(nextResponse);
+      const { hiddenToken: previewToken } = await this.gotoPreview(nextResponse as Record<string, unknown>);
 
       // Step 7: Submit
       const { hiddenToken: jwtToken } = await this.submit(
         previewToken,
-        travelerData.email
+        travelerData.email ?? ''
       );
 
       // Step 8: Get result
@@ -901,17 +951,18 @@ map[key] = row;
 
       return result;
 
-    } catch (error) {
-      console.error('❌ TDAC submission failed:', error);
+    } catch (error: unknown) {
+      const caughtError = error instanceof Error ? error : new Error(String(error));
+      console.error('❌ TDAC submission failed:', caughtError);
       
       // Enhanced error handling with retry logic
-      const errorResult = await TDACErrorHandler.handleSubmissionError(error, {
+      const errorResult = await TDACErrorHandler.handleSubmissionError(caughtError, {
         operation: 'tdac_api_submission',
         submissionMethod: 'api',
         travelerData: {
-          passportNo: travelerData.passportNo,
-          arrivalDate: travelerData.arrivalDate,
-          nationality: travelerData.nationality
+          passportNo: travelerData.passportNo as string,
+          arrivalDate: travelerData.arrivalDate as string,
+          nationality: travelerData.nationality as string
         },
         userAgent: 'TDACAPIService'
       }, attemptNumber);
@@ -945,7 +996,7 @@ map[key] = row;
   /**
    * Initialize action token with retry logic
    */
-  async initActionTokenWithRetry(cloudflareToken, attemptNumber = 0) {
+  async initActionTokenWithRetry(cloudflareToken: string, attemptNumber: number = 0): Promise<unknown> {
     try {
       // Validate Cloudflare token before using it
       if (!cloudflareToken || cloudflareToken.length < 100) {
@@ -954,26 +1005,27 @@ map[key] = row;
 
       console.log(`🔄 initActionTokenWithRetry attempt ${attemptNumber + 1}`);
       return await this.initActionToken(cloudflareToken);
-    } catch (error) {
-      console.error('❌ initActionTokenWithRetry failed:', error.message);
+    } catch (error: unknown) {
+      const err = error as Record<string, unknown>;
+      console.error('❌ initActionTokenWithRetry failed:', err.message);
       
       // Check if this is a timeout error and log details
-      if (error.name === 'TimeoutError' || error.message.includes('timeout')) {
+      if (err.name === 'TimeoutError' || String(err.message ?? '').includes('timeout')) {
         console.error('🔍 Timeout error analysis:');
-        console.error('   Error name:', error.name);
-        console.error('   Error message:', error.message);
-        console.error('   Actual duration:', error.actualDuration || 'unknown');
-        console.error('   Configured timeout:', error.configuredTimeout || 'unknown');
+        console.error('   Error name:', err.name);
+        console.error('   Error message:', err.message);
+        console.error('   Actual duration:', err.actualDuration || 'unknown');
+        console.error('   Configured timeout:', err.configuredTimeout || 'unknown');
         
         // If we're seeing a 15-second timeout but configured 60 seconds, there's another timeout source
-        if (error.message.includes('15 seconds') || (error.actualDuration && error.actualDuration < 20000)) {
+        if (String(err.message ?? '').includes('15 seconds') || ((err.actualDuration as number) && (err.actualDuration as number) < 20000)) {
           console.error('⚠️  DETECTED: Timeout is shorter than configured!');
           console.error('   This suggests there is another timeout source (browser, React Native, network layer)');
           console.error('   Consider using WebView mode or investigating network configuration');
         }
       }
       
-      if (error.message.includes('Cloudflare') && attemptNumber === 0) {
+      if (String(err.message ?? '').includes('Cloudflare') && attemptNumber === 0) {
         console.log('🔄 Cloudflare token issue, attempting to refresh...');
         // Could implement token refresh logic here
       }
@@ -984,11 +1036,13 @@ map[key] = row;
   /**
    * Validate form data structure before submission
    */
-  validateFormData(formData) {
+  validateFormData(formData: Record<string, unknown>): boolean {
     try {
       const requiredSections = ['personalInfo', 'tripInfo'];
       const requiredPersonalFields = ['familyName', 'firstName', 'passportNo', 'gender'];
       const requiredTripFields = ['arrDate', 'traPurposeId'];
+      const personalInfo = formData.personalInfo as Record<string, unknown> | undefined;
+      const tripInfo = formData.tripInfo as Record<string, unknown> | undefined;
 
       // Check required sections exist
       for (const section of requiredSections) {
@@ -1000,7 +1054,7 @@ map[key] = row;
 
       // Check required personal info fields
       for (const field of requiredPersonalFields) {
-        if (!formData.personalInfo[field] || !formData.personalInfo[field].toString().trim()) {
+        if (!personalInfo?.[field] || !String(personalInfo[field] ?? '').trim()) {
           console.error(`❌ Missing personal info field: ${field}`);
           return false;
         }
@@ -1008,22 +1062,22 @@ map[key] = row;
 
       // Check required trip info fields
       for (const field of requiredTripFields) {
-        if (!formData.tripInfo[field]) {
+        if (!tripInfo?.[field]) {
           console.error(`❌ Missing trip info field: ${field}`);
           return false;
         }
       }
 
       // Validate date formats
-      if (formData.tripInfo.arrDate && !/^\d{4}\/\d{2}\/\d{2}$/.test(formData.tripInfo.arrDate)) {
-        console.error(`❌ Invalid arrival date format: ${formData.tripInfo.arrDate}`);
+      if (tripInfo?.arrDate && !/^\d{4}\/\d{2}\/\d{2}$/.test(String(tripInfo.arrDate))) {
+        console.error(`❌ Invalid arrival date format: ${tripInfo.arrDate}`);
         return false;
       }
 
       console.log('✅ Form data validation passed');
       return true;
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('❌ Form data validation error:', error);
       return false;
     }
@@ -1032,7 +1086,7 @@ map[key] = row;
   /**
    * Build form data from traveler input
    */
-  buildFormData(traveler) {
+  buildFormData(traveler: TravelerData): Record<string, unknown> {
     console.log('📋 Building form data...');
     
     // Validate required fields
@@ -1041,21 +1095,22 @@ map[key] = row;
                            'cityResidence', 'phoneCode', 'phoneNo'];
     
     for (const field of requiredFields) {
-      if (!traveler[field]) {
+      if (!(traveler as Record<string, unknown>)[field]) {
         console.error('❌ Missing required field:', field);
         console.error('   Traveler data:', JSON.stringify(traveler, null, 2));
-        throw new Error(`Missing required field: ${  field}`);
+        throw new Error(`Missing required field: ${field}`);
       }
     }
     
     // Parse birthDate if it's a string
-    let {birthDate} = traveler;
-    if (typeof birthDate === 'string') {
+    let birthDate: { day: string; month: string; year: string } | undefined = undefined;
+    const rawBirthDate = traveler.birthDate;
+    if (typeof rawBirthDate === 'string') {
       // Assume format: YYYY-MM-DD or DD/MM/YYYY
-      const parts = birthDate.includes('/') ? birthDate.split('/') : birthDate.split('-');
+      const parts = rawBirthDate.includes('/') ? rawBirthDate.split('/') : rawBirthDate.split('-');
       if (parts.length === 3) {
         // Check if it's YYYY-MM-DD or DD/MM/YYYY
-        if (parts[0].length === 4) {
+        if (parts[0] && parts[0].length === 4) {
           // YYYY-MM-DD
           birthDate = { year: parts[0], month: parts[1], day: parts[2] };
         } else {
@@ -1063,8 +1118,15 @@ map[key] = row;
           birthDate = { day: parts[0], month: parts[1], year: parts[2] };
         }
       } else {
-        throw new Error(`Invalid birthDate format. Expected YYYY-MM-DD or DD/MM/YYYY, got: ${  traveler.birthDate}`);
+        throw new Error(`Invalid birthDate format. Expected YYYY-MM-DD or DD/MM/YYYY, got: ${String(traveler.birthDate)}`);
       }
+    } else if (rawBirthDate && typeof rawBirthDate === 'object') {
+      const bd = rawBirthDate as Record<string, unknown>;
+      birthDate = {
+        day: String(bd.day ?? ''),
+        month: String(bd.month ?? ''),
+        year: String(bd.year ?? ''),
+      };
     }
     
     if (!birthDate || !birthDate.day || !birthDate.month || !birthDate.year) {
@@ -1077,6 +1139,10 @@ map[key] = row;
     const arrivalDate = this.normalizeDate(traveler.arrivalDate, 'arrivalDate');
     const departureDate = this.normalizeDate(traveler.departureDate, 'departureDate', { allowEmpty: true });
 
+    if (!arrivalDate) {
+      throw new Error('Arrival date is required and could not be normalized');
+    }
+
     console.log('   Normalized arrivalDate:', arrivalDate);
     console.log('   Normalized departureDate:', departureDate);
 
@@ -1084,7 +1150,7 @@ map[key] = row;
     // TDAC can only be submitted within 72 hours before arrival
     const arrivalDateObj = new Date(arrivalDate.replace(/\//g, '-'));
     const now = new Date();
-    const hoursDiff = (arrivalDateObj - now) / (1000 * 60 * 60);
+    const hoursDiff = (arrivalDateObj.getTime() - now.getTime()) / (1000 * 60 * 60);
     
     if (hoursDiff > 72) {
       const daysUntilArrival = Math.ceil(hoursDiff / 24);
@@ -1112,9 +1178,9 @@ map[key] = row;
 
     const dyn = this.dynamicData || {};
     const {purposeRow} = dyn;
-    const purposeId = purposeRow?.key || this.getPurposeId(traveler.purpose);
-    const cityResName = dyn.stateRow?.value || this.normalizeInput(traveler.cityResidence);
-    const provinceName = dyn.provinceRow?.value || this.normalizeInput(traveler.province);
+    const purposeId = (purposeRow as Record<string, unknown>)?.key as string || this.getPurposeId(traveler.purpose);
+    const cityResName = (dyn.stateRow as Record<string, unknown>)?.value as string || this.normalizeInput(traveler.cityResidence);
+    const provinceName = (dyn.provinceRow as Record<string, unknown>)?.value as string || this.normalizeInput(traveler.province);
 
     // For hotels, district/subDistrict/postCode are not required
     // Check both the string value and the ID value
@@ -1122,8 +1188,8 @@ map[key] = row;
     const isHotelType = accommodationType === 'HOTEL' ||
                        traveler.accommodationType === ID_MAPS.accommodation.HOTEL ||
                        traveler.accommodationTypeDisplay === 'HOTEL';
-    const districtName = isHotelType ? '' : (dyn.districtRow?.value || this.normalizeInput(traveler.district));
-    const subDistrictName = isHotelType ? '' : (dyn.subDistrictRow?.value || this.normalizeInput(traveler.subDistrict));
+    const districtName = isHotelType ? '' : ((dyn.districtRow as Record<string, unknown>)?.value as string || this.normalizeInput(traveler.district));
+    const subDistrictName = isHotelType ? '' : ((dyn.subDistrictRow as Record<string, unknown>)?.value as string || this.normalizeInput(traveler.subDistrict));
 
     console.log('🔍 Dynamic data check:');
     console.log('   provinceRow:', dyn.provinceRow);
@@ -1133,11 +1199,11 @@ map[key] = row;
     console.log('   isHotelType:', isHotelType);
     console.log('   districtRow:', dyn.districtRow);
     console.log('   subDistrictRow:', dyn.subDistrictRow);
-    const postalCode = isHotelType ? '' : (dyn.districtRow?.code || traveler.postCode || '');
+    const postalCode = isHotelType ? '' : ((dyn.districtRow as Record<string, unknown>)?.code as string || traveler.postCode as string || '');
 
     // IMPORTANT: Use tranModeRow from dynamic data (fetched from API in prepareDynamicLookups)
     // Do NOT use traveler.tranModeId as it may contain hardcoded IDs that don't match the session
-    const tranModeId = dyn.tranModeRow?.key || this.getTranModeId(traveler.travelMode);
+    const tranModeId = (dyn.tranModeRow as Record<string, unknown>)?.key as string || this.getTranModeId(traveler.travelMode);
     console.log('   Using tranModeId:', tranModeId, 'from:', dyn.tranModeRow ? 'API session data' : 'fallback');
 
     const hasDeparture = !!departureDate;
@@ -1161,7 +1227,7 @@ map[key] = row;
     // deptTranModeId = departure transport type (COMMERCIAL FLIGHT), same as arrival tranModeId
     // IMPORTANT: Must be null (not empty string) when no departure flight, to match TDAC API behavior
     const deptTranModeId = hasDepartureFlight
-      ? (dyn.tranModeRow?.key || tranModeId)  // Use the same session transport mode as arrival
+      ? ((dyn.tranModeRow as SelectItem)?.key || tranModeId)  // Use the same session transport mode as arrival
       : null;
 
     console.log('   Departure flags:', {
@@ -1220,12 +1286,12 @@ map[key] = row;
         deptTranModeId,     // Departure: Transport type (COMMERCIAL FLIGHT)
         deptFlightNo,
         accTypeId: this.getAccommodationId(traveler.accommodationType),
-        accProvinceId: dyn.provinceRow?.key || this.getProvinceId(traveler.province),
+        accProvinceId: (dyn.provinceRow as SelectItem)?.key || this.getProvinceId(traveler.province),
         accProvinceDesc: provinceName,
         // For hotels, these fields should be empty
-        accDistrictId: isHotelType ? '' : (dyn.districtRow?.key || this.getDistrictId(traveler.district)),
+        accDistrictId: isHotelType ? '' : ((dyn.districtRow as SelectItem)?.key || this.getDistrictId(traveler.district)),
         accDistrictDesc: districtName,
-        accSubDistrictId: isHotelType ? '' : (dyn.subDistrictRow?.key || this.getSubDistrictId(traveler.subDistrict)),
+        accSubDistrictId: isHotelType ? '' : ((dyn.subDistrictRow as SelectItem)?.key || this.getSubDistrictId(traveler.subDistrict)),
         accSubDistrictDesc: subDistrictName,
         accPostCode: postalCode,
         accAddress: (traveler.address || '').toUpperCase(),
@@ -1270,32 +1336,32 @@ map[key] = row;
   /**
    * Helper methods to get IDs from mappings
    */
-  buildValueMap(list = []) {
-    return (list || []).reduce((acc, item = {}) => {
+  buildValueMap(list: SelectItem[] = []): Record<string, string> {
+    return (list || []).reduce((acc: Record<string, string>, item: SelectItem = {}) => {
       const { key, value, code } = item;
       if (key && value) {
         const upper = value.toString().toUpperCase();
         acc[upper] = key;
         acc[this.simplify(upper)] = key;
       }
-      if (code) {
+      if (code && key) {
         acc[code.toString().toUpperCase()] = key;
       }
       return acc;
     }, {});
   }
 
-  normalizeInput(value) {
+  normalizeInput(value: unknown): string {
     return value === undefined || value === null
       ? ''
       : value.toString().trim().toUpperCase();
   }
 
-  simplify(value) {
+  simplify(value: unknown): string {
     return this.normalizeInput(value).replace(/[^A-Z0-9]/g, '');
   }
 
-  lookupWithCache(cacheKey, value, fallbackMap, defaultKey) {
+  lookupWithCache(  cacheKey: string, value: unknown, fallbackMap: Record<string, string> | null, defaultKey: string | null): string | null {
     const normalized = this.normalizeInput(value);
     if (!normalized) {
 return defaultKey;
@@ -1332,10 +1398,15 @@ return defaultKey;
   }
 
   findBestMatch(
-    label,
-    rows = [],
-    { valueCandidates = [], codeCandidates = [], keyCandidates = [], allowFallback = true } = {}
-  ) {
+    label: string,
+    rows: SelectItem[] = [],
+    { valueCandidates = [], codeCandidates = [], keyCandidates = [], allowFallback = true }: {
+      valueCandidates?: unknown[];
+      codeCandidates?: unknown[];
+      keyCandidates?: unknown[];
+      allowFallback?: boolean;
+    } = {}
+  ): SelectItem | null {
     if (!rows || rows.length === 0) {
       return null;
     }
@@ -1353,7 +1424,7 @@ return defaultKey;
       .map((k) => this.normalizeInput(k))
       .filter(Boolean);
 
-    const tryMatch = (row) => {
+    const tryMatch = (row: SelectItem): boolean => {
       if (!row) {
 return false;
 }
@@ -1391,7 +1462,7 @@ return true;
     return null;
   }
 
-  getGenderId(gender) {
+  getGenderId(gender: unknown): string {
     console.log('🔍 TDACAPIService.getGenderId called with:', gender, 'type:', typeof gender);
 
     // IMPORTANT: Do not default to UNDEFINED - TDAC API does not accept it
@@ -1415,9 +1486,9 @@ return true;
     // Fallback: Try direct ID_MAPS lookup (hardcoded values)
     // This is less reliable as IDs might change between sessions
     const normalized = this.normalizeInput(gender);
-    if (normalized && ID_MAPS.gender[normalized]) {
-      console.log('⚠️  Using fallback gender ID from ID_MAPS:', ID_MAPS.gender[normalized]);
-      return ID_MAPS.gender[normalized];
+    if (normalized && (ID_MAPS.gender as Record<string, string>)[normalized]) {
+      console.log('⚠️  Using fallback gender ID from ID_MAPS:', (ID_MAPS.gender as Record<string, string>)[normalized]);
+      return (ID_MAPS.gender as Record<string, string>)[normalized];
     }
 
     // No valid gender found - return empty string to trigger validation error
@@ -1428,82 +1499,82 @@ return true;
     return '';
   }
 
-  getNationalityId(nationality) {
+  getNationalityId(nationality: unknown): string {
     const normalized = this.normalizeInput(nationality);
     const dyn = this.dynamicData || {};
 
     const nationalityRows = dyn.nationalityRows || {};
     const countryRows = dyn.countryRows || {};
 
-    if (normalized && nationalityRows[normalized]) {
-      return nationalityRows[normalized].key;
+    if (normalized && (nationalityRows as Record<string, Record<string, string>>)[normalized]) {
+      return (nationalityRows as Record<string, Record<string, string>>)[normalized].key;
     }
 
-    if (normalized && countryRows[normalized]) {
-      return countryRows[normalized].key;
+    if (normalized && (countryRows as Record<string, Record<string, string>>)[normalized]) {
+      return (countryRows as Record<string, Record<string, string>>)[normalized].key;
     }
 
     const defaultRow =
-      nationalityRows[dyn.nationalityCode] ||
-      countryRows[dyn.countryResidenceCode] ||
-      countryRows[dyn.countryBoardCode];
+      (nationalityRows as Record<string, Record<string, string>>)[dyn.nationalityCode as string] ||
+      (countryRows as Record<string, Record<string, string>>)[dyn.countryResidenceCode as string] ||
+      (countryRows as Record<string, Record<string, string>>)[dyn.countryBoardCode as string];
     if (!normalized && defaultRow) {
       return defaultRow.key;
     }
 
-    const mapKey = normalized || dyn.nationalityCode || 'CHN';
-    return ID_MAPS.nationality[mapKey] || ID_MAPS.nationality.CHN;
+    const mapKey = (normalized || dyn.nationalityCode as string || 'CHN');
+    return (ID_MAPS.nationality as Record<string, string>)[mapKey] || ID_MAPS.nationality.CHN;
   }
 
-  getNationalityDesc(nationality) {
+  getNationalityDesc(nationality: unknown): string {
     const normalized = this.normalizeInput(nationality);
     const dyn = this.dynamicData || {};
     const nationalityRows = dyn.nationalityRows || {};
 
-    if (normalized && nationalityRows[normalized]?.value) {
-      return nationalityRows[normalized].value;
+    if (normalized && (nationalityRows as Record<string, Record<string, string>>)[normalized]?.value) {
+      return (nationalityRows as Record<string, Record<string, string>>)[normalized].value;
     }
 
-    if (!normalized && nationalityRows[dyn.nationalityCode]?.value) {
-      return nationalityRows[dyn.nationalityCode].value;
+    if (!normalized && (nationalityRows as Record<string, Record<string, string>>)[dyn.nationalityCode as string]?.value) {
+      return (nationalityRows as Record<string, Record<string, string>>)[dyn.nationalityCode as string].value;
     }
     return 'CHN : CHINESE';
   }
 
-  getCountryDesc(country) {
+  getCountryDesc(country: unknown): string {
     const normalized = this.normalizeInput(country);
     const dyn = this.dynamicData || {};
     const countryRows = dyn.countryRows || {};
 
-    if (normalized && countryRows[normalized]?.value) {
-      return countryRows[normalized].value;
+    if (normalized && (countryRows as Record<string, Record<string, string>>)[normalized]?.value) {
+      return (countryRows as Record<string, Record<string, string>>)[normalized].value;
     }
 
-    if (!normalized && countryRows[dyn.countryResidenceCode]?.value) {
-      return countryRows[dyn.countryResidenceCode].value;
+    if (!normalized && (countryRows as Record<string, Record<string, string>>)[dyn.countryResidenceCode as string]?.value) {
+      return (countryRows as Record<string, Record<string, string>>)[dyn.countryResidenceCode as string].value;
     }
-    const map = {
+    const map: Record<string, string> = {
       CHN: "CHN : PEOPLE'S REPUBLIC OF CHINA",
       USA: 'USA : UNITED STATES OF AMERICA',
       GBR: 'GBR : UNITED KINGDOM',
       JPN: 'JPN : JAPAN'
     };
-    return map[normalized] || map.CHN;
+    return map[normalized ?? ''] || map.CHN;
   }
 
-  getCityResCode() {
+  getCityResCode(): string {
     const dyn = this.dynamicData || {};
-    return dyn.stateRow?.key || '';
+    return (dyn.stateRow as SelectItem)?.key || '';
   }
 
-  getTravelModeId(mode) {
-    return this.lookupWithCache('travelMode', mode, ID_MAPS.travelMode, ID_MAPS.travelMode.AIR);
+  getTravelModeId(mode: unknown): string {
+    return this.lookupWithCache('travelMode', mode, ID_MAPS.travelMode as Record<string, string>, ID_MAPS.travelMode.AIR) ?? ID_MAPS.travelMode.AIR;
   }
 
-  getTranModeId(mode) {
+  getTranModeId(mode: unknown): string {
     const dyn = this.dynamicData || {};
-    if (dyn.tranModeRow?.key) {
-      return dyn.tranModeRow.key;
+    if ((dyn.tranModeRow as SelectItem)?.key) {
+      return (dyn.tranModeRow as SelectItem).key!;
     }
     
     // Enhanced fallback: use specific transport mode IDs based on travel mode
@@ -1527,7 +1598,7 @@ return true;
     return '6XcrGmsUxFe9ua1gehBv/Q==';
   }
 
-  normalizeDate(value, fieldName, options = {}) {
+  normalizeDate(value: unknown, fieldName: string, options: { allowEmpty?: boolean } = {}): string | null {
     const { allowEmpty = false } = options;
 
     if (value === undefined || value === null) {
@@ -1562,10 +1633,11 @@ return null;
       throw new Error(`Invalid ${fieldName} format: ${value}`);
     }
 
-    if (typeof value === 'object') {
-      const year = value.year || value.YYYY;
-      const month = value.month || value.MM;
-      const day = value.day || value.DD;
+    if (typeof value === 'object' && value !== null) {
+      const obj = value as Record<string, unknown>;
+      const year = obj.year || obj.YYYY;
+      const month = obj.month || obj.MM;
+      const day = obj.day || obj.DD;
 
       if (year && month && day) {
         return `${String(year)}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
@@ -1585,11 +1657,11 @@ return null;
     throw new Error(`Unsupported ${fieldName} value: ${value}`);
   }
 
-  getPurposeId(purpose) {
-    return this.lookupWithCache('purpose', purpose, ID_MAPS.purpose, ID_MAPS.purpose.HOLIDAY);
+  getPurposeId(purpose: unknown): string {
+    return this.lookupWithCache('purpose', purpose, ID_MAPS.purpose as Record<string, string>, ID_MAPS.purpose.HOLIDAY) ?? ID_MAPS.purpose.HOLIDAY;
   }
 
-  getAccommodationId(type) {
+  getAccommodationId(type: unknown): string {
     console.log('🔍 TDACAPIService.getAccommodationId called with:', type, 'type:', typeof type);
 
     // If the accommodation type is already an ID (contains ==), return it as-is
@@ -1606,34 +1678,34 @@ return null;
     }
 
     // Fallback to hardcoded ID_MAPS
-    const fallbackKey = type ? type.toString().toUpperCase().replace(/\s+/g, '_') : 'HOTEL';
-    const fallbackId = ID_MAPS.accommodation[fallbackKey] || ID_MAPS.accommodation.HOTEL;
+    const fallbackKey = type ? String(type).toUpperCase().replace(/\s+/g, '_') : 'HOTEL';
+    const fallbackId = (ID_MAPS.accommodation as Record<string, string>)[fallbackKey] || ID_MAPS.accommodation.HOTEL;
     console.log('⚠️  Using fallback accommodation ID from ID_MAPS:', fallbackId, 'for key:', fallbackKey);
     return fallbackId;
   }
 
-  getProvinceId(province) {
+  getProvinceId(province: unknown): string {
     if (!province) {
 return ID_MAPS.province.BANGKOK;
 }
-    const upperProvince = province.toUpperCase().replace(/\s+/g, '_');
-    return ID_MAPS.province[upperProvince] || ID_MAPS.province.BANGKOK;
+    const upperProvince = String(province).toUpperCase().replace(/\s+/g, '_');
+    return (ID_MAPS.province as Record<string, string>)[upperProvince] || ID_MAPS.province.BANGKOK;
   }
 
-  getDistrictId(district) {
+  getDistrictId(district: unknown): string {
     if (!district) {
 return ID_MAPS.district.BANG_BON;
 }
-    const upperDistrict = district.toUpperCase().replace(/\s+/g, '_');
-    return ID_MAPS.district[upperDistrict] || ID_MAPS.district.BANG_BON;
+    const upperDistrict = String(district).toUpperCase().replace(/\s+/g, '_');
+    return (ID_MAPS.district as Record<string, string>)[upperDistrict] || ID_MAPS.district.BANG_BON;
   }
 
-  getSubDistrictId(subDistrict) {
+  getSubDistrictId(subDistrict: unknown): string {
     if (!subDistrict) {
 return ID_MAPS.subDistrict.BANG_BON_NUEA;
 }
-    const upperSubDistrict = subDistrict.toUpperCase().replace(/\s+/g, '_');
-    return ID_MAPS.subDistrict[upperSubDistrict] || ID_MAPS.subDistrict.BANG_BON_NUEA;
+    const upperSubDistrict = String(subDistrict).toUpperCase().replace(/\s+/g, '_');
+    return (ID_MAPS.subDistrict as Record<string, string>)[upperSubDistrict] || ID_MAPS.subDistrict.BANG_BON_NUEA;
   }
 }
 

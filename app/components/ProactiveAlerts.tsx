@@ -11,6 +11,13 @@ const ProactiveAlerts = ({
   inProgressDestinations,
   upcomingTrips,
   onAlertPress,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  passportData: any;
+  activeEntryPacks: Array<Record<string, unknown>>;
+  inProgressDestinations: Array<Record<string, unknown>>;
+  upcomingTrips: Array<Record<string, unknown>>;
+  onAlertPress?: (action: string, data?: Record<string, unknown>) => void;
 }) => {
   const { t } = useLocale();
 

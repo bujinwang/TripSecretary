@@ -17,8 +17,7 @@ const MDACSelectionScreen = ({ navigation, route }: any) => {
   const params = route.params || {};
   const { passport: rawPassport, destination, travelInfo } = params;
   const passport = UserDataService.toSerializablePassport(rawPassport);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { t } = useLocale() as any;
+  const { t } = useLocale();
 
   const goToGuide = () => {
     navigation.navigate('MDACGuide', { passport, destination, travelInfo });
@@ -52,7 +51,7 @@ const MDACSelectionScreen = ({ navigation, route }: any) => {
         <Text style={styles.cardSubtitle}>{t('malaysia.selection.smartFlow.subtitle')}</Text>
 
         <View style={styles.statsRow}>
-          {t('malaysia.selection.smartFlow.highlights', { returnObjects: true, defaultValue: [] }).map((item, index) => (
+          {(t('malaysia.selection.smartFlow.highlights', { returnObjects: true, defaultValue: [] }) as unknown[]).map((item: Record<string, unknown>, index: number) => (
             <View key={item.title || `smart-${index}`} style={styles.stat}>
               <Text style={styles.statValue}>{item.value}</Text>
               <Text style={styles.statLabel}>{item.title}</Text>
@@ -61,7 +60,7 @@ const MDACSelectionScreen = ({ navigation, route }: any) => {
         </View>
 
         <View style={styles.features}>
-          {t('malaysia.selection.smartFlow.features', { returnObjects: true, defaultValue: [] }).map((feature, index) => (
+          {(t('malaysia.selection.smartFlow.features', { returnObjects: true, defaultValue: [] }) as unknown[]).map((feature: string, index: number) => (
             <Text key={`smart-feature-${index}`} style={styles.feature}>
               {feature}
             </Text>
@@ -79,7 +78,7 @@ const MDACSelectionScreen = ({ navigation, route }: any) => {
         <Text style={styles.cardSubtitle}>{t('malaysia.selection.webFlow.subtitle')}</Text>
 
         <View style={styles.features}>
-          {t('malaysia.selection.webFlow.features', { returnObjects: true, defaultValue: [] }).map((feature, index) => (
+          {(t('malaysia.selection.webFlow.features', { returnObjects: true, defaultValue: [] }) as unknown[]).map((feature: string, index: number) => (
             <Text key={`web-feature-${index}`} style={styles.feature}>
               {feature}
             </Text>
@@ -96,7 +95,7 @@ const MDACSelectionScreen = ({ navigation, route }: any) => {
       {/* Notes */}
       <View style={styles.notesCard}>
         <Text style={styles.notesTitle}>{t('malaysia.selection.notes.title')}</Text>
-        {t('malaysia.selection.notes.items', { returnObjects: true, defaultValue: [] }).map((note, index) => (
+        {(t('malaysia.selection.notes.items', { returnObjects: true, defaultValue: [] }) as unknown[]).map((note: string, index: number) => (
           <Text key={`note-${index}`} style={styles.note}>
             • {note}
           </Text>

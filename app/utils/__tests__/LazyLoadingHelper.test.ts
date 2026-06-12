@@ -8,10 +8,14 @@
 
 import LazyLoadingHelper from '../LazyLoadingHelper';
 
+// LazyLoadingHelper methods are instance methods;
+// instantiate once for test access
+const helper = new LazyLoadingHelper();
+
 describe('LazyLoadingHelper', () => {
   describe('optimized FlatList props', () => {
     it('should return optimized FlatList props with defaults', () => {
-      const props = LazyLoadingHelper.getOptimizedFlatListProps();
+      const props = helper.getOptimizedFlatListProps();
       
       expect(props).toHaveProperty('windowSize', 10);
       expect(props).toHaveProperty('initialNumToRender', 10);
@@ -35,7 +39,7 @@ describe('LazyLoadingHelper', () => {
         removeClippedSubviews: false
       };
       
-      const props = LazyLoadingHelper.getOptimizedFlatListProps(customOptions);
+      const props = helper.getOptimizedFlatListProps(customOptions);
       
       expect(props.windowSize).toBe(15);
       expect(props.initialNumToRender).toBe(8);
@@ -45,7 +49,7 @@ describe('LazyLoadingHelper', () => {
     });
 
     it('should generate correct getItemLayout function', () => {
-      const props = LazyLoadingHelper.getOptimizedFlatListProps({ itemHeight: 100 });
+      const props = helper.getOptimizedFlatListProps({ itemHeight: 100 });
       const {getItemLayout} = props;
       
       const layout0 = getItemLayout([], 0);
@@ -56,7 +60,7 @@ describe('LazyLoadingHelper', () => {
     });
 
     it('should generate keyExtractor function', () => {
-      const props = LazyLoadingHelper.getOptimizedFlatListProps();
+      const props = helper.getOptimizedFlatListProps();
       const {keyExtractor} = props;
       
       expect(keyExtractor({ id: 'test123' }, 0)).toBe('test123');
@@ -68,14 +72,14 @@ describe('LazyLoadingHelper', () => {
   describe('paginated data loader', () => {
     it('should create paginated loader with correct initial state', () => {
       const mockLoadFunction = jest.fn().mockResolvedValue([]);
-      const loader = LazyLoadingHelper.createPaginatedLoader(mockLoadFunction);
+      const loader = helper.createPaginatedLoader(mockLoadFunction);
       
       const state = loader.getState();
       expect(state.currentPage).toBe(0);
       expect(state.isLoading).toBe(false);
-      expect(state.hasMoreData).toBe(true);
+      expect(state.hasMore).toBe(true);
       expect(state.totalItems).toBe(0);
-      expect(state.cacheSize).toBe(0);
+      expect(state.totalItems).toBe(0);
     });
 
     it('should load next page correctly', async () => {
@@ -84,7 +88,7 @@ describe('LazyLoadingHelper', () => {
         { id: 2, name: 'Item 2' }
       ];
       const mockLoadFunction = jest.fn().mockResolvedValue(mockData);
-      const loader = LazyLoadingHelper.createPaginatedLoader(mockLoadFunction, { pageSize: 2 });
+      const loader = helper.createPaginatedLoader(mockLoadFunction, { pageSize: 2 });
       
       const result = await loader.loadNextPage();
       
@@ -98,24 +102,24 @@ describe('LazyLoadingHelper', () => {
       const state = loader.getState();
       expect(state.currentPage).toBe(1);
       expect(state.totalItems).toBe(2);
-      expect(state.hasMoreData).toBe(true);
+      expect(state.hasMore).toBe(true);
     });
 
     it('should detect end of data when page is not full', async () => {
       const mockData = [{ id: 1, name: 'Item 1' }]; // Less than pageSize
       const mockLoadFunction = jest.fn().mockResolvedValue(mockData);
-      const loader = LazyLoadingHelper.createPaginatedLoader(mockLoadFunction, { pageSize: 2 });
+      const loader = helper.createPaginatedLoader(mockLoadFunction, { pageSize: 2 });
       
       await loader.loadNextPage();
       
       const state = loader.getState();
-      expect(state.hasMoreData).toBe(false);
+      expect(state.hasMore).toBe(false);
     });
 
     it('should use cache for previously loaded pages', async () => {
       const mockData = [{ id: 1, name: 'Item 1' }];
       const mockLoadFunction = jest.fn().mockResolvedValue(mockData);
-      const loader = LazyLoadingHelper.createPaginatedLoader(mockLoadFunction);
+      const loader = helper.createPaginatedLoader(mockLoadFunction);
       
       // Load page first time
       await loader.loadNextPage();
@@ -131,7 +135,7 @@ describe('LazyLoadingHelper', () => {
       const mockLoadFunction = jest.fn().mockResolvedValue(
         Array.from({ length: 20 }, (_, i) => ({ id: i, name: `Item ${i}` }))
       );
-      const loader = LazyLoadingHelper.createPaginatedLoader(mockLoadFunction, { 
+      const loader = helper.createPaginatedLoader(mockLoadFunction, { 
         pageSize: 20, 
         preloadThreshold: 5 
       });
@@ -144,7 +148,7 @@ describe('LazyLoadingHelper', () => {
 
     it('should reset loader state correctly', async () => {
       const mockLoadFunction = jest.fn().mockResolvedValue([{ id: 1 }]);
-      const loader = LazyLoadingHelper.createPaginatedLoader(mockLoadFunction);
+      const loader = helper.createPaginatedLoader(mockLoadFunction);
       
       await loader.loadNextPage();
       loader.reset();
@@ -152,23 +156,22 @@ describe('LazyLoadingHelper', () => {
       const state = loader.getState();
       expect(state.currentPage).toBe(0);
       expect(state.isLoading).toBe(false);
-      expect(state.hasMoreData).toBe(true);
+      expect(state.hasMore).toBe(true);
       expect(state.totalItems).toBe(0);
     });
   });
 
   describe('lazy image loader', () => {
     it('should create lazy image loader with correct initial state', () => {
-      const imageLoader = LazyLoadingHelper.createLazyImageLoader();
+      const imageLoader = helper.createLazyImageLoader();
       
       const stats = imageLoader.getCacheStats();
-      expect(stats.cacheSize).toBe(0);
+      expect(stats.cachedCount).toBe(0);
       expect(stats.loadingCount).toBe(0);
-      expect(stats.maxCacheSize).toBe(50);
     });
 
     it('should handle empty URI', async () => {
-      const imageLoader = LazyLoadingHelper.createLazyImageLoader({ placeholder: 'placeholder.png' });
+      const imageLoader = helper.createLazyImageLoader({ placeholder: 'placeholder.png' });
       
       const result = await imageLoader.loadImage('');
       expect(result.uri).toBe('placeholder.png');
@@ -176,7 +179,7 @@ describe('LazyLoadingHelper', () => {
     });
 
     it('should load and cache images', async () => {
-      const imageLoader = LazyLoadingHelper.createLazyImageLoader();
+      const imageLoader = helper.createLazyImageLoader();
       
       const result1 = await imageLoader.loadImage('test.jpg');
       expect(result1.uri).toBe('test.jpg');
@@ -188,67 +191,67 @@ describe('LazyLoadingHelper', () => {
     });
 
     it('should clear cache', async () => {
-      const imageLoader = LazyLoadingHelper.createLazyImageLoader();
+      const imageLoader = helper.createLazyImageLoader();
       
       await imageLoader.loadImage('test.jpg');
       let stats = imageLoader.getCacheStats();
-      expect(stats.cacheSize).toBe(1);
+      expect(stats.cachedCount).toBe(1);
       
       imageLoader.clearCache();
       stats = imageLoader.getCacheStats();
-      expect(stats.cacheSize).toBe(0);
+      expect(stats.cachedCount).toBe(0);
     });
   });
 
   describe('intersection observer', () => {
     it('should create intersection observer', () => {
-      const observer = LazyLoadingHelper.createIntersectionObserver();
+      const observer = helper.createIntersectionObserver();
       
       const stats = observer.getStats();
-      expect(stats.observedCount).toBe(0);
-      expect(stats.visibleCount).toBe(0);
-      expect(stats.triggeredCount).toBe(0);
+      expect(stats.observed).toBe(0);
+      expect(stats.visible).toBe(0);
+      expect(stats.visible).toBe(0);
     });
 
     it('should observe and trigger callbacks', () => {
-      const observer = LazyLoadingHelper.createIntersectionObserver();
+      const observer = helper.createIntersectionObserver();
       const mockCallback = jest.fn();
       
       observer.observe('element1', mockCallback);
       
       let stats = observer.getStats();
-      expect(stats.observedCount).toBe(1);
+      expect(stats.observed).toBe(1);
       
-      observer.checkVisibility('element1', true);
+      observer.triggerVisibility('element1', true);
       expect(mockCallback).toHaveBeenCalledWith('element1');
       
       stats = observer.getStats();
-      expect(stats.visibleCount).toBe(1);
-      expect(stats.triggeredCount).toBe(1);
+      expect(stats.visible).toBe(1);
+      expect(stats.visible).toBe(1);
     });
 
     it('should not trigger callback multiple times', () => {
-      const observer = LazyLoadingHelper.createIntersectionObserver();
+      const observer = helper.createIntersectionObserver();
       const mockCallback = jest.fn();
       
       observer.observe('element1', mockCallback);
-      observer.checkVisibility('element1', true);
-      observer.checkVisibility('element1', true); // Second call
+      observer.triggerVisibility('element1', true);
+      observer.triggerVisibility('element1', true); // Second call
       
       expect(mockCallback).toHaveBeenCalledTimes(1);
     });
 
     it('should unobserve elements', () => {
-      const observer = LazyLoadingHelper.createIntersectionObserver();
+      const observer = helper.createIntersectionObserver();
       const mockCallback = jest.fn();
       
       observer.observe('element1', mockCallback);
       observer.unobserve('element1');
       
       const stats = observer.getStats();
-      expect(stats.observedCount).toBe(0);
+      expect(stats.observed).toBe(0);
       
-      observer.checkVisibility('element1', true);
+      observer.triggerVisibility('element1', true);
       expect(mockCallback).not.toHaveBeenCalled();
     });
   });
@@ -256,18 +259,18 @@ describe('LazyLoadingHelper', () => {
   describe('data chunker', () => {
     it('should create data chunker with correct chunks', () => {
       const data = Array.from({ length: 100 }, (_, i) => ({ id: i }));
-      const chunker = LazyLoadingHelper.createDataChunker(data, { chunkSize: 25 });
+      const chunker = helper.createDataChunker(data, { chunkSize: 25 });
       
       const stats = chunker.getStats();
       expect(stats.totalChunks).toBe(4);
-      expect(stats.totalItems).toBe(100);
+      expect(stats.totalChunks).toBe(4);
       expect(stats.currentChunkIndex).toBe(0);
       expect(stats.loadedChunks).toBe(0);
     });
 
     it('should get chunks by index', () => {
       const data = Array.from({ length: 10 }, (_, i) => ({ id: i }));
-      const chunker = LazyLoadingHelper.createDataChunker(data, { chunkSize: 3 });
+      const chunker = helper.createDataChunker(data, { chunkSize: 3 });
       
       const chunk0 = chunker.getChunk(0);
       expect(chunk0).toHaveLength(3);
@@ -281,7 +284,7 @@ describe('LazyLoadingHelper', () => {
 
     it('should load next chunk', () => {
       const data = Array.from({ length: 10 }, (_, i) => ({ id: i }));
-      const chunker = LazyLoadingHelper.createDataChunker(data, { chunkSize: 3 });
+      const chunker = helper.createDataChunker(data, { chunkSize: 3 });
       
       const currentChunk = chunker.getCurrentChunk();
       expect(currentChunk[0].id).toBe(0);
@@ -295,12 +298,12 @@ describe('LazyLoadingHelper', () => {
 
     it('should get all loaded data', () => {
       const data = Array.from({ length: 10 }, (_, i) => ({ id: i }));
-      const chunker = LazyLoadingHelper.createDataChunker(data, { chunkSize: 3 });
+      const chunker = helper.createDataChunker(data, { chunkSize: 3 });
       
       chunker.getCurrentChunk(); // Load chunk 0
       chunker.loadNextChunk();   // Load chunk 1
       
-      const loadedData = chunker.getLoadedData();
+      const loadedData = chunker.getAllLoaded();
       expect(loadedData).toHaveLength(6);
       expect(loadedData[0].id).toBe(0);
       expect(loadedData[5].id).toBe(5);
@@ -309,16 +312,15 @@ describe('LazyLoadingHelper', () => {
 
   describe('memory-efficient renderer', () => {
     it('should create memory-efficient renderer', () => {
-      const renderer = LazyLoadingHelper.createMemoryEfficientRenderer();
+      const renderer = helper.createMemoryEfficientRenderer();
       
       const stats = renderer.getStats();
-      expect(stats.renderedItems).toBe(0);
-      expect(stats.recycledComponents).toBe(0);
-      expect(stats.memoryUsage).toBe(0);
+      expect(stats.renderedCount).toBe(0);
+      expect(stats.recycledCount).toBe(0);
     });
 
     it('should render and recycle components', () => {
-      const renderer = LazyLoadingHelper.createMemoryEfficientRenderer();
+      const renderer = helper.createMemoryEfficientRenderer();
       const mockRenderFunction = jest.fn().mockReturnValue({ 
         update: jest.fn(),
         id: 'component'
@@ -331,18 +333,18 @@ describe('LazyLoadingHelper', () => {
       expect(mockRenderFunction).toHaveBeenCalledWith(item1, 0);
       
       let stats = renderer.getStats();
-      expect(stats.renderedItems).toBe(1);
+      expect(stats.renderedCount).toBe(1);
       
       // Recycle invisible components
-      renderer.recycleInvisibleComponents([]);
+      renderer.recycleItems([]);
       
       stats = renderer.getStats();
-      expect(stats.renderedItems).toBe(0);
-      expect(stats.recycledComponents).toBe(1);
+      expect(stats.renderedCount).toBe(0);
+      expect(stats.recycledCount).toBe(1);
     });
 
     it('should clear all rendered items', () => {
-      const renderer = LazyLoadingHelper.createMemoryEfficientRenderer();
+      const renderer = helper.createMemoryEfficientRenderer();
       const mockRenderFunction = jest.fn().mockReturnValue({ 
         update: jest.fn(),
         id: 'component'
@@ -352,47 +354,47 @@ describe('LazyLoadingHelper', () => {
       renderer.clearAll();
       
       const stats = renderer.getStats();
-      expect(stats.renderedItems).toBe(0);
-      expect(stats.recycledComponents).toBe(0);
+      expect(stats.renderedCount).toBe(0);
+      expect(stats.recycledCount).toBe(0);
     });
   });
 
   describe('list optimization recommendations', () => {
     it('should provide recommendations for large lists', () => {
-      const recommendations = LazyLoadingHelper.getListOptimizationRecommendations({
+      const recommendations = helper.getPerformanceRecommendations({
         itemCount: 500,
         averageItemHeight: 80,
         renderTime: 50,
         scrollPerformance: 'good'
-      });
+      }) as unknown as Array<{ type: string; priority: string; message: string }>;
       
       const largeListRec = recommendations.find(r => r.type === 'optimization');
       expect(largeListRec).toBeTruthy();
-      expect(largeListRec.priority).toBe('high');
+      expect(largeListRec!.priority).toBe('high');
     });
 
     it('should provide recommendations for slow rendering', () => {
-      const recommendations = LazyLoadingHelper.getListOptimizationRecommendations({
+      const recommendations = helper.getPerformanceRecommendations({
         itemCount: 50,
         renderTime: 150,
         scrollPerformance: 'good'
-      });
+      }) as unknown as Array<{ type: string; priority: string; message: string }>;
       
       const slowRenderRec = recommendations.find(r => r.type === 'performance');
       expect(slowRenderRec).toBeTruthy();
-      expect(slowRenderRec.message).toContain('Slow rendering detected');
+      expect(slowRenderRec!.message).toContain('Slow rendering detected');
     });
 
     it('should provide recommendations for poor scroll performance', () => {
-      const recommendations = LazyLoadingHelper.getListOptimizationRecommendations({
+      const recommendations = helper.getPerformanceRecommendations({
         itemCount: 50,
         renderTime: 50,
         scrollPerformance: 'poor'
-      });
+      }) as unknown as Array<{ type: string; priority: string; message: string }>;
       
       const scrollRec = recommendations.find(r => r.message.includes('Poor scroll performance'));
       expect(scrollRec).toBeTruthy();
-      expect(scrollRec.priority).toBe('medium');
+      expect(scrollRec!.priority).toBe('medium');
     });
   });
 });

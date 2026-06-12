@@ -3,77 +3,84 @@
  * 
  * Manages field state and determines which fields should be saved based on user interaction.
  * Provides filtering logic for save operations and accurate completion metrics calculation.
- * 
- * Features:
- * - Filters fields based on user interaction state
- * - Processes save payloads to include only user-modified fields
- * - Calculates completion metrics based on actual user input
- * - Handles special cases for different field types
  */
 
-/**
- * FieldStateManager Class
- */
+export interface InteractionFieldState {
+  isUserModified: boolean;
+  lastModified?: string;
+  initialValue?: unknown;
+}
+
+export interface InteractionState {
+  [fieldName: string]: InteractionFieldState;
+}
+
+interface SaveOptions {
+  preserveExisting?: boolean;
+  alwaysSaveFields?: string[];
+}
+
+interface FieldConfig {
+  requiredFields?: string[];
+  optionalFields?: string[];
+  fieldWeights?: Record<string, number>;
+}
+
+interface CompletionMetrics {
+  totalFields: number;
+  completedFields: number;
+  completionPercentage: number;
+  weightedCompletionPercentage: number;
+  requiredFields: number;
+  requiredFieldsCompleted: number;
+  requiredCompletionPercentage: number;
+  optionalFields: number;
+  optionalFieldsCompleted: number;
+  userModifiedFields: number;
+}
+
+interface FieldCount {
+  totalUserModified: number;
+  totalWithValues: number;
+  totalFields: number;
+}
+
+interface MergeOptions {
+  preferPrimary?: boolean;
+}
+
 class FieldStateManager {
-  /**
-   * Determine if a field should be saved based on user interaction
-   * 
-   * @param {string} fieldName - Name of the field
-   * @param {any} value - Current value of the field
-   * @param {boolean} isUserModified - Whether the field has been user-modified
-   * @param {Object} options - Additional options for save logic
-   * @param {boolean} options.preserveExisting - Whether to preserve existing saved values
-   * @param {Array<string>} options.alwaysSaveFields - Fields that should always be saved
-   * @returns {boolean} True if field should be saved
-   */
-  static shouldSaveField(fieldName, value, isUserModified, options = {}) {
+  static shouldSaveField(fieldName: string, value: unknown, isUserModified: boolean, options: SaveOptions = {}): boolean {
     const { preserveExisting = true, alwaysSaveFields = [] } = options;
 
-    // Always save fields that are explicitly marked as always-save
     if (alwaysSaveFields.includes(fieldName)) {
       return true;
     }
 
-    // Don't save empty or null values unless user explicitly modified them
     if (value === null || value === undefined || value === '') {
       return isUserModified;
     }
 
-    // Save if user has modified the field
     if (isUserModified) {
       return true;
     }
 
-    // If preserveExisting is true and we have a value, it might be existing data
-    // In this case, we should save it to maintain backward compatibility
     if (preserveExisting && value !== null && value !== undefined && value !== '') {
       return true;
     }
 
-    // Default: don't save fields that haven't been user-modified
     return false;
   }
 
-  /**
-   * Filter fields to include only those that should be saved with error recovery
-   * 
-   * @param {Object} allFields - Object containing all field values
-   * @param {Object} interactionState - User interaction state from UserInteractionTracker
-   * @param {Object} options - Additional options for filtering
-   * @param {Array<string>} options.alwaysSaveFields - Fields that should always be saved
-   * @param {boolean} options.preserveExisting - Whether to preserve existing saved values
-   * @returns {Object} Filtered object containing only saveable fields
-   */
-  static filterSaveableFields(allFields, interactionState, options = {}) {
+  static filterSaveableFields(allFields: Record<string, unknown>, interactionState: InteractionState, options: SaveOptions = {}): Record<string, unknown> {
     try {
       if (!allFields || typeof allFields !== 'object') {
         console.warn('Invalid allFields provided to filterSaveableFields');
         return {};
       }
 
-      // Validate and recover interaction state if needed
       const validatedState = this.validateAndRecoverInteractionState(interactionState);
-      const saveableFields = {};
+      const saveableFields: Record<string, unknown> = {};
 
       Object.keys(allFields).forEach(fieldName => {
         try {
@@ -86,7 +93,6 @@ class FieldStateManager {
         } catch (fieldError) {
           console.warn(`Error processing field ${fieldName} in filterSaveableFields:`, fieldError);
           
-          // For critical fields, include them in save to prevent data loss
           if (options.alwaysSaveFields && options.alwaysSaveFields.includes(fieldName)) {
             saveableFields[fieldName] = allFields[fieldName];
           }
@@ -96,34 +102,19 @@ class FieldStateManager {
       return saveableFields;
     } catch (error) {
       console.error('Error in filterSaveableFields:', error);
-      
-      // Fallback: return all fields to prevent data loss
       return allFields || {};
     }
   }
 
-  /**
-   * Calculate completion metrics based on user-modified fields
-   * 
-   * @param {Object} fields - Object containing all field values
-   * @param {Object} interactionState - User interaction state from UserInteractionTracker
-   * @param {Object} fieldConfig - Configuration for field requirements
-   * @param {Array<string>} fieldConfig.requiredFields - List of required field names
-   * @param {Array<string>} fieldConfig.optionalFields - List of optional field names
-   * @param {Object} fieldConfig.fieldWeights - Weights for different fields (optional)
-   * @returns {Object} Completion metrics object
-   */
-  static getCompletionMetrics(fields, interactionState, fieldConfig = {}) {
+  static getCompletionMetrics(fields: Record<string, unknown>, interactionState: InteractionState, fieldConfig: FieldConfig = {}): CompletionMetrics {
     const {
       requiredFields = [],
       optionalFields = [],
       fieldWeights = {}
     } = fieldConfig;
 
-    // Get all fields that should be considered for completion
     const allRelevantFields = [...requiredFields, ...optionalFields];
     
-    // If no field configuration provided, consider all fields as optional
     const fieldsToConsider = allRelevantFields.length > 0 
       ? allRelevantFields 
       : Object.keys(fields);
@@ -138,7 +129,6 @@ class FieldStateManager {
       const isUserModified = interactionState[fieldName]?.isUserModified || false;
       const fieldWeight = fieldWeights[fieldName] || 1;
 
-      // Only count fields that have been user-modified or have meaningful values
       const hasValue = value !== null && value !== undefined && value !== '';
       const shouldCount = isUserModified || hasValue;
 
@@ -146,7 +136,6 @@ class FieldStateManager {
         totalFields++;
         totalWeight += fieldWeight;
 
-        // Field is complete if it has a value and was user-modified
         if (hasValue && isUserModified) {
           completedFields++;
           completedWeight += fieldWeight;
@@ -154,7 +143,6 @@ class FieldStateManager {
       }
     });
 
-    // Calculate percentages
     const completionPercentage = totalFields > 0 
       ? Math.round((completedFields / totalFields) * 100) 
       : 0;
@@ -163,7 +151,6 @@ class FieldStateManager {
       ? Math.round((completedWeight / totalWeight) * 100) 
       : 0;
 
-    // Calculate required field completion
     const requiredFieldsCompleted = requiredFields.filter(fieldName => {
       const value = fields[fieldName];
       const isUserModified = interactionState[fieldName]?.isUserModified || false;
@@ -186,20 +173,12 @@ class FieldStateManager {
       optionalFields: optionalFields.length,
       optionalFieldsCompleted: completedFields - requiredFieldsCompleted,
       userModifiedFields: Object.keys(interactionState).filter(
-        fieldName => interactionState[fieldName]?.isUserModified
+        (fieldName: string) => interactionState[fieldName]?.isUserModified
       ).length
     };
   }
 
-  /**
-   * Get field count for display purposes (only user-modified fields)
-   * 
-   * @param {Object} fields - Object containing all field values
-   * @param {Object} interactionState - User interaction state from UserInteractionTracker
-   * @param {Array<string>} fieldsToCount - Specific fields to count (optional)
-   * @returns {Object} Field count information
-   */
-  static getFieldCount(fields, interactionState, fieldsToCount = null) {
+  static getFieldCount(fields: Record<string, unknown>, interactionState: InteractionState, fieldsToCount: string[] | null = null): FieldCount {
     const fieldsToCheck = fieldsToCount || Object.keys(fields);
     
     let totalUserModified = 0;
@@ -214,8 +193,6 @@ class FieldStateManager {
         totalUserModified++;
       }
 
-      // Count fields with values, regardless of user-modified status
-      // This ensures that data loaded from database is counted correctly
       if (hasValue) {
         totalWithValues++;
       }
@@ -228,15 +205,9 @@ class FieldStateManager {
     };
   }
 
-  /**
-   * Validate field interaction state for consistency
-   * 
-   * @param {Object} interactionState - User interaction state to validate
-   * @returns {Object} Validation result with any issues found
-   */
-  static validateInteractionState(interactionState) {
-    const issues = [];
-    const validatedState = {};
+  static validateInteractionState(interactionState: InteractionState): { isValid: boolean; issues: string[]; validatedState: InteractionState } {
+    const issues: string[] = [];
+    const validatedState: InteractionState = {};
 
     if (!interactionState || typeof interactionState !== 'object') {
       return {
@@ -260,7 +231,6 @@ class FieldStateManager {
         initialValue
       } = fieldState;
 
-      // Validate required properties
       if (typeof isUserModified !== 'boolean') {
         issues.push(`Invalid isUserModified for ${fieldName}`);
         return;
@@ -271,7 +241,6 @@ class FieldStateManager {
         return;
       }
 
-      // Validate date format if present
       if (lastModified) {
         const date = new Date(lastModified);
         if (isNaN(date.getTime())) {
@@ -280,7 +249,6 @@ class FieldStateManager {
         }
       }
 
-      // Field state is valid
       validatedState[fieldName] = {
         isUserModified,
         lastModified: lastModified || new Date().toISOString(),
@@ -295,20 +263,14 @@ class FieldStateManager {
     };
   }
 
-  /**
-   * Validate and recover interaction state
-   * 
-   * @param {Object} interactionState - User interaction state to validate and recover
-   * @returns {Object} Validated and recovered interaction state
-   */
-  static validateAndRecoverInteractionState(interactionState) {
+  static validateAndRecoverInteractionState(interactionState: InteractionState): InteractionState {
     try {
       if (!interactionState || typeof interactionState !== 'object') {
         console.warn('Invalid interaction state, initializing empty state');
         return {};
       }
 
-      const recoveredState = {};
+      const recoveredState: InteractionState = {};
       let hasRecovery = false;
 
       Object.keys(interactionState).forEach(fieldName => {
@@ -321,8 +283,7 @@ class FieldStateManager {
             return;
           }
 
-          // Validate and recover field state
-          const recoveredFieldState = {
+          const recoveredFieldState: InteractionFieldState = {
             isUserModified: typeof fieldState.isUserModified === 'boolean' 
               ? fieldState.isUserModified 
               : false,
@@ -330,7 +291,6 @@ class FieldStateManager {
             initialValue: fieldState.initialValue
           };
 
-          // Validate date format
           if (fieldState.lastModified) {
             const date = new Date(fieldState.lastModified);
             if (isNaN(date.getTime())) {
@@ -358,24 +318,14 @@ class FieldStateManager {
     }
   }
 
-  /**
-   * Merge interaction states (useful for migration or combining states)
-   * 
-   * @param {Object} primaryState - Primary interaction state
-   * @param {Object} secondaryState - Secondary interaction state to merge
-   * @param {Object} options - Merge options
-   * @param {boolean} options.preferPrimary - Whether to prefer primary state in conflicts
-   * @returns {Object} Merged interaction state
-   */
-  static mergeInteractionStates(primaryState, secondaryState, options = {}) {
+  static mergeInteractionStates(primaryState: InteractionState, secondaryState: InteractionState, options: MergeOptions = {}): InteractionState {
     try {
       const { preferPrimary = true } = options;
       
-      // Validate and recover both states
       const validPrimaryState = this.validateAndRecoverInteractionState(primaryState);
       const validSecondaryState = this.validateAndRecoverInteractionState(secondaryState);
       
-      const merged = { ...validSecondaryState };
+      const merged: InteractionState = { ...validSecondaryState };
 
       Object.keys(validPrimaryState).forEach(fieldName => {
         try {
@@ -385,7 +335,6 @@ class FieldStateManager {
           if (!secondaryField || preferPrimary) {
             merged[fieldName] = primaryField;
           } else {
-            // Merge with preference for more recent modification
             const primaryDate = new Date(primaryField.lastModified || 0);
             const secondaryDate = new Date(secondaryField.lastModified || 0);
 
@@ -393,7 +342,6 @@ class FieldStateManager {
           }
         } catch (fieldError) {
           console.warn(`Error merging field ${fieldName}:`, fieldError);
-          // Keep the primary field on error
           merged[fieldName] = validPrimaryState[fieldName];
         }
       });

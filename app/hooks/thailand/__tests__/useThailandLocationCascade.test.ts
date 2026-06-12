@@ -5,8 +5,12 @@
  * Tests location cascade logic for Province -> District -> SubDistrict -> Postal Code
  */
 
-import { renderHook, act } from '@testing-library/react-native';
+import { renderHook, act, RenderHookResult } from '@testing-library/react-native';
 import { useThailandLocationCascade } from '../useThailandLocationCascade';
+
+interface RenderHookResultWithUpdate<P, R> extends RenderHookResult<P, R> {
+  waitForNextUpdate: (options?: { timeout?: number }) => Promise<void>;
+}
 
 // Mock location helpers
 jest.mock('../../../utils/thailand/LocationHelpers', () => ({
@@ -24,10 +28,25 @@ jest.mock('../../../utils/thailand/LocationHelpers', () => ({
   }),
 }));
 
+interface MockFormState {
+  province: string;
+  district: string;
+  districtId: number | null;
+  subDistrict: string;
+  subDistrictId: number | null;
+  postalCode: string;
+  setProvince: jest.Mock;
+  setDistrict: jest.Mock;
+  setDistrictId: jest.Mock;
+  setSubDistrict: jest.Mock;
+  setSubDistrictId: jest.Mock;
+  setPostalCode: jest.Mock;
+}
+
 describe('useThailandLocationCascade', () => {
-  let mockFormState;
-  let mockHandleFieldBlur;
-  let mockSaveDataToSecureStorage;
+  let mockFormState: MockFormState;
+  let mockHandleFieldBlur: jest.Mock;
+  let mockSaveDataToSecureStorage: jest.Mock<Promise<boolean>>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -64,7 +83,7 @@ describe('useThailandLocationCascade', () => {
           handleFieldBlur: mockHandleFieldBlur,
           saveDataToSecureStorage: mockSaveDataToSecureStorage,
         })
-      );
+      ) as RenderHookResultWithUpdate<unknown, unknown>;
 
       // Wait for useEffect to run
       await act(async () => {
@@ -85,7 +104,7 @@ describe('useThailandLocationCascade', () => {
           handleFieldBlur: mockHandleFieldBlur,
           saveDataToSecureStorage: mockSaveDataToSecureStorage,
         })
-      );
+      ) as RenderHookResultWithUpdate<unknown, unknown>;
 
       await act(async () => {
         await waitForNextUpdate();
@@ -125,7 +144,7 @@ describe('useThailandLocationCascade', () => {
           handleFieldBlur: mockHandleFieldBlur,
           saveDataToSecureStorage: mockSaveDataToSecureStorage,
         })
-      );
+      ) as RenderHookResultWithUpdate<unknown, unknown>;
 
       await act(async () => {
         await waitForNextUpdate();
@@ -147,7 +166,7 @@ describe('useThailandLocationCascade', () => {
           handleFieldBlur: mockHandleFieldBlur,
           saveDataToSecureStorage: mockSaveDataToSecureStorage,
         })
-      );
+      ) as RenderHookResultWithUpdate<unknown, unknown>;
 
       await act(async () => {
         await waitForNextUpdate();
@@ -168,7 +187,7 @@ describe('useThailandLocationCascade', () => {
           handleFieldBlur: mockHandleFieldBlur,
           saveDataToSecureStorage: mockSaveDataToSecureStorage,
         })
-      );
+      ) as RenderHookResultWithUpdate<unknown, unknown>;
 
       await act(async () => {
         await waitForNextUpdate();

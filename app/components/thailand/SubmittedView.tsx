@@ -10,12 +10,19 @@ import { designTokens, spacing, borderRadius, shadows, typography } from '../../
 import { animateValue, createAnimationValue, ANIMATIONS } from '../../utils/animations';
 import ActionButton from './ActionButton';
 
+interface SubmittedViewProps {
+  latestTdacData?: Record<string, unknown> | null;
+  onViewEntryPack?: () => void;
+  onStartImmigration?: () => void;
+  onEditInformation?: () => void;
+}
+
 const SubmittedView = ({
   latestTdacData,
   onViewEntryPack,
   onStartImmigration,
   onEditInformation,
-}) => {
+}: SubmittedViewProps) => {
   // Animation refs
   const fadeAnim = useRef(createAnimationValue(0)).current;
   const slideAnim = useRef(createAnimationValue(40)).current;

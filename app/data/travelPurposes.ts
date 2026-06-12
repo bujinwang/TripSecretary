@@ -1,7 +1,7 @@
 // Travel purposes for TripSecretary
 // Standardized travel purpose options with internationalization support
 
-export const TRAVEL_PURPOSES = {
+export const TRAVEL_PURPOSES: Record<string, Record<string, string>> = {
   // Basic travel purposes (matching the image provided)
   'TOURISM': {
     en: 'Tourism',
@@ -108,7 +108,7 @@ export const TRAVEL_PURPOSES = {
 };
 
 // Helper functions
-export const getTravelPurposeDisplayName = (code, locale = 'en') => {
+export const getTravelPurposeDisplayName = (code: string, locale = 'en') => {
   const purpose = TRAVEL_PURPOSES[code];
   if (!purpose) {
 return code;
@@ -117,7 +117,7 @@ return code;
   return purpose[locale] || purpose.en || code;
 };
 
-export const getTravelPurposeCode = (displayName, locale = 'en') => {
+export const getTravelPurposeCode = (displayName: string, locale = 'en') => {
   const entry = Object.entries(TRAVEL_PURPOSES).find(([code, translations]) => translations[locale] === displayName || translations.en === displayName);
   return entry ? entry[0] : displayName;
 };
@@ -162,14 +162,14 @@ export const getThailandTravelPurposes = (locale = 'en') => {
 };
 
 // Map legacy purpose values to new standardized codes
-export const normalizeTravelPurpose = (legacyPurpose) => {
+export const normalizeTravelPurpose = (legacyPurpose: string) => {
   if (!legacyPurpose) {
 return 'TOURISM';
 }
 
   const normalized = legacyPurpose.toUpperCase().replace(/[\s\-_]/g, '');
 
-  const legacyMapping = {
+  const legacyMapping: Record<string, string> = {
     'TOURISM': 'TOURISM',
     'BUSINESS': 'BUSINESS',
     'VISITINGRELATIVES': 'VISITING_RELATIVES',

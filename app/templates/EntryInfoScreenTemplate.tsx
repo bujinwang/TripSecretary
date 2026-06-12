@@ -101,19 +101,19 @@ const EntryInfoScreenTemplate = ({ navigation, route, config }: EntryInfoScreenT
   const passport = UserDataService.toSerializablePassport(rawPassport);
 
   const headerTitle = config?.headerTitleKey
-    ? t(config.headerTitleKey, { defaultValue: config.headerTitleDefault })
+    ? t(config.headerTitleKey, { defaultValue: config.headerTitleDefault as string | undefined })
     : config?.headerTitle || '';
 
-  const backLabel = config?.backLabelKey
-    ? t(config.backLabelKey, { defaultValue: config.backLabelDefault || t('common.back') })
-    : config?.backLabel || t('common.back');
+  const backLabel: string = config?.backLabelKey
+    ? t(config.backLabelKey, { defaultValue: (config.backLabelDefault as string | undefined) || t('common.back') })
+    : (config?.backLabel as string) || t('common.back');
 
   const titleText = config?.titleKey
-    ? t(config.titleKey, { defaultValue: config.titleDefault })
+    ? t(config.titleKey, { defaultValue: config.titleDefault as string | undefined })
     : config?.title || '';
 
   const subtitleText = config?.subtitleKey
-    ? t(config.subtitleKey, { defaultValue: config.subtitleDefault })
+    ? t(config.subtitleKey, { defaultValue: config.subtitleDefault as string | undefined })
     : config?.subtitle || '';
 
   const sections: ResolvedSection[] = useMemo(() => {
@@ -121,15 +121,15 @@ const EntryInfoScreenTemplate = ({ navigation, route, config }: EntryInfoScreenT
       return [];
     }
 
-    return config.sections.map((section: InfoScreenSectionConfig) => {
-      const title =
+      return config.sections.map((section: InfoScreenSectionConfig) => {
+      const title: string =
         section.titleKey
-          ? t(section.titleKey, { defaultValue: section.titleDefault })
-          : section.title || '';
+          ? t(section.titleKey, { defaultValue: section.titleDefault as string | undefined })
+          : (section.title as string) || '';
 
       const items = normalizeItems(
         section.itemsKey
-          ? t(section.itemsKey, { defaultValue: section.itemsDefault || [] })
+          ? (section.itemsDefault as string[]) || section.items || []
           : section.items || []
       );
 
@@ -195,7 +195,7 @@ const EntryInfoScreenTemplate = ({ navigation, route, config }: EntryInfoScreenT
             <TouchableOpacity style={styles.primaryButton} onPress={handlePrimaryAction}>
               <Text style={styles.primaryButtonText}>
                 {config.primaryAction.labelKey
-                  ? t(config.primaryAction.labelKey, { defaultValue: config.primaryAction.labelDefault })
+                  ? t(config.primaryAction.labelKey, { defaultValue: config.primaryAction.labelDefault as string | undefined })
                   : config.primaryAction.label || ''}
               </Text>
             </TouchableOpacity>

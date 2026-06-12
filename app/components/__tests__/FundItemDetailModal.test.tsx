@@ -12,9 +12,14 @@ import * as ImagePicker from 'expo-image-picker';
 
 // Mock dependencies
 jest.mock('../../services/data/UserDataService');
+interface MockTranslationOptions {
+  defaultValue?: string;
+  [key: string]: unknown;
+}
+
 jest.mock('../../i18n/LocaleContext', () => ({
   useTranslation: () => ({
-    t: (key, options) => options?.defaultValue || key,
+    t: (key: string, options?: MockTranslationOptions) => options?.defaultValue || key,
     language: 'en'
   })
 }));
@@ -78,7 +83,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    Alert.alert.mockClear();
+    (Alert.alert as jest.Mock).mockClear();
   });
 
   describe('Rendering with Different Fund Item Types', () => {
@@ -254,7 +259,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
   describe('Save Operation', () => {
     it('should save changes successfully', async () => {
       const updatedItem = { ...mockCashItem, amount: 6000 };
-      UserDataService.saveFundItem.mockResolvedValue(updatedItem);
+      (UserDataService.saveFundItem as jest.Mock).mockResolvedValue(updatedItem);
 
       const { getByText, getByDisplayValue } = render(
         <FundItemDetailModal
@@ -358,7 +363,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
     });
 
     it('should handle save errors gracefully', async () => {
-      UserDataService.saveFundItem.mockRejectedValue(
+      (UserDataService.saveFundItem as jest.Mock).mockRejectedValue(
         new Error('Database error')
       );
 
@@ -420,7 +425,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
     });
 
     it('should delete fund item when confirmed', async () => {
-      UserDataService.deleteFundItem.mockResolvedValue();
+      (UserDataService.deleteFundItem as jest.Mock).mockResolvedValue(undefined);
 
       const { getByText } = render(
         <FundItemDetailModal
@@ -437,8 +442,8 @@ describe('FundItemDetailModal - Unit Tests', () => {
       fireEvent.press(deleteButton);
 
       // Get the confirm callback from Alert.alert
-      const alertCall = Alert.alert.mock.calls[0];
-      const confirmButton = alertCall[2].find(btn => btn.text === 'Delete');
+      const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
+      const confirmButton = alertCall[2].find((btn: { text?: string; onPress?: () => void }) => btn.text === 'Delete');
       
       // Execute the confirm callback
       await act(async () => {
@@ -456,7 +461,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
     });
 
     it('should handle delete errors gracefully', async () => {
-      UserDataService.deleteFundItem.mockRejectedValue(
+      (UserDataService.deleteFundItem as jest.Mock).mockRejectedValue(
         new Error('Database error')
       );
 
@@ -475,8 +480,8 @@ describe('FundItemDetailModal - Unit Tests', () => {
       fireEvent.press(deleteButton);
 
       // Get the confirm callback from Alert.alert
-      const alertCall = Alert.alert.mock.calls[0];
-      const confirmButton = alertCall[2].find(btn => btn.text === 'Delete');
+      const alertCall = (Alert.alert as jest.Mock).mock.calls[0];
+      const confirmButton = alertCall[2].find((btn: { text?: string; onPress?: () => void }) => btn.text === 'Delete');
       
       // Execute the confirm callback
       await act(async () => {
@@ -494,7 +499,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
 
   describe('Error Display', () => {
     it('should display error message when save fails', async () => {
-      UserDataService.saveFundItem.mockRejectedValue(
+      (UserDataService.saveFundItem as jest.Mock).mockRejectedValue(
         new Error('Network error')
       );
 
@@ -528,7 +533,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
     });
 
     it('should clear error when switching modes', async () => {
-      UserDataService.saveFundItem.mockRejectedValue(
+      (UserDataService.saveFundItem as jest.Mock).mockRejectedValue(
         new Error('Network error')
       );
 
@@ -624,7 +629,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
 
   describe('Photo Management', () => {
     it('should request permissions when adding photo', async () => {
-      ImagePicker.requestMediaLibraryPermissionsAsync.mockResolvedValue({
+      (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValue({
         status: 'granted'
       });
 
@@ -650,7 +655,7 @@ describe('FundItemDetailModal - Unit Tests', () => {
     });
 
     it('should show photo options alert when permissions granted', async () => {
-      ImagePicker.requestMediaLibraryPermissionsAsync.mockResolvedValue({
+      (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValue({
         status: 'granted'
       });
 

@@ -19,8 +19,7 @@ type SGArrivalSelectionProps = RootStackScreenProps<'SGArrivalSelection'>;
 const SGArrivalSelectionScreen: React.FC<SGArrivalSelectionProps> = ({ navigation, route }) => {
   const { passport: rawPassport, destination = null, travelInfo = null } = route.params ?? {};
   const passport = UserDataService.toSerializablePassport(rawPassport) as SerializablePassport | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { t } = useLocale() as any;
+  const { t } = useLocale();
 
   const goToGuide = () => {
     navigation.navigate('SGArrivalGuide', { passport, destination, travelInfo });
@@ -52,7 +51,7 @@ const SGArrivalSelectionScreen: React.FC<SGArrivalSelectionProps> = ({ navigatio
         <Text style={styles.cardTitle}>{t('singapore.selection.smartFlow.title')}</Text>
         <Text style={styles.cardSubtitle}>{t('singapore.selection.smartFlow.subtitle')}</Text>
         <View style={styles.statsRow}>
-          {t('singapore.selection.smartFlow.highlights', { returnObjects: true, defaultValue: [] }).map((item, index) => (
+          {(t('singapore.selection.smartFlow.highlights', { returnObjects: true, defaultValue: [] }) as unknown[]).map((item: Record<string, unknown>, index: number) => (
             <View key={`sg-smart-${index}`} style={styles.stat}>
               <Text style={styles.statValue}>{item.value}</Text>
               <Text style={styles.statLabel}>{item.title}</Text>
@@ -60,7 +59,7 @@ const SGArrivalSelectionScreen: React.FC<SGArrivalSelectionProps> = ({ navigatio
           ))}
         </View>
         <View style={styles.features}>
-          {t('singapore.selection.smartFlow.features', { returnObjects: true, defaultValue: [] }).map((feature, index) => (
+          {(t('singapore.selection.smartFlow.features', { returnObjects: true, defaultValue: [] }) as unknown[]).map((feature: string, index: number) => (
             <Text key={`sg-feature-${index}`} style={styles.feature}>
               {feature}
             </Text>
@@ -75,7 +74,7 @@ const SGArrivalSelectionScreen: React.FC<SGArrivalSelectionProps> = ({ navigatio
         <Text style={styles.cardTitle}>{t('singapore.selection.webFlow.title')}</Text>
         <Text style={styles.cardSubtitle}>{t('singapore.selection.webFlow.subtitle')}</Text>
         <View style={styles.features}>
-          {t('singapore.selection.webFlow.features', { returnObjects: true, defaultValue: [] }).map((feature, index) => (
+          {t('singapore.selection.webFlow.features', { returnObjects: true, defaultValue: [] }).map((feature: string, index: number) => (
             <Text key={`sg-web-${index}`} style={styles.feature}>
               {feature}
             </Text>
@@ -90,7 +89,7 @@ const SGArrivalSelectionScreen: React.FC<SGArrivalSelectionProps> = ({ navigatio
 
       <View style={styles.notesCard}>
         <Text style={styles.notesTitle}>{t('singapore.selection.notes.title')}</Text>
-        {t('singapore.selection.notes.items', { returnObjects: true, defaultValue: [] }).map((note, index) => (
+        {t('singapore.selection.notes.items', { returnObjects: true, defaultValue: [] }).map((note: string, index: number) => (
           <Text key={`sg-note-${index}`} style={styles.note}>
             • {note}
           </Text>

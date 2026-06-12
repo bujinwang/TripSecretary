@@ -206,7 +206,7 @@ function runTests() {
       test();
       passed++;
     } catch (error) {
-      console.error(`✗ ${test.name} failed:`, error.message);
+      console.error(`✗ ${test.name} failed:`, (error as Error).message);
       failed++;
     }
   });

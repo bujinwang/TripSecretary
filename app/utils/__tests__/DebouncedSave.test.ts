@@ -6,7 +6,7 @@
 import { DebouncedSave } from '../DebouncedSave';
 
 describe('DebouncedSave', () => {
-  let debouncedSave;
+  let debouncedSave: DebouncedSave;
 
   beforeEach(() => {
     debouncedSave = new DebouncedSave();

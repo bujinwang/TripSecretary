@@ -252,9 +252,9 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
       
       // Should still have jp cache but not th
       const hasThailandCache = Array.from(calculator.destinationProgressCache.keys())
-        .some(key => key.includes('destination_th_'));
+        .some((key: unknown) => (key as string).includes('destination_th_'));
       const hasJapanCache = Array.from(calculator.destinationProgressCache.keys())
-        .some(key => key.includes('destination_jp_'));
+        .some((key: unknown) => (key as string).includes('destination_jp_'));
         
       expect(hasThailandCache).toBe(false);
       expect(hasJapanCache).toBe(true);

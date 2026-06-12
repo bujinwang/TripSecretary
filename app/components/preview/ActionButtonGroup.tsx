@@ -44,6 +44,19 @@ const AnimatedTouchable = Animated.createAnimatedComponent(Animated.View);
  *   primaryLoading={isSubmitting}
  * />
  */
+interface ActionButtonGroupProps {
+  variant?: 'preview-incomplete' | 'preview-complete' | 'preview-info' | 'submitted';
+  onPrimaryPress?: () => void;
+  onSecondaryPress?: () => void;
+  primaryLabel?: string;
+  secondaryLabel?: string;
+  primaryLoading?: boolean;
+  primaryDisabled?: boolean;
+  secondaryDisabled?: boolean;
+  fixed?: boolean;
+  style?: Record<string, unknown>;
+}
+
 const ActionButtonGroup = ({
   variant = 'preview-incomplete',
   onPrimaryPress,
@@ -55,7 +68,7 @@ const ActionButtonGroup = ({
   secondaryDisabled = false,
   fixed = true,
   style,
-}) => {
+}: ActionButtonGroupProps) => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 

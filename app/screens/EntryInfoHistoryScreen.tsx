@@ -320,7 +320,7 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
       setHistoryItems(remainingItems);
       applyFiltersAndSearch(remainingItems, selectedFilter, searchQuery);
 
-      PerformanceMonitor.endTiming(operationId, {
+      PerformanceMonitor.endTiming(operationId as string, {
         itemsLoaded: normalizedItems.length,
         leftCount: leftItems.length,
         archivedCount: archivedItems.length,
@@ -328,7 +328,7 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
       });
     } catch (error) {
       console.error('Failed to load history data:', error);
-      PerformanceMonitor.endTiming(operationId, {
+      PerformanceMonitor.endTiming(operationId as string, {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
       Alert.alert('错误', '加载历史记录失败，请重试');
@@ -767,7 +767,7 @@ const EntryInfoHistoryScreen: React.FC<EntryInfoHistoryScreenProps> = ({ navigat
       }
     });
 
-    PerformanceMonitor.endTiming(operationId, {
+    PerformanceMonitor.endTiming(operationId as string, {
       flattenedCount: flattened.length,
       groupCount: groupOrder.filter((g) => groups[g]?.length > 0).length,
     });

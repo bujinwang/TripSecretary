@@ -20,14 +20,16 @@ describe('Login Traditional Chinese Translations', () => {
   });
 
   test('should access Traditional Chinese through lazy getter', () => {
-    const zhTWTranslations = translations['zh-TW'];
+    const zhTWTranslations = translations['zh-TW'] as Record<string, unknown>;
     expect(zhTWTranslations).toBeDefined();
-    expect(zhTWTranslations.login).toBeDefined();
-    expect(zhTWTranslations.login.tagline).toBeDefined();
+    const zhTWLogin = zhTWTranslations.login as Record<string, unknown>;
+    expect(zhTWLogin).toBeDefined();
+    expect(zhTWLogin.tagline).toBeDefined();
     
     // Should have converted characters
-    expect(zhTWTranslations.login.benefits.free).toBe('完全免費');
-    expect(zhTWTranslations.login.benefits.noRegistration).toBe('無需註冊');
+    const zhTWBenefits = zhTWLogin.benefits as Record<string, unknown>;
+    expect(zhTWBenefits.free).toBe('完全免費');
+    expect(zhTWBenefits.noRegistration).toBe('無需註冊');
   });
 
   test('should handle interpolation placeholders correctly', () => {
@@ -41,8 +43,8 @@ describe('Login Traditional Chinese Translations', () => {
   });
 
   test('should maintain structure consistency', () => {
-    const simplifiedLogin = translations['zh-CN'].login;
-    const traditionalLogin = translations['zh-TW'].login;
+    const simplifiedLogin = (translations['zh-CN'] as Record<string, unknown>).login as Record<string, unknown>;
+    const traditionalLogin = (translations['zh-TW'] as Record<string, unknown>).login as Record<string, unknown>;
     
     // Should have same keys
     expect(Object.keys(traditionalLogin)).toEqual(Object.keys(simplifiedLogin));

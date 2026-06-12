@@ -13,7 +13,7 @@ jest.mock('../InputWithUserTracking', () => {
 });
 
 describe('TravelInfoFormSection', () => {
-  const defaultProps = {
+  const defaultProps: { fieldName: string; label: string; value: string; onChangeText: jest.Mock; onUserInteraction: jest.Mock; required?: boolean; optional?: boolean } = {
     fieldName: 'testField',
     label: 'Test Field',
     value: '',
@@ -282,7 +282,7 @@ describe('TravelInfoFormSection', () => {
 
   describe('Edge Cases Logic', () => {
     test('should handle missing callbacks gracefully', () => {
-      const minimalProps = {
+      const minimalProps: { fieldName: string; label: string; value: string; onChangeText?: jest.Mock; onUserInteraction?: jest.Mock } = {
         fieldName: "testField",
         label: "Test Field",
         value: ""

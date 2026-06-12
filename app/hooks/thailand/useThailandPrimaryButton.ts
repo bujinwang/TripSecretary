@@ -30,12 +30,19 @@ import ArrivalWindowCalculator from '../../utils/thailand/ArrivalWindowCalculato
  * @param {string|null} params.entryPackStatus - Entry pack status ('submitted', 'superseded', etc.)
  * @returns {ButtonState} Button state configuration
  */
+interface UseThailandPrimaryButtonParams {
+  completionPercent: number;
+  arrivalDate: string | null;
+  showSupersededStatus: boolean;
+  entryPackStatus: string | null;
+}
+
 export const useThailandPrimaryButton = ({
   completionPercent,
   arrivalDate,
   showSupersededStatus,
   entryPackStatus,
-}) => {
+}: UseThailandPrimaryButtonParams) => {
   const { t } = useLocale();
 
   const buttonState = useMemo(() => {

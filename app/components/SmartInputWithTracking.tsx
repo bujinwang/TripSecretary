@@ -15,7 +15,25 @@ import React, { useMemo, useCallback } from 'react';
 import InputWithUserTracking from './InputWithUserTracking';
 import SuggestionProviders from '../utils/SuggestionProviders';
 
-const SmartInputWithTracking = React.forwardRef(({
+// Workaround for TS2322: SmartInputProps index signature [extra: string]: unknown
+// causes prop type widening when passing to InputWithUserTracking.
+const UntypedInput = InputWithUserTracking as React.ComponentType<any>;
+
+interface SmartInputProps {
+  fieldName: string;
+  fieldType: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  onUserInteraction?: (fieldName: string, value: string) => void;
+  context?: Record<string, unknown>;
+  showSuggestions?: boolean;
+  maxSuggestions?: number;
+  label?: string;
+  placeholder?: string;
+  [extra: string]: unknown;
+}
+
+const SmartInputWithTracking = React.forwardRef<React.ComponentRef<typeof InputWithUserTracking>, SmartInputProps>(({
   fieldName,
   fieldType,
   value,
@@ -36,8 +54,8 @@ const SmartInputWithTracking = React.forwardRef(({
       return [];
     }
 
-    const allSuggestions = SuggestionProviders.getSuggestions(fieldType, context);
-    return allSuggestions.slice(0, maxSuggestions);
+    const allSuggestions = SuggestionProviders.getSuggestions(fieldType as string, (context ?? undefined) as Record<string, unknown> | undefined);
+    return allSuggestions.slice(0, maxSuggestions as number);
   }, [fieldType, context, showSuggestions, maxSuggestions]);
 
   /**
@@ -48,7 +66,7 @@ const SmartInputWithTracking = React.forwardRef(({
       return placeholder;
     }
 
-    return SuggestionProviders.getSuggestionPlaceholder(fieldType, context);
+    return SuggestionProviders.getSuggestionPlaceholder(fieldType as string, context as Record<string, unknown>);
   }, [fieldType, context, showSuggestions, placeholder]);
 
   /**
@@ -58,9 +76,9 @@ const SmartInputWithTracking = React.forwardRef(({
     // Update context with the selection for future suggestions
     if (fieldType && context) {
       const updatedContext = SuggestionProviders.updateContextWithSelection(
-        fieldType,
-        selectedValue,
-        context
+        fieldType as string,
+        selectedValue as string,
+        context as Record<string, unknown>
       );
       
       // You might want to persist this updated context
@@ -98,7 +116,7 @@ const SmartInputWithTracking = React.forwardRef(({
   }, [showSuggestions, suggestions.length]);
 
   return (
-    <InputWithUserTracking
+    <UntypedInput
       ref={ref}
       fieldName={fieldName}
       value={value}
@@ -112,7 +130,7 @@ const SmartInputWithTracking = React.forwardRef(({
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
       accessibilityRole="textbox"
-      {...inputProps}
+      {...(inputProps as Record<string, never>)}
     />
   );
 });

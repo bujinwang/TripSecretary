@@ -79,16 +79,16 @@ class EntryGuideService {
 
   constructor() {
     this.guides = {
-      thailand: thailandEntryGuide,
-      japan: japanEntryGuide,
-      singapore: singaporeEntryGuide,
-      malaysia: malaysiaEntryGuide,
-      korea: koreaEntryGuide,
-      hongkong: hongkongEntryGuide,
-      taiwan: taiwanEntryGuide,
-      vietnam: vietnamEntryGuide,
-      usa: usaEntryGuide,
-      canada: canadaEntryGuide
+      thailand: thailandEntryGuide as CountryGuide,
+      japan: japanEntryGuide as CountryGuide,
+      singapore: singaporeEntryGuide as CountryGuide,
+      malaysia: malaysiaEntryGuide as CountryGuide,
+      korea: koreaEntryGuide as CountryGuide,
+      hongkong: hongkongEntryGuide as CountryGuide,
+      taiwan: taiwanEntryGuide as CountryGuide,
+      vietnam: vietnamEntryGuide as CountryGuide,
+      usa: usaEntryGuide as CountryGuide,
+      canada: canadaEntryGuide as CountryGuide
     };
 
     this.activeCountry = null;

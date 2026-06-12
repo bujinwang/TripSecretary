@@ -11,6 +11,34 @@
  * - Backward compatibility with legacy formats
  */
 
+interface RoutePassport {
+  nameEn?: string;
+  name?: string;
+  passportNo?: string;
+  birthDate?: string;
+  dob?: string;
+  gender?: string;
+  sex?: string;
+  nationality?: string;
+}
+interface RouteTravelInfo {
+  flightNumber?: string;
+  flightNo?: string;
+  arrivalDate?: string;
+  travelPurpose?: string;
+  purpose?: string;
+  departureCountry?: string;
+  occupation?: string;
+  province?: string;
+  contactPhone?: string;
+  hotelAddress?: string;
+}
+interface RouteParams {
+  travelerInfo?: Record<string, unknown>;
+  passport?: RoutePassport;
+  travelInfo?: RouteTravelInfo;
+}
+
 class TravelerDataTransformer {
   /**
    * Transform traveler info to TDAC API format
@@ -18,7 +46,7 @@ class TravelerDataTransformer {
    * @param {Object} travelerInfo - Traveler information object
    * @returns {Object} Transformed data ready for TDAC API submission
    */
-  static toTDACFormat(travelerInfo) {
+  static toTDACFormat(travelerInfo: Record<string, string>) {
     if (!travelerInfo) {
       throw new Error('TravelerDataTransformer: travelerInfo is required');
     }
@@ -86,7 +114,7 @@ class TravelerDataTransformer {
    * @param {Object} params - Route parameters
    * @returns {Object} Normalized traveler information
    */
-  static fromRouteParams(params) {
+  static fromRouteParams(params: RouteParams | null) {
     if (!params) {
       return null;
     }
@@ -132,7 +160,7 @@ class TravelerDataTransformer {
    * @param {string} nameEn - Full name in English (e.g., "WANG BUJIN")
    * @returns {Object} Parsed name components
    */
-  static parsePassportName(nameEn) {
+  static parsePassportName(nameEn: string) {
     if (!nameEn || typeof nameEn !== 'string') {
       return { familyName: '', firstName: '', middleName: '' };
     }
@@ -161,7 +189,7 @@ class TravelerDataTransformer {
    * @param {string} travelMode - Travel mode (e.g., "Air", "Sea", "Land")
    * @returns {string} Travel mode ID for TDAC API
    */
-  static resolveTravelModeId(travelMode) {
+  static resolveTravelModeId(travelMode: string) {
     const travelModeMap = {
       'Air': '1',
       'Sea': '2',
@@ -178,7 +206,7 @@ class TravelerDataTransformer {
    * @param {Object} travelerData - Traveler data to validate
    * @returns {Object} Validation result with isValid flag and errors array
    */
-  static validate(travelerData) {
+  static validate(travelerData: Record<string, string>) {
     const errors = [];
     const requiredFields = [
       { field: 'passportNo', label: 'Passport Number' },
@@ -210,7 +238,7 @@ class TravelerDataTransformer {
    * @param {Object} travelerData - Traveler data to sanitize
    * @returns {Object} Sanitized data safe for logging
    */
-  static sanitizeForLogging(travelerData) {
+  static sanitizeForLogging(travelerData: Record<string, string>) {
     if (!travelerData) {
       return null;
     }
@@ -238,7 +266,7 @@ class TravelerDataTransformer {
    * @param {Object} travelerData - Traveler data to check
    * @returns {boolean} True if data is complete
    */
-  static isComplete(travelerData) {
+  static isComplete(travelerData: Record<string, string>) {
     const validation = this.validate(travelerData);
     return validation.isValid;
   }
@@ -249,7 +277,7 @@ class TravelerDataTransformer {
    * @param {Object} travelerData - Traveler data to check
    * @returns {number} Completion percentage (0-100)
    */
-  static getCompletionPercentage(travelerData) {
+  static getCompletionPercentage(travelerData: Record<string, string>) {
     if (!travelerData) {
       return 0;
     }

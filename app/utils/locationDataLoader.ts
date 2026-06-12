@@ -5,9 +5,9 @@ import { thailandDistricts, thailandSubDistricts, getSubDistrictsByDistrictId } 
 // Helper functions for Thailand data transformation
 const createThailandLocationLoaders = () => {
   // Transform districts object to array format expected by the component
-  const getDistricts = (provinceCode) => {
+  const getDistricts = (provinceCode: string) => {
     if (thailandDistricts[provinceCode]) {
-      return thailandDistricts[provinceCode].map(district => ({
+      return thailandDistricts[provinceCode].map((district: Record<string, unknown>) => ({
         ...district,
         provinceId: provinceCode
       }));
@@ -16,7 +16,7 @@ const createThailandLocationLoaders = () => {
   };
 
   // Transform sub-districts to array format
-  const getSubDistricts = (districtId) => getSubDistrictsByDistrictId(districtId);
+  const getSubDistricts = (districtId: string) => getSubDistrictsByDistrictId(districtId);
 
   return {
     provinces: thailandProvinces,
@@ -30,7 +30,7 @@ const createThailandLocationLoaders = () => {
  * @param {string} countryCode - Country code (e.g., 'th' for Thailand)
  * @returns {Object} Object containing location data and loader functions
  */
-export const getLocationLoaders = (countryCode) => {
+export const getLocationLoaders = (countryCode: string) => {
   switch (countryCode) {
     case 'th':
     case 'thailand':

@@ -1,6 +1,46 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type HookParams = Record<string, any>;
 
+interface UserDataShape {
+  passport?: {
+    passportNumber?: string;
+    fullName?: string;
+    nationality?: string;
+    dateOfBirth?: string;
+    expiryDate?: string;
+    gender?: string;
+    [key: string]: unknown;
+  };
+  personalInfo?: {
+    phoneCode?: string;
+    phoneNumber?: string;
+    email?: string;
+    occupation?: string;
+    provinceCity?: string;
+    countryRegion?: string;
+    [key: string]: unknown;
+  };
+  travelInfo?: {
+    travelPurpose?: string;
+    boardingCountry?: string;
+    accommodationType?: string;
+    recentStayCountry?: string;
+    arrivalFlightNumber?: string;
+    arrivalArrivalDate?: string;
+    departureFlightNumber?: string;
+    departureDepartureDate?: string;
+    province?: string;
+    district?: string;
+    subDistrict?: string;
+    postalCode?: string;
+    hotelAddress?: string;
+    visaNumber?: string;
+    isTransitPassenger?: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
 /**
  * useThailandDataPersistence Hook
  *
@@ -190,7 +230,7 @@ export const useThailandDataPersistence = ({
   }, [destinationIdCandidates, userId]);
 
   // Normalize fund item
-  const normalizeFundItem = useCallback((item) => ({
+  const normalizeFundItem = useCallback((item: Record<string, unknown>) => ({
     id: item.id,
     type: item.type || item.itemType || 'cash',
     amount: item.amount,
@@ -207,7 +247,7 @@ export const useThailandDataPersistence = ({
       await UserDataService.initialize(userId);
 
       const fundItems = await UserDataService.getFundItems(userId, options);
-      const normalized = fundItems.map(normalizeFundItem);
+      const normalized = (fundItems as Record<string, unknown>[]).map(normalizeFundItem);
       setFunds(normalized);
     } catch (error) {
       console.error('Failed to refresh fund items:', error);
@@ -388,18 +428,19 @@ export const useThailandDataPersistence = ({
   }, [getSessionStateKey, setExpandedSection, setScrollPosition, setLastEditedField]);
 
   // Migration function to mark existing data as user-modified
-  const migrateExistingDataToInteractionState = useCallback(async (userData) => {
-    if (!userData || !interactionTrackerInitialized) {
+  const migrateExistingDataToInteractionState = useCallback(async (userData: Record<string, unknown>) => {
+    const ud = userData as UserDataShape;
+    if (!ud || !interactionTrackerInitialized) {
       return;
     }
 
     console.log('=== MIGRATING EXISTING DATA TO INTERACTION STATE ===');
 
-    const existingDataToMigrate = {};
+    const existingDataToMigrate: Record<string, unknown> = {};
 
     // Migrate passport data
-    if (userData.passport) {
-      const {passport} = userData;
+    if (ud.passport) {
+      const passport = ud.passport;
       if (passport.passportNumber) {
 existingDataToMigrate.passportNo = passport.passportNumber;
 }
@@ -421,8 +462,8 @@ existingDataToMigrate.sex = passport.gender;
     }
 
     // Migrate personal info data
-    if (userData.personalInfo) {
-      const {personalInfo} = userData;
+    if (ud.personalInfo) {
+      const personalInfo = ud.personalInfo;
       if (personalInfo.phoneCode) {
 existingDataToMigrate.phoneCode = personalInfo.phoneCode;
 }
@@ -444,8 +485,8 @@ existingDataToMigrate.residentCountry = personalInfo.countryRegion;
     }
 
     // Migrate travel info data
-    if (userData.travelInfo) {
-      const {travelInfo} = userData;
+    if (ud.travelInfo) {
+      const travelInfo = ud.travelInfo;
       if (travelInfo.travelPurpose) {
 existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
 }
@@ -505,7 +546,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
   }, [interactionTrackerInitialized, initializeWithExistingData]);
 
   // Save photo to travel info
-  const savePhoto = useCallback(async (photoType, photoUri) => {
+  const savePhoto = useCallback(async (photoType: string, photoUri: string) => {
     try {
       let fieldName;
 
@@ -533,7 +574,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
   }, [setFlightTicketPhoto, setDepartureFlightTicketPhoto, setHotelReservationPhoto, saveDataToSecureStorage]);
 
   // Handle flight ticket photo upload
-  const handleFlightTicketPhotoUpload = useCallback(async (t) => {
+  const handleFlightTicketPhotoUpload = useCallback(async (_t: unknown) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -559,7 +600,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
         }
       }
     } catch (error) {
-      ErrorHandler.handleStorageError(error, 'useThailandDataPersistence.handleFlightTicketPhotoUpload', {
+      ErrorHandler.handleStorageError(error as Error, 'useThailandDataPersistence.handleFlightTicketPhotoUpload', {
         severity: ErrorSeverity.WARNING,
         customTitle: t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
         customMessage: t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' }),
@@ -569,7 +610,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
   }, [savePhoto]);
 
   // Handle hotel reservation photo upload
-  const handleHotelReservationPhotoUpload = useCallback(async (t) => {
+  const handleHotelReservationPhotoUpload = useCallback(async (_t: unknown) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -595,7 +636,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
         }
       }
     } catch (error) {
-      ErrorHandler.handleStorageError(error, 'useThailandDataPersistence.handleHotelReservationPhotoUpload', {
+      ErrorHandler.handleStorageError(error as Error, 'useThailandDataPersistence.handleHotelReservationPhotoUpload', {
         severity: ErrorSeverity.WARNING,
         customTitle: t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
         customMessage: t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' }),
@@ -605,7 +646,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
   }, [savePhoto]);
 
   // Handle departure flight ticket photo upload
-  const handleDepartureFlightTicketPhotoUpload = useCallback(async (t) => {
+  const handleDepartureFlightTicketPhotoUpload = useCallback(async (_t: unknown) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -631,7 +672,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
         }
       }
     } catch (error) {
-      ErrorHandler.handleStorageError(error, 'useThailandDataPersistence.handleDepartureFlightTicketPhotoUpload', {
+      ErrorHandler.handleStorageError(error as Error, 'useThailandDataPersistence.handleDepartureFlightTicketPhotoUpload', {
         severity: ErrorSeverity.WARNING,
         customTitle: t('thailand.travelInfo.uploadError', { defaultValue: '上传失败' }),
         customMessage: t('thailand.travelInfo.uploadErrorMessage', { defaultValue: '选择照片失败，请重试' }),
@@ -641,7 +682,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
   }, [savePhoto]);
 
   // Handle navigation with save error handling
-  const handleNavigationWithSave = useCallback(async (navigationAction, actionName = 'navigate') => {
+  const handleNavigationWithSave = useCallback(async (navigationAction: () => void, actionName = 'navigate') => {
     try {
       // Set saving state to show user that save is in progress
       setSaveStatus('saving');
@@ -870,8 +911,57 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
     }
   }, [userId, passport, destination, canonicalDestinationId, destinationIdCandidates, fetchTravelInfoForCandidates, initializeWithExistingData, refreshFundItems, setIsLoading, setPassportNo, setSurname, setMiddleName, setGivenName, setNationality, setDob, setExpiryDate, setPassportData, setOccupation, setCustomOccupation, setCityOfResidence, setResidentCountry, setPhoneCode, setPhoneNumber, setEmail, setPersonalInfoData, setSex, setTravelPurpose, setCustomTravelPurpose, setBoardingCountry, setRecentStayCountry, setVisaNumber, setArrivalFlightNumber, setArrivalArrivalDate, setPreviousArrivalDate, setDepartureFlightNumber, setDepartureDepartureDate, setIsTransitPassenger, setAccommodationType, setCustomAccommodationType, setProvince, setDistrict, setDistrictId, setSubDistrict, setSubDistrictId, setPostalCode, setHotelAddress, setFlightTicketPhoto, setDepartureFlightTicketPhoto, setHotelReservationPhoto]);
 
+  interface SaveResultEntry {
+    success?: boolean;
+    error?: unknown;
+  }
+  interface SaveResults {
+    passport: SaveResultEntry;
+    personalInfo: SaveResultEntry;
+    travelInfo: SaveResultEntry;
+  }
+  interface CurrentStateForSave {
+    passportNo: string;
+    surname: string;
+    middleName: string;
+    givenName: string;
+    nationality: string;
+    dob: string;
+    expiryDate: string;
+    sex: string;
+    phoneCode: string;
+    phoneNumber: string;
+    email: string;
+    occupation: string;
+    cityOfResidence: string;
+    residentCountry: string;
+    travelPurpose: string;
+    customTravelPurpose: string;
+    boardingCountry: string;
+    recentStayCountry: string;
+    visaNumber: string;
+    arrivalFlightNumber: string;
+    arrivalArrivalDate: string;
+    departureFlightNumber: string;
+    departureDepartureDate: string;
+    isTransitPassenger: boolean;
+    accommodationType: string;
+    customAccommodationType: string;
+    province: string;
+    district: string;
+    subDistrict: string;
+    postalCode: string;
+    hotelAddress: string;
+    existingPassport: { id?: string } | null;
+    interactionState: Record<string, unknown>;
+    destination: Record<string, unknown>;
+    flightTicketPhoto: string | null;
+    departureFlightTicketPhoto: string | null;
+    hotelReservationPhoto: string | null;
+  }
+
   // Helper function to perform the actual save operation
-  const performSaveOperation = useCallback(async (userId, fieldOverrides, saveResults, saveErrors, currentState) => {
+  const performSaveOperation = useCallback(async (userId: string, fieldOverrides: Record<string, unknown>, saveResults: SaveResults, saveErrors: Array<{ section: string; error: unknown }>, currentState: CurrentStateForSave) => {
     try {
       const {
         passportNo, surname, middleName, givenName, nationality, dob, expiryDate, sex,
@@ -883,7 +973,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
         flightTicketPhoto, departureFlightTicketPhoto, hotelReservationPhoto
       } = currentState;
 
-      const getCurrentValue = (fieldName, currentValue) => fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
+      const getCurrentValue = (fieldName: string, currentValue: unknown) => fieldOverrides[fieldName] !== undefined ? fieldOverrides[fieldName] : currentValue;
 
       // Save passport data
       const allPassportFields = {
@@ -902,7 +992,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
 
       const passportUpdates = FieldStateManager.filterSaveableFields(
         allPassportFields,
-        interactionState,
+        interactionState as InteractionState,
         { preserveExisting: true, alwaysSaveFields: passportAlwaysSaveFields }
       );
 
@@ -943,7 +1033,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
 
       const personalInfoUpdates = FieldStateManager.filterSaveableFields(
         allPersonalInfoFields,
-        interactionState,
+        interactionState as InteractionState,
         { preserveExisting: true, alwaysSaveFields: personalInfoAlwaysSaveFields }
       );
 
@@ -1010,7 +1100,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
 
       const travelInfoUpdates = FieldStateManager.filterSaveableFields(
         allTravelInfoFields,
-        interactionState,
+        interactionState as InteractionState,
         { preserveExisting: true, alwaysSaveFields }
       );
 
@@ -1106,7 +1196,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
           // Update completion metrics using the EntryInfo model method
           // which now uses EntryCompletionCalculator internally
           entryInfo.updateCompletionMetrics(
-            savedPassport || {},
+            (savedPassport as Record<string, unknown>) || {},
             savedPersonalInfo || {},
             savedFunds || [],
             freshTravelInfo || {}

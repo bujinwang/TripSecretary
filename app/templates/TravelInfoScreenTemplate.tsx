@@ -232,7 +232,7 @@ return null;
 /**
  * Privacy Notice Component
  */
-TravelInfoScreenTemplate.PrivacyNotice = ({ message }) => {
+TravelInfoScreenTemplate.PrivacyNotice = ({ message }: { message?: string }) => {
   const { t } = useTravelInfoTemplate();
 
   return (
@@ -254,7 +254,7 @@ TravelInfoScreenTemplate.PrivacyNotice = ({ message }) => {
 /**
  * Scrollable Content Container
  */
-TravelInfoScreenTemplate.ScrollContainer = ({ children }) => {
+TravelInfoScreenTemplate.ScrollContainer = ({ children }: { children?: React.ReactNode }) => {
   const { scrollViewRef, setScrollPosition } = useTravelInfoTemplate();
 
   return (
@@ -284,6 +284,14 @@ TravelInfoScreenTemplate.Section = ({
   fieldCount,
   children,
   defaultExpanded = false,
+}: {
+  name: string;
+  title?: string;
+  titleKey?: string;
+  icon?: string;
+  fieldCount?: { completed: number; total: number };
+  children?: React.ReactNode;
+  defaultExpanded?: boolean;
 }) => {
   const { t, config, expandedSection, setExpandedSection } = useTravelInfoTemplate();
 
@@ -346,6 +354,13 @@ TravelInfoScreenTemplate.SubmitButton = ({
   variant = 'primary',
   disabled = false,
   icon,
+}: {
+  label?: string;
+  labelKey?: string;
+  onPress?: () => void;
+  variant?: string;
+  disabled?: boolean;
+  icon?: string | React.ReactNode;
 }) => {
   const { t, config, navigation, route } = useTravelInfoTemplate();
 
@@ -388,7 +403,7 @@ TravelInfoScreenTemplate.SubmitButton = ({
 /**
  * Loading Indicator Component
  */
-TravelInfoScreenTemplate.LoadingIndicator = ({ message }) => {
+TravelInfoScreenTemplate.LoadingIndicator = ({ message }: { message?: string }) => {
   const { t, isLoading } = useTravelInfoTemplate();
 
   if (!isLoading) {

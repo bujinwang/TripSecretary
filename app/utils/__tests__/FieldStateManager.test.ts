@@ -6,7 +6,7 @@
  * Requirements: 1.3, 3.4, 5.1, 5.2
  */
 
-import FieldStateManager from '../FieldStateManager';
+import FieldStateManager, { InteractionState } from '../FieldStateManager';
 
 describe('FieldStateManager', () => {
   describe('shouldSaveField', () => {
@@ -63,7 +63,7 @@ describe('FieldStateManager', () => {
         emptyNonModified: ''
       };
 
-      const interactionState = {
+      const interactionState: InteractionState = {
         userModifiedField: { isUserModified: true },
         emptyUserModified: { isUserModified: true }
       };
@@ -83,7 +83,7 @@ describe('FieldStateManager', () => {
         nonModifiedField: 'value2'
       };
 
-      const interactionState = {
+      const interactionState: InteractionState = {
         userModifiedField: { isUserModified: true }
       };
 
@@ -103,7 +103,7 @@ describe('FieldStateManager', () => {
         normalField: 'value3'
       };
 
-      const interactionState = {
+      const interactionState: InteractionState = {
         userModifiedField: { isUserModified: true }
       };
 
@@ -119,9 +119,9 @@ describe('FieldStateManager', () => {
     });
 
     test('should handle invalid input gracefully', () => {
-      expect(FieldStateManager.filterSaveableFields(null, {})).toEqual({});
-      expect(FieldStateManager.filterSaveableFields(undefined, {})).toEqual({});
-      expect(FieldStateManager.filterSaveableFields('invalid', {})).toEqual({});
+      expect(FieldStateManager.filterSaveableFields(null as unknown as Record<string, unknown>, {} as InteractionState)).toEqual({});
+      expect(FieldStateManager.filterSaveableFields(undefined as unknown as Record<string, unknown>, {} as InteractionState)).toEqual({});
+      expect(FieldStateManager.filterSaveableFields('invalid' as unknown as Record<string, unknown>, {} as InteractionState)).toEqual({});
     });
 
     test('should handle empty interaction state', () => {
@@ -146,7 +146,7 @@ describe('FieldStateManager', () => {
         field4: 'value4'
       };
 
-      const interactionState = {
+      const interactionState: InteractionState = {
         field1: { isUserModified: true },
         field2: { isUserModified: true },
         field3: { isUserModified: true },
@@ -169,7 +169,7 @@ describe('FieldStateManager', () => {
         optionalField2: ''
       };
 
-      const interactionState = {
+      const interactionState: InteractionState = {
         requiredField1: { isUserModified: true },
         requiredField2: { isUserModified: true },
         optionalField1: { isUserModified: true }
@@ -196,7 +196,7 @@ describe('FieldStateManager', () => {
         minorField: ''
       };
 
-      const interactionState = {
+      const interactionState: InteractionState = {
         importantField: { isUserModified: true },
         normalField: { isUserModified: true },
         minorField: { isUserModified: true }
@@ -231,7 +231,7 @@ describe('FieldStateManager', () => {
         emptyUserField: ''
       };
 
-      const interactionState = {
+      const interactionState: InteractionState = {
         userField: { isUserModified: true },
         emptyUserField: { isUserModified: true }
       };
@@ -253,7 +253,7 @@ describe('FieldStateManager', () => {
         field4: null
       };
 
-      const interactionState = {
+      const interactionState: InteractionState = {
         field1: { isUserModified: true },
         field2: { isUserModified: true },
         field3: { isUserModified: false }
@@ -273,7 +273,7 @@ describe('FieldStateManager', () => {
         field3: 'value3'
       };
 
-      const interactionState = {
+      const interactionState: InteractionState = {
         field1: { isUserModified: true },
         field2: { isUserModified: true },
         field3: { isUserModified: false }
@@ -289,7 +289,7 @@ describe('FieldStateManager', () => {
 
   describe('validateInteractionState', () => {
     test('should validate correct interaction state', () => {
-      const interactionState = {
+      const interactionState: InteractionState = {
         field1: {
           isUserModified: true,
           lastModified: '2024-01-01T00:00:00.000Z',
@@ -309,7 +309,7 @@ describe('FieldStateManager', () => {
     });
 
     test('should detect invalid interaction state structure', () => {
-      const result = FieldStateManager.validateInteractionState(null);
+      const result = FieldStateManager.validateInteractionState(null as unknown as InteractionState);
 
       expect(result.isValid).toBe(false);
       expect(result.issues).toContain('Interaction state is not a valid object');
@@ -317,7 +317,7 @@ describe('FieldStateManager', () => {
     });
 
     test('should detect invalid field states', () => {
-      const interactionState = {
+      const interactionState: InteractionState = {
         validField: {
           isUserModified: true,
           lastModified: '2024-01-01T00:00:00.000Z'
@@ -342,7 +342,7 @@ describe('FieldStateManager', () => {
     });
 
     test('should add default lastModified when missing', () => {
-      const interactionState = {
+      const interactionState: InteractionState = {
         field1: {
           isUserModified: true
         }
@@ -430,13 +430,13 @@ describe('FieldStateManager', () => {
         field2: 'value2'
       };
 
-      const corruptedState = {
+      const corruptedState: InteractionState = {
         field1: null,
         field2: 'not-an-object',
         field3: {
           isUserModified: 'not-boolean'
         }
-      };
+      } as unknown as InteractionState;
 
       // Should not throw and should return fallback behavior
       const result = FieldStateManager.filterSaveableFields(allFields, corruptedState);
@@ -444,7 +444,7 @@ describe('FieldStateManager', () => {
     });
 
     test('should recover from validateAndRecoverInteractionState errors', () => {
-      const corruptedState = {
+      const corruptedState: InteractionState = {
         validField: {
           isUserModified: true,
           lastModified: '2024-01-01T00:00:00.000Z'
@@ -454,7 +454,7 @@ describe('FieldStateManager', () => {
           isUserModified: 'not-boolean',
           lastModified: 'invalid-date'
         }
-      };
+      } as unknown as InteractionState;
 
       const recovered = FieldStateManager.validateAndRecoverInteractionState(corruptedState);
 
@@ -476,8 +476,8 @@ describe('FieldStateManager', () => {
     test('should handle null/undefined interaction states', () => {
       const allFields = { field1: 'value1' };
 
-      expect(FieldStateManager.filterSaveableFields(allFields, null)).toEqual(allFields);
-      expect(FieldStateManager.filterSaveableFields(allFields, undefined)).toEqual(allFields);
+      expect(FieldStateManager.filterSaveableFields(allFields, null as unknown as InteractionState)).toEqual(allFields);
+      expect(FieldStateManager.filterSaveableFields(allFields, undefined as unknown as InteractionState)).toEqual(allFields);
       
       const metrics = FieldStateManager.getCompletionMetrics(allFields, {});
       expect(metrics.completionPercentage).toBeGreaterThanOrEqual(0);
@@ -492,7 +492,7 @@ describe('FieldStateManager', () => {
         symbolField: Symbol('test')
       };
 
-      const interactionState = {
+      const interactionState: InteractionState = {
         normalField: { isUserModified: true },
         nullField: { isUserModified: true },
         undefinedField: { isUserModified: true },
@@ -516,7 +516,7 @@ describe('FieldStateManager', () => {
         circularField: circularObj
       };
 
-      const interactionState = {
+      const interactionState: InteractionState = {
         normalField: { isUserModified: true },
         circularField: { isUserModified: true }
       };
@@ -534,7 +534,7 @@ describe('FieldStateManager', () => {
       };
 
       // Mock a scenario where field processing might fail
-      const interactionState = {
+      const interactionState: InteractionState = {
         normalField: { isUserModified: true },
         problematicField: { isUserModified: true }
       };
@@ -559,7 +559,7 @@ describe('FieldStateManager', () => {
       const corruptedState = {
         field2: null,
         field3: 'not-an-object'
-      };
+      } as unknown as InteractionState;
 
       const result = FieldStateManager.mergeInteractionStates(validState, corruptedState);
       
@@ -577,7 +577,7 @@ describe('FieldStateManager', () => {
       const corruptedState = {
         field1: null,
         field2: { isUserModified: 'not-boolean' }
-      };
+      } as unknown as InteractionState;
 
       // Should not throw and should provide reasonable defaults
       const metrics = FieldStateManager.getCompletionMetrics(fields, corruptedState);
@@ -601,7 +601,7 @@ describe('FieldStateManager', () => {
             }
           }
         }
-      };
+      } as unknown as InteractionState;
 
       const result = FieldStateManager.validateInteractionState(deeplyCorrupted);
       
@@ -612,8 +612,8 @@ describe('FieldStateManager', () => {
 
     test('should gracefully degrade when all operations fail', () => {
       // Simulate complete system failure
-      const invalidFields = null;
-      const invalidState = undefined;
+      const invalidFields = null as unknown as Record<string, unknown>;
+      const invalidState = undefined as unknown as InteractionState;
       const invalidConfig = 'not-an-object';
 
       // Should return safe defaults instead of throwing
@@ -638,7 +638,7 @@ describe('FieldStateManager', () => {
         dateField: new Date('2024-01-01')
       };
 
-      const interactionState = {
+      const interactionState: InteractionState = {
         arrayField: { isUserModified: true },
         objectField: { isUserModified: true },
         numberField: { isUserModified: true },
@@ -655,7 +655,7 @@ describe('FieldStateManager', () => {
 
     test('should handle very large field sets efficiently', () => {
       const fields = {};
-      const interactionState = {};
+      const interactionState: InteractionState = {};
 
       // Create 1000 fields
       for (let i = 0; i < 1000; i++) {

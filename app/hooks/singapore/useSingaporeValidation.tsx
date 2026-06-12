@@ -12,15 +12,64 @@ import { useCallback, useMemo } from 'react';
  * @param {Object} params - Hook parameters
  * @returns {Object} Validation functions and helpers
  */
+interface SingaporeFormStateForValidation {
+  arrivalArrivalDate: string;
+  travelPurpose: string;
+  accommodationType: string;
+  isTransitPassenger: boolean;
+  fullName: string;
+  nationality: string;
+  passportNo: string;
+  dob: string;
+  expiryDate: string;
+  sex: string;
+  occupation: string;
+  cityOfResidence: string;
+  residentCountry: string;
+  phoneCode: string;
+  phoneNumber: string;
+  email: string;
+  customTravelPurpose: string;
+  customAccommodationType: string;
+  boardingCountry: string;
+  arrivalFlightNumber: string;
+  departureFlightNumber: string;
+  departureDepartureDate: string;
+  province: string;
+  district: string;
+  subDistrict: string;
+  postalCode: string;
+  hotelAddress: string;
+  funds: unknown[];
+  errors: Record<string, string>;
+  warnings: Record<string, string>;
+  totalCompletionPercent: number;
+  setLastEditedField: (field: string | null) => void;
+  setErrors: (updater: (prev: Record<string, string>) => Record<string, string>) => void;
+  setWarnings: (updater: (prev: Record<string, string>) => Record<string, string>) => void;
+  setLastEditedAt: (dateOrIso: Date | string) => void;
+}
+interface SingaporeTravelInfoFormForValidation {
+  handleUserInteraction: (fieldName: string, value: string) => void;
+  getFieldCount: (section: string, allFields: Record<string, unknown>) => { filled: number; total: number };
+  calculateCompletionMetrics: (allFields: Record<string, unknown>) => { totalPercent: number; metrics: unknown; isReady: boolean };
+}
+interface UseSingaporeValidationParams {
+  formState: SingaporeFormStateForValidation;
+  travelInfoForm: SingaporeTravelInfoFormForValidation;
+  saveDataToSecureStorage: (data: Record<string, unknown>) => Promise<void>;
+  debouncedSaveData: () => void;
+}
+
 export const useSingaporeValidation = ({
   formState,
   travelInfoForm,
   saveDataToSecureStorage,
   debouncedSaveData,
-}) => {
+}: UseSingaporeValidationParams) => {
   // ========== Field Change Handler ==========
 
-  const handleFieldChange = useCallback((fieldName, value, setter) => {
+  const handleFieldChange = useCallback((fieldName: string, value: string, setter: (v: string) => void) => {
     setter(value);
     travelInfoForm.handleUserInteraction(fieldName, value);
     formState.setLastEditedField(fieldName);
@@ -30,7 +79,7 @@ export const useSingaporeValidation = ({
 
   // ========== Field Validation ==========
 
-  const validateField = useCallback((fieldName, fieldValue) => {
+  const validateField = useCallback((fieldName: string, fieldValue: string) => {
     let isValid = true;
     let errorMessage = '';
     let isWarning = false;
@@ -294,7 +343,7 @@ export const useSingaporeValidation = ({
 
   // ========== Field Blur Handler ==========
 
-  const handleFieldBlur = useCallback(async (fieldName, fieldValue) => {
+  const handleFieldBlur = useCallback(async (fieldName: string, fieldValue: string) => {
     try {
       console.log('=== HANDLE FIELD BLUR (SINGAPORE) ===');
       console.log('Field:', fieldName);
@@ -328,12 +377,12 @@ export const useSingaporeValidation = ({
       }
 
       // Update errors and warnings state
-      formState.setErrors(prev => ({
+      formState.setErrors((prev: Record<string, string>) => ({
         ...prev,
         [fieldName]: isValid ? '' : (isWarning ? '' : errorMessage)
       }));
 
-      formState.setWarnings(prev => ({
+      formState.setWarnings((prev: Record<string, string>) => ({
         ...prev,
         [fieldName]: isWarning ? errorMessage : ''
       }));
@@ -363,7 +412,7 @@ export const useSingaporeValidation = ({
 
   // ========== User Interaction Handler ==========
 
-  const handleUserInteraction = useCallback((fieldName, value) => {
+  const handleUserInteraction = useCallback((fieldName: string, value: string) => {
     // Use the travel info form utility to handle user interaction
     travelInfoForm.handleUserInteraction(fieldName, value);
 
@@ -376,7 +425,7 @@ export const useSingaporeValidation = ({
 
   // ========== Field Count Calculation ==========
 
-  const getFieldCount = useCallback((section) => {
+  const getFieldCount = useCallback((section: string): { filled: number; total: number } => {
     const allFields = {
       // Passport fields
       fullName: formState.fullName,

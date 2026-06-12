@@ -201,7 +201,7 @@ export const NOTIFICATION_METADATA = {
  * @param {string} language - Language code (zh-CN, en, es)
  * @returns {Object|null} Notification template or null if not found
  */
-export function getNotificationTemplate(type, language = 'en') {
+export function getNotificationTemplate(type: string, language = 'en') {
   const metadata = NOTIFICATION_METADATA[type];
   if (!metadata) {
     console.warn(`Notification template not found for type: ${type}`);
@@ -264,7 +264,7 @@ export function getNotificationTemplate(type, language = 'en') {
  * @param {string} type - Notification type from NOTIFICATION_TYPES
  * @returns {Object} Notification metadata
  */
-export function getNotificationMetadata(type) {
+export function getNotificationMetadata(type: string) {
   const metadata = NOTIFICATION_METADATA[type];
   if (!metadata) {
     return {
@@ -290,7 +290,7 @@ export function getNotificationMetadata(type) {
  * @param {Object} variables - Variables to interpolate
  * @returns {string} Interpolated string
  */
-export function interpolateTemplate(template, variables = {}) {
+export function interpolateTemplate(template: string, variables: Record<string, string> = {}) {
   if (!template || typeof template !== 'string') {
     return template;
   }
@@ -306,7 +306,7 @@ export function interpolateTemplate(template, variables = {}) {
  * @param {Object} additionalData - Additional data to include
  * @returns {Object} Complete notification object
  */
-export function createNotificationFromTemplate(type, language, variables = {}, additionalData = {}) {
+export function createNotificationFromTemplate(type: string, language: string, variables: Record<string, string> = {}, additionalData: Record<string, unknown> = {}) {
   const template = getNotificationTemplate(type, language);
   const metadata = getNotificationMetadata(type);
 
@@ -354,7 +354,7 @@ export function getAllNotificationTypes() {
  * @param {string} type - Notification type to check
  * @returns {boolean} Whether the type exists
  */
-export function isValidNotificationType(type) {
+export function isValidNotificationType(type: string) {
   return Object.values(NOTIFICATION_TYPES).includes(type);
 }
 
@@ -371,7 +371,7 @@ export function getSupportedLanguages() {
  * @param {string} priority - Priority level (urgent, high, normal, low)
  * @returns {Array<string>} Array of notification types with that priority
  */
-export function getNotificationTypesByPriority(priority) {
+export function getNotificationTypesByPriority(priority: string) {
   return Object.keys(NOTIFICATION_METADATA).filter(type => {
     const metadata = getNotificationMetadata(type);
     return metadata.priority === priority;

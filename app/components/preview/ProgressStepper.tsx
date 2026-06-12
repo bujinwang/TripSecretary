@@ -45,6 +45,15 @@ import { PreviewHaptics } from '../../utils/haptics';
  *   onStepPress={(stepId) => handleStepNavigation(stepId)}
  * />
  */
+interface ProgressStepperProps {
+  steps?: Array<{ id: string; labelKey: string; labelDefault: string; status: 'completed' | 'current' | 'pending' | 'error' }>;
+  currentStepId?: string;
+  onStepPress?: (stepId: string) => void;
+  collapsible?: boolean;
+  initiallyCollapsed?: boolean;
+  style?: object;
+}
+
 const ProgressStepper = ({
   steps = [],
   currentStepId,
@@ -52,7 +61,7 @@ const ProgressStepper = ({
   collapsible = true,
   initiallyCollapsed = false,
   style,
-}) => {
+}: ProgressStepperProps) => {
   const { t } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(initiallyCollapsed);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -115,7 +124,7 @@ const ProgressStepper = ({
     : steps;
 
   // Animated Step Component
-  const AnimatedStep = ({ step, index, isLast, isCurrent }) => {
+  const AnimatedStep = ({ step, index, isLast, isCurrent }: { step: { id: string; labelKey: string; labelDefault: string; status: 'completed' | 'current' | 'pending' | 'error' }; index: number; isLast: boolean; isCurrent: boolean }) => {
     const config = statusConfig[step.status] || statusConfig.pending;
 
     // Animation values for status changes

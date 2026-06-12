@@ -910,7 +910,7 @@ class SnapshotService {
 
   private async fileExists(path: string): Promise<boolean> {
     const file = new FileSystem.File(path);
-    return file.exists;
+    return file.exists as any;
   }
 
   private async getFileSize(path: string): Promise<number> {
@@ -1302,30 +1302,30 @@ class SnapshotService {
             if (!photoInfo) {
               verificationResult.missingPhotos++;
               verificationResult.issues.push({
-                fundItemId: photoEntry.fundItemId,
+                fundItemId: photoEntry.fundItemId ?? 'unknown',
                 issue: 'Photo file missing',
-                path: photoEntry.snapshotPath
-              });
+                path: photoEntry.snapshotPath ?? ''
+              } as any);
             } else if ((photoInfo.size ?? 0) !== photoEntry.fileSize) {
               verificationResult.corruptedPhotos++;
               verificationResult.issues.push({
-                fundItemId: photoEntry.fundItemId,
+                fundItemId: photoEntry.fundItemId ?? 'unknown',
                 issue: 'File size mismatch',
-                expected: photoEntry.fileSize,
+                expected: photoEntry.fileSize ?? 0,
                 actual: photoInfo.size ?? 0,
-                path: photoEntry.snapshotPath
-              });
+                path: photoEntry.snapshotPath ?? ''
+              } as any);
             } else {
               verificationResult.validPhotos++;
             }
           } catch (error: any) {
             verificationResult.corruptedPhotos++;
             verificationResult.issues.push({
-              fundItemId: photoEntry.fundItemId,
-              issue: 'File access error',
-              error: error.message,
-              path: photoEntry.snapshotPath
-            });
+                fundItemId: photoEntry.fundItemId ?? 'unknown',
+                issue: 'File access error',
+                error: (error as any).message,
+                path: photoEntry.snapshotPath ?? ''
+              } as any);
           }
         }
       }

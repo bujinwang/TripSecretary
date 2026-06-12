@@ -60,7 +60,7 @@ const COUNTRY_CODES = {
  * extractCountryCode("+86 138 1234 5678")
  * // → "86"
  */
-export const extractCountryCode = (phoneNumber, options = {}) => {
+export const extractCountryCode = (phoneNumber: string, options: Record<string, unknown> = {}) => {
   const { strict = true } = options;
 
   if (!phoneNumber) {
@@ -125,7 +125,7 @@ return '';
  * extractNationalNumber("+86 138 1234 5678")
  * // → "13812345678"
  */
-export const extractNationalNumber = (phoneNumber, countryCode = null) => {
+export const extractNationalNumber = (phoneNumber: string, countryCode: string | null = null) => {
   if (!phoneNumber) {
 return '';
 }
@@ -182,7 +182,7 @@ return '';
  * //   countryName: 'China'
  * // }
  */
-export const parsePhoneNumber = (phoneNumber, options = {}) => {
+export const parsePhoneNumber = (phoneNumber: string, options: Record<string, unknown> = {}) => {
   const { defaultCountryCode = null, strict = true } = options;
 
   if (!phoneNumber) {
@@ -239,7 +239,7 @@ export const parsePhoneNumber = (phoneNumber, options = {}) => {
  * formatPhoneNumber("13812345678", { countryCode: '86', format: 'national' })
  * // → "138 1234 5678"
  */
-export const formatPhoneNumber = (phoneNumber, options = {}) => {
+export const formatPhoneNumber = (phoneNumber: string, options: Record<string, unknown> = {}) => {
   const { countryCode, format = 'international' } = options;
 
   if (!phoneNumber) {
@@ -276,7 +276,7 @@ return '';
  * @param {string} [countryCode] - Country code for specific formatting
  * @returns {string} Formatted national number
  */
-const formatNationalNumber = (nationalNumber, countryCode = null) => {
+const formatNationalNumber = (nationalNumber: string, countryCode: string | null = null) => {
   if (!nationalNumber) {
 return '';
 }
@@ -335,7 +335,7 @@ return '';
  * validatePhoneNumber("+86 138 1234 5678")
  * // → { isValid: true, errors: [] }
  */
-export const validatePhoneNumber = (phoneNumber, options = {}) => {
+export const validatePhoneNumber = (phoneNumber: string, options: Record<string, unknown> = {}) => {
   const {
     countryCode = null,
     minLength = 7,
@@ -386,12 +386,12 @@ export const validatePhoneNumber = (phoneNumber, options = {}) => {
  * getCountryCodeFromNationality('CHN')
  * // → '86'
  */
-export const getCountryCodeFromNationality = (nationalityCode) => {
+export const getCountryCodeFromNationality = (nationalityCode: string) => {
   if (!nationalityCode) {
 return '';
 }
 
-  const mapping = {
+  const mapping: Record<string, string> = {
     'CHN': '86',
     'USA': '1',
     'CAN': '1',

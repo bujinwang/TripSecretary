@@ -11,14 +11,14 @@ try {
 }
 
 const ConnectivityTestRunner = () => {
-  const [testResults, setTestResults] = useState([]);
+  const [testResults, setTestResults] = useState<Record<string, unknown>[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
   const TDAC_BASE_URL = 'https://tdac.immigration.go.th/arrival-card-api/api/v1';
   const TEST_TIMEOUTS = [5000, 10000, 15000, 30000];
 
-  const addResult = (test, result) => {
-    const newResult = { ...test, ...result, timestamp: new Date() };
+  const addResult = (test: Record<string, unknown>, result: Record<string, unknown>) => {
+    const newResult: Record<string, unknown> = { ...test, ...result, timestamp: new Date() };
     console.log('📊 Test result:', {
       client: newResult.client,
       endpoint: newResult.endpoint,
@@ -73,13 +73,12 @@ const ConnectivityTestRunner = () => {
             timeout
           }, {
             success: false,
-            error: `${error.name}: ${error.message}`
+            error: `${(_error as Error).name}: ${(_error as Error).message}`
           });
         }
       }
     }
   };
-
   const testConnectivityWithAxios = async () => {
     if (!axios) {
       console.log('⚠️ Skipping axios tests - axios not available');
@@ -142,8 +141,8 @@ const ConnectivityTestRunner = () => {
             timeout
           }, {
             success: false,
-            error: `${error.code || error.name}: ${error.message}`,
-            duration
+            error: `${(_error as Error & { code?: string }).code || (_error as Error).name}: ${(_error as Error).message}`,
+          duration
           });
         }
       }
@@ -191,7 +190,7 @@ const ConnectivityTestRunner = () => {
           timeout: 30000
         }, {
           success: false,
-          error: `${error.code || error.name}: ${error.message}`
+          error: `${(_error as Error & { code?: string }).code || (_error as Error).name}: ${(_error as Error).message}`
         });
       }
     } else {
@@ -247,7 +246,7 @@ const ConnectivityTestRunner = () => {
         timeout: 30000
       }, {
         success: false,
-        error: `${error.name}: ${error.message}`
+        error: `${(_error as Error).name}: ${(_error as Error).message}`
       });
     }
   };
@@ -276,8 +275,8 @@ const ConnectivityTestRunner = () => {
       console.log('✅ All tests completed');
       Alert.alert('Tests Complete', `Completed ${totalTests} connectivity tests. Check results below.`);
     } catch (_error) {
-      console.error('❌ Test error:', error);
-      Alert.alert('Test Error', error.message);
+      console.error('❌ Test error:', _error);
+      Alert.alert('Test Error', (_error as Error).message);
     } finally {
       setIsRunning(false);
     }

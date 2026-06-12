@@ -19,7 +19,7 @@ export const OCRUtils = {
       const TextRecognition = require('@react-native-ml-kit/text-recognition').default;
       return TextRecognition !== null;
     } catch (error) {
-      console.warn('OCR not available:', error.message);
+      console.warn('OCR not available:', (error as Error).message);
       return false;
     }
   },
@@ -44,16 +44,16 @@ export const OCRUtils = {
    * @param {string} imageUri - Image URI
    * @returns {Promise<Object>} - Image validation result
    */
-  async validateImageForOCR(imageUri) {
+  async validateImageForOCR(imageUri: string) {
     try {
       const { Image } = require('react-native');
 
       return new Promise((resolve) => {
-        Image.getSize(imageUri, (width, height) => {
+        Image.getSize(imageUri, (width: number, height: number) => {
           const validation = {
             isValid: true,
-            warnings: [],
-            recommendations: []
+            warnings: [] as string[],
+            recommendations: [] as string[]
           };
 
           // Check dimensions
@@ -76,7 +76,7 @@ export const OCRUtils = {
           }
 
           resolve(validation);
-        }, (error) => {
+        }, (_error: unknown) => {
           resolve({
             isValid: false,
             warnings: ['Failed to read image'],
@@ -98,7 +98,7 @@ export const OCRUtils = {
    * @param {string} imageUri - Image URI
    * @returns {Promise<Object>} - Preprocessing result
    */
-  async preprocessImage(imageUri) {
+  async preprocessImage(imageUri: string) {
     // In a real implementation, you might:
     // - Adjust brightness/contrast
     // - Rotate image if needed
@@ -116,8 +116,8 @@ export const OCRUtils = {
         cropping: false,
         filters: []
       },
-      quality: validation.isValid ? 'good' : 'needs_improvement',
-      recommendations: validation.recommendations
+      quality: (validation as { isValid: boolean; recommendations: string[] }).isValid ? 'good' : 'needs_improvement',
+      recommendations: (validation as { isValid: boolean; recommendations: string[] }).recommendations
     };
   },
 
@@ -126,7 +126,7 @@ export const OCRUtils = {
    * @param {Object} imageInfo - Image information
    * @returns {number} - Estimated accuracy (0-1)
    */
-  estimateAccuracy(imageInfo) {
+  estimateAccuracy(imageInfo: Record<string, unknown>) {
     let accuracy = 0.8; // Base accuracy
 
     // Adjust based on image properties
@@ -134,13 +134,14 @@ export const OCRUtils = {
       accuracy += 0.1;
     }
 
-    if (imageInfo.preprocessing?.filters?.length > 0) {
+    if ((imageInfo.preprocessing as Record<string, unknown>)?.filters && ((imageInfo.preprocessing as Record<string, unknown>).filters as unknown[]).length > 0) {
       accuracy += 0.05;
     }
 
     // Reduce accuracy for warnings
-    if (imageInfo.warnings?.length > 0) {
-      accuracy -= imageInfo.warnings.length * 0.05;
+    const warnings = imageInfo.warnings as unknown[] | undefined;
+    if (warnings && warnings.length > 0) {
+      accuracy -= warnings.length * 0.05;
     }
 
     return Math.max(0.1, Math.min(1.0, accuracy));
@@ -151,17 +152,17 @@ export const OCRUtils = {
    * @param {Object} ocrResult - Raw OCR result
    * @returns {Object} - Formatted result
    */
-  formatResult(ocrResult) {
+  formatResult(ocrResult: Record<string, unknown>) {
     return {
       ...ocrResult,
       formattedData: {
-        passportNumber: ocrResult.data?.passportNumber || 'Not found',
-        fullName: ocrResult.data?.fullName || 'Not found',
-        dateOfBirth: ocrResult.data?.dateOfBirth || 'Not found',
-        expirationDate: ocrResult.data?.expirationDate || 'Not found',
-        nationality: ocrResult.data?.nationality || 'Not found'
+        passportNumber: (ocrResult.data as Record<string, string>)?.passportNumber || 'Not found',
+        fullName: (ocrResult.data as Record<string, string>)?.fullName || 'Not found',
+        dateOfBirth: (ocrResult.data as Record<string, string>)?.dateOfBirth || 'Not found',
+        expirationDate: (ocrResult.data as Record<string, string>)?.expirationDate || 'Not found',
+        nationality: (ocrResult.data as Record<string, string>)?.nationality || 'Not found'
       },
-      displayConfidence: Math.round((ocrResult.confidence?.overall || 0) * 100),
+      displayConfidence: Math.round(((ocrResult.confidence as Record<string, number>)?.overall || 0) * 100),
       displayCompleteness: ocrResult.completeness || 0,
       status: ocrResult.success ? 'success' : 'needs_review'
     };
@@ -172,7 +173,7 @@ export const OCRUtils = {
    * @param {string} errorType - Error type
    * @returns {string} - User-friendly message
    */
-  getErrorMessage(errorType) {
+  getErrorMessage(errorType: string) {
     const messages = {
       'ocr_failed': 'Unable to read text from image. Please try again.',
       'low_confidence': 'Text recognition confidence is low. Please ensure good lighting and focus.',

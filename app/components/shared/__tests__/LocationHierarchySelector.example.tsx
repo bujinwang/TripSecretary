@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { LocationHierarchySelector } from '../index';
+import type { LocationRecord } from '../LocationHierarchySelector';
 import { thailandProvinces } from '../../../data/thailandProvinces';
 import {
   getDistrictsByProvince,
@@ -43,7 +44,7 @@ export const ThailandProvinceExample = () => {
 export const ThailandDistrictExample = () => {
   const [province, setProvince] = useState('');
   const [districtId, setDistrictId] = useState('');
-  const [districtData, setDistrictData] = useState(null);
+  const [districtData, setDistrictData] = useState<LocationRecord | null>(null);
 
   return (
     <View>
@@ -64,7 +65,7 @@ export const ThailandDistrictExample = () => {
         placeholder="กรุณาเลือกอำเภอ/เขต"
         selectedId={districtId}
         onSelect={(district) => {
-          setDistrictId(district.id);
+          setDistrictId(district.id as string);
           setDistrictData(district);
         }}
         modalTitle="เลือกอำเภอ/เขต"
@@ -103,7 +104,7 @@ export const ThailandSubDistrictExample = () => {
         parentId={province}
         label="อำเภอ/เขต"
         selectedId={districtId}
-        onSelect={(district) => setDistrictId(district.id)}
+        onSelect={(district) => setDistrictId(district.id as string)}
         displayFormat="bilingual"
         parentRequiredMessage="กรุณาเลือกจังหวัดก่อน"
       />
@@ -116,7 +117,7 @@ export const ThailandSubDistrictExample = () => {
         placeholder="กรุณาเลือกตำบล/แขวง"
         selectedId={subDistrictId}
         onSelect={(subDistrict) => {
-          setSubDistrictId(subDistrict.id);
+          setSubDistrictId(subDistrict.id as string);
           setPostalCode(subDistrict.postalCode || '');
         }}
         modalTitle="เลือกตำบล/แขวง"
@@ -135,15 +136,15 @@ export const ThailandSubDistrictExample = () => {
 export const ThailandFullAddressExample = () => {
   // State
   const [province, setProvince] = useState('');
-  const [provinceData, setProvinceData] = useState(null);
+  const [provinceData, setProvinceData] = useState<LocationRecord | null>(null);
   const [districtId, setDistrictId] = useState('');
-  const [districtData, setDistrictData] = useState(null);
+  const [districtData, setDistrictData] = useState<LocationRecord | null>(null);
   const [subDistrictId, setSubDistrictId] = useState('');
-  const [subDistrictData, setSubDistrictData] = useState(null);
+  const [subDistrictData, setSubDistrictData] = useState<LocationRecord | null>(null);
   const [postalCode, setPostalCode] = useState('');
 
   // Reset child selections when parent changes
-  const handleProvinceChange = (code) => {
+  const handleProvinceChange = (code: string) => {
     setProvince(code);
     setDistrictId('');
     setDistrictData(null);
@@ -152,7 +153,7 @@ export const ThailandFullAddressExample = () => {
     setPostalCode('');
   };
 
-  const handleDistrictSelect = (district) => {
+  const handleDistrictSelect = (district: { id: string; [key: string]: unknown }) => {
     setDistrictId(district.id);
     setDistrictData(district);
     setSubDistrictId('');
@@ -160,7 +161,7 @@ export const ThailandFullAddressExample = () => {
     setPostalCode('');
   };
 
-  const handleSubDistrictSelect = (subDistrict) => {
+  const handleSubDistrictSelect = (subDistrict: { id: string; postalCode?: string; [key: string]: unknown }) => {
     setSubDistrictId(subDistrict.id);
     setSubDistrictData(subDistrict);
     setPostalCode(subDistrict.postalCode || '');
@@ -188,7 +189,7 @@ export const ThailandFullAddressExample = () => {
         label="อำเภอ/เขต (District) *"
         placeholder="กรุณาเลือกอำเภอ/เขต"
         selectedId={districtId}
-        onSelect={handleDistrictSelect}
+        onSelect={handleDistrictSelect as (location: LocationRecord) => void}
         modalTitle="เลือกอำเภอ/เขต"
         searchPlaceholder="ค้นหาอำเภอ/เขต..."
         displayFormat="bilingual"
@@ -202,7 +203,7 @@ export const ThailandFullAddressExample = () => {
         label="ตำบล/แขวง (Subdistrict) *"
         placeholder="กรุณาเลือกตำบล/แขวง"
         selectedId={subDistrictId}
-        onSelect={handleSubDistrictSelect}
+        onSelect={handleSubDistrictSelect as (location: LocationRecord) => void}
         modalTitle="เลือกตำบล/แขวง"
         searchPlaceholder="ค้นหาตำบล/แขวง หรือรหัสไปรษณีย์..."
         displayFormat="bilingual"
@@ -295,7 +296,7 @@ export const WithValidationExample = () => {
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleProvinceChange = (code) => {
+  const handleProvinceChange = (code: string) => {
     setProvince(code);
     if (code) {
       setError(false);

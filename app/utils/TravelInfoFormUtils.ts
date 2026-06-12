@@ -1,6 +1,46 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FieldValues = Record<string, any>;
 
+interface UserDataShape {
+  passport?: {
+    passportNumber?: string;
+    fullName?: string;
+    nationality?: string;
+    dateOfBirth?: string;
+    expiryDate?: string;
+    gender?: string;
+    [key: string]: unknown;
+  };
+  personalInfo?: {
+    phoneCode?: string;
+    phoneNumber?: string;
+    email?: string;
+    occupation?: string;
+    provinceCity?: string;
+    countryRegion?: string;
+    [key: string]: unknown;
+  };
+  travelInfo?: {
+    travelPurpose?: string;
+    boardingCountry?: string;
+    accommodationType?: string;
+    recentStayCountry?: string;
+    arrivalFlightNumber?: string;
+    arrivalArrivalDate?: string;
+    departureFlightNumber?: string;
+    departureDepartureDate?: string;
+    province?: string;
+    district?: string;
+    subDistrict?: string;
+    postalCode?: string;
+    hotelAddress?: string;
+    visaNumber?: string;
+    isTransitPassenger?: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
 interface DestinationFormConfig {
   requiredFields: string[];
   optionalFields: string[];
@@ -27,13 +67,13 @@ interface DestinationFormConfig {
 
 import { useCallback, useMemo } from 'react';
 import { useUserInteractionTracker } from './UserInteractionTracker';
-import FieldStateManager from './FieldStateManager';
+import FieldStateManager, { InteractionState } from './FieldStateManager';
 import SuggestionProviders from './SuggestionProviders';
 
 /**
  * Default field configurations for different destinations
  */
-const DESTINATION_CONFIGS = {
+const DESTINATION_CONFIGS: Record<string, DestinationFormConfig> = {
   thailand: {
     requiredFields: [
       'fullName', 'nationality', 'passportNo', 'dob', 'expiryDate', 'sex',
@@ -132,18 +172,19 @@ export const useTravelInfoForm = (destination: string, options: Record<string, u
   /**
    * Initialize form with existing data and mark as user-modified for backward compatibility
    */
-  const initializeWithExistingData = useCallback(async (userData) => {
-    if (!userData || !userInteractionTracker.isInitialized) {
+  const initializeWithExistingData = useCallback(async (userData: Record<string, unknown>) => {
+    const ud = userData as UserDataShape;
+    if (!ud || !userInteractionTracker.isInitialized) {
       return;
     }
 
     console.log(`=== MIGRATING EXISTING DATA FOR ${destination.toUpperCase()} ===`);
     
-    const existingDataToMigrate = {};
+    const existingDataToMigrate: Record<string, unknown> = {};
 
     // Migrate passport data
-    if (userData.passport) {
-      const {passport} = userData;
+    if (ud.passport) {
+      const passport = ud.passport;
       if (passport.passportNumber) {
 existingDataToMigrate.passportNo = passport.passportNumber;
 }
@@ -165,8 +206,8 @@ existingDataToMigrate.sex = passport.gender;
     }
 
     // Migrate personal info data
-    if (userData.personalInfo) {
-      const {personalInfo} = userData;
+    if (ud.personalInfo) {
+      const personalInfo = ud.personalInfo;
       if (personalInfo.phoneCode) {
 existingDataToMigrate.phoneCode = personalInfo.phoneCode;
 }
@@ -188,8 +229,8 @@ existingDataToMigrate.residentCountry = personalInfo.countryRegion;
     }
 
     // Migrate travel info data
-    if (userData.travelInfo) {
-      const {travelInfo} = userData;
+    if (ud.travelInfo) {
+      const travelInfo = ud.travelInfo;
       if (travelInfo.travelPurpose) {
 existingDataToMigrate.travelPurpose = travelInfo.travelPurpose;
 }
@@ -251,7 +292,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
   /**
    * Handle user interaction with form fields
    */
-  const handleUserInteraction = useCallback((fieldName, value) => {
+  const handleUserInteraction = useCallback((fieldName: string, value: string) => {
     // Mark field as user-modified
     userInteractionTracker.markFieldAsModified(fieldName, value);
     
@@ -261,9 +302,9 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
   /**
    * Get field count for a section using FieldStateManager
    */
-  const getFieldCount = useCallback((section, allFields) => {
+  const getFieldCount = useCallback((section: string, allFields: Record<string, unknown>) => {
     // Build interaction state for FieldStateManager
-    const interactionState = {};
+    const interactionState: Record<string, unknown> = {};
     const allFieldNames = [
       ...destinationConfig.requiredFields,
       ...destinationConfig.optionalFields
@@ -290,7 +331,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
         
         const passportFieldCount = FieldStateManager.getFieldCount(
           passportFields,
-          interactionState,
+          interactionState as InteractionState,
           Object.keys(passportFields)
         );
         
@@ -311,7 +352,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
         
         const personalFieldCount = FieldStateManager.getFieldCount(
           personalFields,
-          interactionState,
+          interactionState as InteractionState,
           Object.keys(personalFields)
         );
         
@@ -323,7 +364,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
       case 'funds':
         // For funds, show actual count with minimum requirement of 1
         // Funds are not tracked by interaction state, so use existing logic
-        const fundItemCount = allFields.funds ? allFields.funds.length : 0;
+        const fundItemCount = allFields.funds ? (allFields.funds as unknown[]).length : 0;
         if (fundItemCount === 0) {
           return { filled: 0, total: 1 };
         } else {
@@ -332,22 +373,33 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
       
       case 'travel':
         // Build travel fields with proper handling of custom values
-        const purposeFilled = allFields.travelPurpose === 'OTHER' 
-          ? (allFields.customTravelPurpose && allFields.customTravelPurpose.trim() !== '')
-          : (allFields.travelPurpose && allFields.travelPurpose.trim() !== '');
-        
-        const accommodationTypeFilled = allFields.accommodationType === 'OTHER'
-          ? (allFields.customAccommodationType && allFields.customAccommodationType.trim() !== '')
-          : (allFields.accommodationType && allFields.accommodationType.trim() !== '');
+        const cp = allFields.customTravelPurpose as string | undefined;
+        const tp = allFields.travelPurpose as string | undefined;
+        const ca = allFields.customAccommodationType as string | undefined;
+        const at = allFields.accommodationType as string | undefined;
 
-        const travelFields = {
+        const purposeFilled = tp === 'OTHER' 
+          ? (cp && cp.trim() !== '')
+          : (tp && tp.trim() !== '');
+        
+        const accommodationTypeFilled = at === 'OTHER'
+          ? (ca && ca.trim() !== '')
+          : (at && at.trim() !== '');
+
+        const travelFields: Record<string, unknown> = {
           travelPurpose: purposeFilled ? (allFields.travelPurpose === 'OTHER' ? allFields.customTravelPurpose : allFields.travelPurpose) : '',
           recentStayCountry: allFields.recentStayCountry || '',
           boardingCountry: allFields.boardingCountry || '',
           arrivalFlightNumber: allFields.arrivalFlightNumber || '',
           arrivalArrivalDate: allFields.arrivalArrivalDate || '',
           departureFlightNumber: allFields.departureFlightNumber || '',
-          departureDepartureDate: allFields.departureDepartureDate || ''
+          departureDepartureDate: allFields.departureDepartureDate || '',
+          accommodationType: undefined,
+          province: undefined,
+          hotelAddress: undefined,
+          district: undefined,
+          subDistrict: undefined,
+          postalCode: undefined,
         };
 
         // Only include accommodation fields if not a transit passenger
@@ -367,7 +419,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
         
         const travelFieldCount = FieldStateManager.getFieldCount(
           travelFields,
-          interactionState,
+          interactionState as InteractionState,
           Object.keys(travelFields)
         );
         
@@ -383,10 +435,10 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
   /**
    * Calculate completion metrics using FieldStateManager
    */
-  const calculateCompletionMetrics = useCallback((allFields) => {
+  const calculateCompletionMetrics = useCallback((allFields: Record<string, unknown>) => {
     try {
       // Build interaction state for FieldStateManager
-      const interactionState = {};
+      const interactionState: Record<string, unknown> = {};
       const allFieldNames = [
         ...destinationConfig.requiredFields,
         ...destinationConfig.optionalFields
@@ -435,10 +487,10 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
       };
 
       // Use FieldStateManager to get completion metrics
-      const metrics = FieldStateManager.getCompletionMetrics(fieldsForCalculation, interactionState, destinationConfig);
+      const metrics = FieldStateManager.getCompletionMetrics(fieldsForCalculation, interactionState as InteractionState, destinationConfig);
       
       // Add funds completion (not tracked by interaction state)
-      const fundItemCount = allFields.funds ? allFields.funds.length : 0;
+      const fundItemCount = allFields.funds ? (allFields.funds as unknown[]).length : 0;
       const fundsComplete = fundItemCount > 0;
       
       // Calculate overall completion including funds
@@ -494,9 +546,9 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
   /**
    * Filter fields for save operation using FieldStateManager
    */
-  const filterFieldsForSave = useCallback((allFields) => {
+  const filterFieldsForSave = useCallback((allFields: Record<string, unknown>) => {
     // Build interaction state for FieldStateManager
-    const interactionState = {};
+    const interactionState: Record<string, unknown> = {};
     const allFieldNames = [
       ...destinationConfig.requiredFields,
       ...destinationConfig.optionalFields
@@ -510,7 +562,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
       };
     });
 
-    return FieldStateManager.filterSaveableFields(allFields, interactionState, {
+    return FieldStateManager.filterSaveableFields(allFields, interactionState as InteractionState, {
       preserveExisting: true,
       alwaysSaveFields: ['userId', 'destinationId'] // Always save these critical fields
     });
@@ -519,7 +571,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
   /**
    * Get suggestions for a field
    */
-  const getSuggestions = useCallback((fieldName, currentValue, passport) => {
+  const getSuggestions = useCallback((fieldName: string, _currentValue: string, passport: Record<string, unknown>) => {
     switch (fieldName) {
       case 'travelPurpose':
         return SuggestionProviders.getTravelPurposeSuggestions();
@@ -535,7 +587,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
   /**
    * Check if a field value is a predefined option
    */
-  const isPredefinedOption = useCallback((fieldName, value) => {
+  const isPredefinedOption = useCallback((fieldName: string, value: string) => {
     const options = destinationConfig.predefinedOptions[fieldName];
     return options && options.includes(value);
   }, [destinationConfig]);
@@ -579,7 +631,7 @@ export const getDestinationConfig = (destination: string): DestinationFormConfig
 /**
  * Validate field value based on destination requirements
  */
-export const validateFieldValue = (fieldName, value, destination = 'thailand') => {
+export const validateFieldValue = (fieldName: string, value: string, destination = 'thailand') => {
   const config = getDestinationConfig(destination);
   
   // Basic validation rules that apply to all destinations

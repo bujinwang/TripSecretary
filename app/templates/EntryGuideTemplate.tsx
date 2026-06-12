@@ -123,7 +123,7 @@ const EntryGuideTemplate = ({
     return ((currentStepIndex + 1) / steps.length) * 100;
   }, [currentStepIndex, steps.length]);
 
-  const markStepComplete = useCallback((stepId) => {
+  const markStepComplete = useCallback((stepId: string) => {
     if (!stepId) {
       return;
     }
@@ -155,7 +155,7 @@ const EntryGuideTemplate = ({
   }, []);
 
   const handleStepPress = useCallback(
-    (index) => {
+    (index: number) => {
       if (index < 0 || index >= steps.length) {
         return;
       }
@@ -324,7 +324,7 @@ const EntryGuideTemplateStepIndicator = () => {
   const [contentWidth, setContentWidth] = useState(0);
 
   const centerStepInView = useCallback(
-    (index) => {
+    (index: number) => {
       const layout = stepLayoutsRef.current[index];
       if (
         !layout ||
@@ -354,7 +354,7 @@ const EntryGuideTemplateStepIndicator = () => {
   }, [centerStepInView, currentStepIndex]);
 
   const getStepStatus = useCallback(
-    (index) => {
+    (index: number) => {
       const step = steps[index];
       if (!step) {
         return 'pending';
@@ -401,7 +401,7 @@ const EntryGuideTemplateStepIndicator = () => {
           setContentWidth(width);
         }}
       >
-        {steps.map((step, index) => {
+        {steps.map((step: GuideStep, index: number) => {
           const status = getStepStatus(index);
           const isCompleted = status === 'completed';
           const isCurrent = status === 'current';
@@ -567,7 +567,7 @@ const EntryGuideTemplateCurrentStep = () => {
         <Text style={styles.formFieldsTitle}>
           {t('entryGuide.sections.formFields', { defaultValue: isChinese ? '📝 表格填写要点' : '📝 Form Filling Tips' })}
         </Text>
-        {currentStep.formFields.map((field, index) => {
+        {currentStep.formFields.map((field: Record<string, string>, index: number) => {
           const label = resolveLabel(
             { zh: field.labelZh, en: field.label },
             isChinese,

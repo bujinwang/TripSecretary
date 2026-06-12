@@ -26,7 +26,7 @@ export type DataEvent = DataChangeEvent | ResubmissionWarningEvent;
 
 export type DataChangeListener = (event: DataEvent) => void;
 
-type EntryInfoRecord = {
+export type EntryInfoRecord = {
   id?: string;
   status?: string;
   userId?: string;
@@ -34,9 +34,9 @@ type EntryInfoRecord = {
   [key: string]: unknown;
 };
 
-type GetEntryInfosCallback = (userId: string) => Promise<EntryInfoRecord[]>;
+export type GetEntryInfosCallback = (userId: string) => Promise<EntryInfoRecord[]>;
 
-type CheckEntryInfoCallback = (
+export type CheckEntryInfoCallback = (
   entryInfo: EntryInfoRecord,
   dataType: string,
   changeDetails: DataChangeDetails

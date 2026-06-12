@@ -13,6 +13,15 @@ const TravelReadinessDashboard = ({
   onPassportPress,
   onTripPress,
   onActionPress,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  passportData: any;
+  activeEntryPacks: Array<Record<string, unknown>>;
+  inProgressDestinations: Array<Record<string, unknown>>;
+  upcomingTrips: Array<Record<string, unknown>>;
+  onPassportPress?: () => void;
+  onTripPress?: (trip: Record<string, unknown>) => void;
+  onActionPress?: (action: string) => void;
 }) => {
   const { t } = useLocale();
 
@@ -100,20 +109,21 @@ const TravelReadinessDashboard = ({
         status: 'submitted'
       })),
       ...inProgressDestinations.map(dest => ({
-        type: 'inProgress',
+        type: 'inProgress' as const,
         destination: dest.destinationName || 'Unknown',
         flag: getDestinationFlag(dest.destinationId),
+        daysUntil: null as number | null,
         completion: dest.completionPercent,
         status: 'inProgress'
       })),
       ...upcomingTrips.map(trip => ({
-        type: 'upcoming',
-        destination: trip.destination?.name || 'Unknown',
+        type: 'upcoming' as const,
+        destination: (trip.destination as Record<string, unknown>)?.name as string || 'Unknown',
         flag: trip.flag,
-        daysUntil: trip.daysFromNow,
+        daysUntil: trip.daysFromNow as number | null,
         status: 'planned'
       }))
-    ].filter(trip => trip.daysUntil !== null && trip.daysUntil >= 0);
+    ].filter(trip => (trip as { daysUntil: number | null }).daysUntil !== null && (trip as { daysUntil: number }).daysUntil >= 0);
 
     return allTrips.sort((a, b) => (a.daysUntil || 0) - (b.daysUntil || 0))[0];
   }, [activeEntryPacks, inProgressDestinations, upcomingTrips]);
