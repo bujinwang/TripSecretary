@@ -722,9 +722,10 @@ initialState.visaNumber = passport.visaNumber;
             return record as Record<string, unknown> | null;
           }
 
-          if (typeof (record as Record<string, unknown>).toJSON === 'function') {
+          const obj = record as Record<string, unknown>;
+          if (record != null && typeof record === 'object' && typeof obj.toJSON === 'function') {
             try {
-              return (record as Record<string, unknown>).toJSON() as Record<string, unknown>;
+              return obj.toJSON() as Record<string, unknown>;
             } catch (jsonError) {
               LoggingService.warn('Template', 'Failed to normalize record via toJSON', { error: jsonError });
             }
@@ -745,11 +746,11 @@ initialState.visaNumber = passport.visaNumber;
         : [];
 
       // Filter entries for this destination
-      const typedEntryInfos = (entryInfos || []) as Record<string, unknown>[];
+      const typedEntryInfos = (entryInfos as unknown as Record<string, unknown>[]) || [];
       const destinationEntries = typedEntryInfos.filter((info) => info.destinationId === destinationId);
       LoggingService.debug('Template', `Found ${destinationEntries.length} entry(ies) for destination ${destinationId}`, {
         entryCount: destinationEntries.length,
-        destinationId,
+        destinationId: destinationId as string | undefined,
         entries: destinationEntries.map(e => ({ id: e.id, created_at: e.createdAt, last_updated_at: e.lastUpdatedAt }))
       });
 
@@ -757,7 +758,7 @@ initialState.visaNumber = passport.visaNumber;
       
       // Strategy 1: Use entryInfoId from formState if it exists and matches an entry
       if (formState.entryInfoId) {
-        entryInfo = destinationEntries.find((info) => info.id === formState.entryInfoId);
+        entryInfo = destinationEntries.find((info) => info.id === formState.entryInfoId) || null;
         if (entryInfo) {
           LoggingService.debug('Template', `Using entry from formState.entryInfoId` , { entryInfoId: entryInfo.id });
         } else {
@@ -768,8 +769,8 @@ initialState.visaNumber = passport.visaNumber;
       // Strategy 2: If no match from formState, use the most recent entry (by last_updated_at, then created_at)
       if (!entryInfo && destinationEntries.length > 0) {
         entryInfo = destinationEntries.sort((a, b) => {
-          const aTime = new Date(a.lastUpdatedAt || a.createdAt || 0).getTime();
-          const bTime = new Date(b.lastUpdatedAt || b.createdAt || 0).getTime();
+          const aTime = new Date((a.lastUpdatedAt as string) || (a.createdAt as string) || 0).getTime();
+          const bTime = new Date((b.lastUpdatedAt as string) || (b.createdAt as string) || 0).getTime();
           return bTime - aTime; // Most recent first
         })[0];
         LoggingService.debug('Template', 'Using most recent entry', { entryInfoId: entryInfo.id, lastUpdatedAt: entryInfo.lastUpdatedAt || entryInfo.createdAt });
@@ -790,7 +791,7 @@ initialState.visaNumber = passport.visaNumber;
           passportId: (passportRaw as Record<string, unknown> | null)?.id as string | null || null,
           personalInfoId: (personalInfoRaw as Record<string, unknown> | null)?.id as string | null || null,
           travelInfoId: (travelRaw as Record<string, unknown> | null)?.id as string | null || null,
-          destinationId,
+          destinationId: destinationId as string | undefined,
           status: 'incomplete',
           fundItemIds: fundIds,
           lastUpdatedAt: timestamp,
@@ -832,31 +833,31 @@ initialState.visaNumber = passport.visaNumber;
         entryInfo.destinationId = destinationId;
       }
 
-      entryInfo.fundItemIds = Array.from(fundIds);
+      entryInfo!.fundItemIds = Array.from(fundIds);
 
-      entryInfo.updateCompletionMetrics(
+      (entryInfo!.updateCompletionMetrics as (p: Record<string, unknown>, pi: Record<string, unknown>, f: unknown[], t: Record<string, unknown>) => void)(
         passportData,
         personalInfoData,
         fundsData,
         travelInfoData
       );
 
-      if (['incomplete', 'ready'].includes(entryInfo.status)) {
-        entryInfo.status = entryInfo.isReadyForSubmission() ? 'ready' : 'incomplete';
+      if (['incomplete', 'ready'].includes(entryInfo!.status as string)) {
+        entryInfo!.status = (entryInfo!.isReadyForSubmission as () => boolean)() ? 'ready' : 'incomplete';
       }
 
-      entryInfo.lastUpdatedAt = timestamp;
-      await entryInfo.save({ skipValidation: true });
+      entryInfo!.lastUpdatedAt = timestamp;
+      await (entryInfo!.save as (opts: Record<string, unknown>) => Promise<void>)({ skipValidation: true });
 
       updateFormState({
-        entryInfoId: entryInfo.id,
+        entryInfoId: entryInfo!.id,
         entryInfoInitialized: true,
         lastEntryInfoUpdate: timestamp,
       });
 
-      return entryInfo;
+      return entryInfo!;
     } catch (error) {
-      LoggingService.error('Template', 'Failed to ensure entry info record', { error });
+      LoggingService.error('Template', 'Failed to ensure entry info record', { error: error instanceof Error ? error.message : String(error) });
       updateFormState({ entryInfoInitialized: false });
       return null;
     }
@@ -1069,7 +1070,7 @@ initialState.visaNumber = passport.visaNumber;
       // Combine name parts into fullName for database
       const nameParts = [formState.surname, formState.middleName, formState.givenName]
         .filter(Boolean)
-        .map(part => part.trim())
+        .map(part => String(part).trim())
         .filter(part => part.length > 0);
       const fullName = nameParts.length > 0 ? nameParts.join(', ') : '';
 
@@ -1259,12 +1260,12 @@ initialState.visaNumber = passport.visaNumber;
   // ============================================
   const validation = useTemplateValidation({
     config: config as unknown as Record<string, unknown>,
-    formState: { ...formState, setErrors: (fn: unknown) => updateFormState({ errors: typeof fn === 'function' ? (fn as (prev: Record<string, string>) => Record<string, string>)(formState.errors) : fn as Record<string, string> }), setWarnings: (fn: unknown) => updateFormState({ warnings: typeof fn === 'function' ? (fn as (prev: Record<string, string>) => Record<string, string>)(formState.warnings) : fn as Record<string, string> }), setLastEditedAt: (date: Date) => updateFormState({ lastEditedAt: date.toISOString() }) },
+    formState: { ...formState, setErrors: (fn: unknown) => updateFormState({ errors: typeof fn === 'function' ? (fn as (prev: Record<string, string>) => Record<string, string>)(formState.errors) : fn as Record<string, string> }), setWarnings: (fn: unknown) => updateFormState({ warnings: typeof fn === 'function' ? (fn as (prev: Record<string, string>) => Record<string, string>)(formState.warnings) : fn as Record<string, string> }), setLastEditedAt: (date: Date) => updateFormState({ lastEditedAt: date.toISOString() }) } as unknown as FormState,
     userInteractionTracker,
     saveDataToUserDataService,
     debouncedSave,
     t,
-    destinationId,
+    destinationId: destinationId as string | undefined,
   });
 
   // ============================================
@@ -1367,13 +1368,11 @@ initialState.visaNumber = passport.visaNumber;
     await saveDataToUserDataService();
 
     if (nextRouteName) {
-      const nextParams = {
-        ...(route?.params || {}),
-        passport,
-        destination,
-      };
-
-      navigation.navigate(nextRouteName, nextParams);
+      navigation.navigate(nextRouteName as string, {
+        ...(route?.params || {}) as Record<string, unknown>,
+        passport: passport as Record<string, unknown>,
+        destination: destination as Record<string, unknown>,
+      } as Record<string, unknown>);
     } else {
       LoggingService.warn('Template', 'No next navigation route configured');
       navigation.goBack();
@@ -1407,7 +1406,7 @@ initialState.visaNumber = passport.visaNumber;
   // ============================================
   // CONTEXT VALUE
   // ============================================
-  const contextValue = {
+  const contextValue: EnhancedTemplateContextType = {
     config,
     formState,
     updateField,
@@ -1417,11 +1416,11 @@ initialState.visaNumber = passport.visaNumber;
     debouncedSave,
     handleContinue,
     handleGoBack,
-    handleProvinceSelect,
-    handleDistrictSelect,
-    handleSubDistrictSelect,
+    handleProvinceSelect: handleProvinceSelect as (province: string) => void,
+    handleDistrictSelect: handleDistrictSelect as (district: string, districtId: string) => void,
+    handleSubDistrictSelect: handleSubDistrictSelect as (subDistrict: string, subDistrictId: string, postalCode: string) => void,
     locationData,
-    t,
+    t: t as (key: string, options?: Record<string, unknown>) => string,
     navigation,
     route,
     passport,
@@ -1429,11 +1428,14 @@ initialState.visaNumber = passport.visaNumber;
     userId,
     // Template features
     userInteractionTracker,
-    validation,
-    fundManagement,
-    photoManagement,
+    validation: validation as Record<string, unknown>,
+    fundManagement: fundManagement as unknown as Record<string, unknown>,
+    photoManagement: photoManagement as unknown as Record<string, unknown>,
     entryInfoId: formState.entryInfoId,
     entryInfoInitialized: formState.entryInfoInitialized,
+    destinationId,
+    travelSectionConfig,
+    resolveSectionLabels: resolveSectionLabels as (sectionKey: string, sectionConfig: Record<string, unknown>, labelSource?: Record<string, unknown>) => Record<string, unknown>,
   };
 
   // ============================================
@@ -1499,16 +1501,16 @@ initialState.visaNumber = passport.visaNumber;
             <PassportSection
               isExpanded={formState.expandedSections?.passport}
               onToggle={() => toggleSection('passport')}
-              fieldCount={validation.getFieldCount('passport')}
-              surname={formState.surname}
-              middleName={formState.middleName}
-              givenName={formState.givenName}
-              nationality={formState.nationality}
-              passportNo={formState.passportNo}
-              visaNumber={formState.visaNumber}
-              dob={formState.dob}
-              expiryDate={formState.expiryDate}
-              sex={formState.sex}
+              fieldCount={validation.getFieldCount('passport') as unknown as number}
+              surname={formState.surname as string}
+              middleName={(formState.middleName || '') as string}
+              givenName={formState.givenName as string}
+              nationality={formState.nationality as string}
+              passportNo={formState.passportNo as string}
+              visaNumber={formState.visaNumber as string | undefined}
+              dob={formState.dob as string}
+              expiryDate={formState.expiryDate as string}
+              sex={formState.sex as string}
               setSurname={(v) => updateField('surname', v)}
               setMiddleName={(v) => updateField('middleName', v)}
               setGivenName={(v) => updateField('givenName', v)}
@@ -1524,7 +1526,7 @@ initialState.visaNumber = passport.visaNumber;
               debouncedSaveData={debouncedSave}
               labels={(() => {
                 const labelSource: Record<string, unknown> = ((config?.i18n as Record<string, Record<string, unknown>> | undefined)?.labelSource?.passport || {}) as Record<string, unknown>;
-                return resolveSectionLabels('passport', config?.sections?.passport, labelSource);
+                return resolveSectionLabels('passport', config?.sections?.passport as TravelInfoSectionConfig, labelSource) as Record<string, string>;
               })()}
               config={{
                 ...config?.sections?.passport,
@@ -1532,7 +1534,7 @@ initialState.visaNumber = passport.visaNumber;
                     const sexFieldConfig = (config?.sections?.passport?.fields as Record<string, TravelInfoFieldConfig> | undefined)?.sex;
                   if (sexFieldConfig?.options) {
                     // Translate gender options if they have labelKey
-                    return sexFieldConfig.options.map((option: {value: string; labelKey?: string; label?: string; [key: string]: unknown}) => {
+                    return (sexFieldConfig.options as Array<{value: string; labelKey?: string; label?: string; [key: string]: unknown}>).map((option) => {
                       if (option.labelKey) {
                         return {
                           ...option,
@@ -1561,7 +1563,7 @@ initialState.visaNumber = passport.visaNumber;
             const destId = config?.destinationId || destinationId || 'hongkong';
             
             // Get base labels from resolveSectionLabels
-            const baseLabels = resolveSectionLabels('personal', config?.sections?.personal, ((config?.i18n as Record<string, unknown> | undefined)?.labelSource as Record<string, unknown> | undefined)?.personal || {});
+            const baseLabels = resolveSectionLabels('personal', config?.sections?.personal as TravelInfoSectionConfig, (((config?.i18n as Record<string, unknown> | undefined)?.labelSource as Record<string, unknown> | undefined)?.personal || {}) as Record<string, unknown>);
             
             // Resolve cityOfResidence labels with proper destId and ensure strings
             const cityOfResidenceLabelKey = isChineseResidence
@@ -1609,14 +1611,14 @@ initialState.visaNumber = passport.visaNumber;
               <PersonalInfoSection
                 isExpanded={!!formState.expandedSections.personal}
                 onToggle={() => toggleSection('personal')}
-                fieldCount={validation.getFieldCount('personal')}
-                occupation={formState.occupation}
-                customOccupation={formState.customOccupation}
-                cityOfResidence={formState.cityOfResidence}
-                residentCountry={formState.countryOfResidence || formState.residentCountry}
-                phoneCode={formState.phoneCode}
-                phoneNumber={formState.phoneNumber}
-                email={formState.email}
+                fieldCount={validation.getFieldCount('personal') as unknown as number}
+                occupation={formState.occupation as string}
+                customOccupation={formState.customOccupation as string}
+                cityOfResidence={formState.cityOfResidence as string}
+                residentCountry={((formState.countryOfResidence || formState.residentCountry) || '') as string}
+                phoneCode={(formState.phoneCode || '') as string}
+                phoneNumber={formState.phoneNumber as string}
+                email={formState.email as string}
                 setOccupation={(v) => updateField('occupation', v)}
                 setCustomOccupation={(v) => updateField('customOccupation', v)}
                 setCityOfResidence={(v) => updateField('cityOfResidence', v)}
@@ -1655,13 +1657,13 @@ initialState.visaNumber = passport.visaNumber;
             <TypedFundsSection
               isExpanded={formState.expandedSections.funds}
               onToggle={() => toggleSection('funds')}
-              fieldCount={validation.getFieldCount('funds') as any}
-              funds={formState.funds || []}
+              fieldCount={validation.getFieldCount('funds') as unknown as number}
+              funds={(formState.funds as unknown[] | undefined) || []}
               setFunds={(v: unknown[]) => updateField('funds', v as unknown as string)}
               addFund={fundManagement.addFund}
               handleFundItemPress={fundManagement.handleFundItemPress}
               debouncedSaveData={debouncedSave}
-              labels={resolveSectionLabels('funds', config?.sections?.funds, ((config?.i18n as Record<string, unknown> | undefined)?.labelSource as Record<string, unknown> | undefined)?.funds || {})}
+              labels={resolveSectionLabels('funds', config?.sections?.funds as TravelInfoSectionConfig, (((config?.i18n as Record<string, unknown> | undefined)?.labelSource as Record<string, unknown> | undefined)?.funds || {}) as Record<string, unknown>)}
               config={(config?.sections?.funds || {}) as unknown as Partial<FundSectionConfig>}
             />
           )}
@@ -1671,28 +1673,28 @@ initialState.visaNumber = passport.visaNumber;
             <TypedTravelDetailsSection
               isExpanded={formState.expandedSections.travel}
               onToggle={() => toggleSection('travel')}
-              fieldCount={validation.getFieldCount('travel')}
-              travelPurpose={formState.travelPurpose}
-              customTravelPurpose={formState.customTravelPurpose}
-              recentStayCountry={formState.recentStayCountry}
-              boardingCountry={formState.boardingCountry}
-              arrivalFlightNumber={formState.arrivalFlightNumber}
-              arrivalDate={formState.arrivalDate}
-              flightTicketPhoto={formState.flightTicketPhoto}
-              departureFlightNumber={formState.departureFlightNumber}
-              departureDate={formState.departureDate}
-              departureFlightTicketPhoto={formState.departureFlightTicketPhoto}
-              isTransitPassenger={formState.isTransitPassenger}
-              accommodationType={formState.accommodationType}
-              customAccommodationType={formState.customAccommodationType}
-              province={formState.province}
-              district={formState.district}
-              districtId={formState.districtId}
-              subDistrict={formState.subDistrict}
-              subDistrictId={formState.subDistrictId}
-              postalCode={formState.postalCode}
-              hotelAddress={formState.hotelAddress}
-              hotelReservationPhoto={formState.hotelReservationPhoto}
+              fieldCount={validation.getFieldCount('travel') as unknown as number}
+              travelPurpose={formState.travelPurpose as string | undefined}
+              customTravelPurpose={formState.customTravelPurpose as string | undefined}
+              recentStayCountry={formState.recentStayCountry as string | undefined}
+              boardingCountry={formState.boardingCountry as string | undefined}
+              arrivalFlightNumber={formState.arrivalFlightNumber as string | undefined}
+              arrivalDate={formState.arrivalDate as string | undefined}
+              flightTicketPhoto={formState.flightTicketPhoto as string | undefined}
+              departureFlightNumber={formState.departureFlightNumber as string | undefined}
+              departureDate={formState.departureDate as string | undefined}
+              departureFlightTicketPhoto={formState.departureFlightTicketPhoto as string | undefined}
+              isTransitPassenger={formState.isTransitPassenger as boolean | undefined}
+              accommodationType={formState.accommodationType as string | undefined}
+              customAccommodationType={formState.customAccommodationType as string | undefined}
+              province={formState.province as string | undefined}
+              district={formState.district as string | undefined}
+              districtId={formState.districtId as string | undefined}
+              subDistrict={formState.subDistrict as string | undefined}
+              subDistrictId={formState.subDistrictId as string | undefined}
+              postalCode={formState.postalCode as string | undefined}
+              hotelAddress={formState.hotelAddress as string | undefined}
+              hotelReservationPhoto={formState.hotelReservationPhoto as string | undefined}
               setTravelPurpose={(v: string) => updateField('travelPurpose', v)}
               setCustomTravelPurpose={(v: string) => updateField('customTravelPurpose', v)}
               setRecentStayCountry={(v: string) => updateField('recentStayCountry', v)}
@@ -1715,7 +1717,7 @@ initialState.visaNumber = passport.visaNumber;
               setHotelAddress={(v: string) => updateField('hotelAddress', v)}
               setHotelReservationPhoto={(v: string) => updateField('hotelReservationPhoto', v)}
               handleProvinceSelect={handleProvinceSelect}
-              handleDistrictSelect={handleDistrictSelect}
+              handleDistrictSelect={handleDistrictSelect as (districtName: string, districtId: string) => void}
               handleSubDistrictSelect={handleSubDistrictSelect}
               getProvinceData={locationData.provinces as any}
               getDistrictData={locationData.getDistricts as any}
@@ -1727,7 +1729,7 @@ initialState.visaNumber = passport.visaNumber;
               warnings={formState.warnings}
               handleFieldBlur={validation.handleFieldBlur}
               debouncedSaveData={debouncedSave}
-              labels={resolveSectionLabels('travel', config?.sections?.travel, ((config?.i18n as Record<string, unknown> | undefined)?.labelSource as Record<string, unknown> | undefined)?.travel || {})}
+              labels={resolveSectionLabels('travel', config?.sections?.travel as TravelInfoSectionConfig, (((config?.i18n as Record<string, unknown> | undefined)?.labelSource as Record<string, unknown> | undefined)?.travel || {}) as Record<string, unknown>) as Record<string, string>}
               config={{
                 ...travelSectionConfig,
                 accommodationOptions: (() => {
@@ -1752,7 +1754,7 @@ initialState.visaNumber = passport.visaNumber;
                   }
                   
                   // Translate accommodation options
-                  return options.map((option: {value: string; labelKey?: string; label?: string; defaultLabel?: string; [key: string]: unknown}) => {
+                  return (options as Array<{value: string; labelKey?: string; label?: string; defaultLabel?: string; [key: string]: unknown}>).map((option) => {
                     if (option.labelKey) {
                       // If option has a labelKey, translate it
                       const translatedLabel = t(option.labelKey, { defaultValue: option.defaultLabel || option.label || option.value });
@@ -1799,7 +1801,7 @@ initialState.visaNumber = passport.visaNumber;
           return formState.fundItemModalVisible ? (
             <FundItemDetailModal
               visible={formState.fundItemModalVisible}
-              fundItem={formState.currentFundItem}
+              fundItem={formState.currentFundItem as Record<string, unknown> | null}
               isCreateMode={isCreateMode}
               createItemType={formState.newFundItemType}
               onClose={fundManagement.handleFundItemModalClose}
@@ -1840,9 +1842,9 @@ const RichHeroSection = ({ config }: { config: TravelInfoConfig }) => {
   return (
     <YStack paddingHorizontal="$md" marginBottom="$md">
       <LinearGradient
-        colors={config.hero.gradient.colors}
-        start={config.hero.gradient.start}
-        end={config.hero.gradient.end}
+        colors={(config.hero.gradient?.colors || ['#667eea', '#764ba2']) as [string, string, ...string[]]}
+        start={config.hero.gradient?.start || { x: 0, y: 0 }}
+        end={config.hero.gradient?.end || { x: 1, y: 1 }}
         style={{
           borderRadius: 12,
           padding: 16,
@@ -1864,7 +1866,7 @@ const RichHeroSection = ({ config }: { config: TravelInfoConfig }) => {
 
           {/* Value Propositions */}
           <XStack justifyContent="space-around" width="100%" marginVertical="$sm" paddingVertical="$xs">
-            {config.hero.valuePropositions.map((vp: {icon: string; textKey?: string; text?: string; defaultText?: string}, idx: number) => {
+            {(config.hero.valuePropositions || []).map((vp: {icon: string; textKey?: string; text?: string; defaultText?: string}, idx: number) => {
               // Support both textKey (i18n) and text (direct) properties
               const text = vp.textKey
                 ? t(vp.textKey, { defaultValue: vp.defaultText || vp.text || '' })
@@ -1881,6 +1883,7 @@ const RichHeroSection = ({ config }: { config: TravelInfoConfig }) => {
           </XStack>
 
           {/* Beginner Tip */}
+          {config.hero.beginnerTip && (
           <XStack
             backgroundColor="rgba(255, 255, 255, 0.1)"
             borderRadius={10}
@@ -1893,6 +1896,7 @@ const RichHeroSection = ({ config }: { config: TravelInfoConfig }) => {
               {beginnerTipText}
             </TamaguiText>
           </XStack>
+          )}
         </YStack>
       </LinearGradient>
     </YStack>

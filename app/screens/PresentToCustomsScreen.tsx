@@ -19,30 +19,30 @@ const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: (
   const rawPassport = rawParams.passport;
   const destination = rawParams.destination as Record<string, unknown> | undefined;
   const travelInfo = rawParams.travelInfo as Record<string, unknown> | undefined;
-  const passport = UserDataService.toSerializablePassport(rawPassport);
+  const passport = UserDataService.toSerializablePassport(rawPassport as any);
   
   const destLang = language;
 
   // 翻译字段
   const fields = {
-    fullName: translateField('fullName', destination?.id),
-    passportNumber: translateField('passportNumber', destination?.id),
-    flightNumber: translateField('flightNumber', destination?.id),
-    arrivalDate: translateField('arrivalDate', destination?.id),
-    hotelName: translateField('hotelName', destination?.id),
-    hotelAddress: translateField('hotelAddress', destination?.id),
-    contactPhone: translateField('contactPhone', destination?.id),
-    purposeOfVisit: translateField('purposeOfVisit', destination?.id),
+    fullName: translateField('fullName', destination?.id as string),
+    passportNumber: translateField('passportNumber', destination?.id as string),
+    flightNumber: translateField('flightNumber', destination?.id as string),
+    arrivalDate: translateField('arrivalDate', destination?.id as string),
+    hotelName: translateField('hotelName', destination?.id as string),
+    hotelAddress: translateField('hotelAddress', destination?.id as string),
+    contactPhone: translateField('contactPhone', destination?.id as string),
+    purposeOfVisit: translateField('purposeOfVisit', destination?.id as string),
   };
 
   // Calculate departure date (if not provided)
   const calculateDepartureDate = () => {
     if (travelInfo?.departureDate) {
-      return travelInfo.departureDate;
+      return travelInfo.departureDate as string;
     }
     if (travelInfo?.arrivalDate && travelInfo?.stayDuration) {
-      const arrival = new Date(travelInfo.arrivalDate);
-      const days = parseInt(travelInfo.stayDuration) || 7;
+      const arrival = new Date(travelInfo.arrivalDate as string);
+      const days = parseInt(travelInfo.stayDuration as string) || 7;
       arrival.setDate(arrival.getDate() + days);
       return arrival.toISOString().split('T')[0];
     }
@@ -69,7 +69,7 @@ const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: (
       'it': { 'zh-CN': '意大利', 'en': 'Italy' },
       'es': { 'zh-CN': '西班牙', 'en': 'Spain' },
     };
-    return nameMap[destId]?.[language] || nameMap[destId]?.['en'] || destination?.name || '';
+    return (destId ? (nameMap[destId]?.[language] || nameMap[destId]?.['en']) : undefined) || (destination?.name as string) || '';
   };
 
   // 将中文旅行目的转换为英文key
@@ -89,8 +89,8 @@ const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: (
     { label: fields.passportNumber, value: passport?.passportNo, important: true },
     { label: fields.flightNumber, value: travelInfo?.flightNumber, important: true },
     { label: fields.arrivalDate, value: travelInfo?.arrivalDate, important: true },
-    { label: translateField('departureDate', destination?.id, language), value: calculateDepartureDate(), important: true },
-    { label: fields.purposeOfVisit, value: translateField(convertPurposeToKey(travelInfo?.travelPurpose), destination?.id, language), important: true },
+    { label: translateField('departureDate', destination?.id as string, language), value: calculateDepartureDate(), important: true },
+    { label: fields.purposeOfVisit, value: translateField(convertPurposeToKey(travelInfo?.travelPurpose as string | undefined), destination?.id as string, language), important: true },
     { label: fields.hotelName, value: travelInfo?.hotelName },
     { label: fields.hotelAddress, value: travelInfo?.hotelAddress },
     { label: fields.contactPhone, value: travelInfo?.contactPhone },
@@ -105,7 +105,7 @@ const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: (
         iconStyle={styles.backArrow}
       >
         <View style={styles.backTextContainer}>
-          <Text style={styles.backTextPrimary}>{translateField('back', destination?.id, language)}</Text>
+          <Text style={styles.backTextPrimary}>{translateField('back', destination?.id as string, language)}</Text>
           {/* 如果目的地语言不是中文，显示简体中文帮助老人 */}
           {destLang !== 'zh-CN' && destLang !== 'zh-TW' && (
             <Text style={styles.backTextSecondary}>{t('common.back', { defaultValue: '返回' })}</Text>
@@ -120,13 +120,13 @@ const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: (
       >
         {/* Title - Large and Clear */}
         <View style={styles.titleSection}>
-          <Text style={styles.titleMain}>{getDestinationName(destination?.id)}</Text>
-          <Text style={styles.titleSub}>{translateField('entryInformation', destination?.id, language)}</Text>
+          <Text style={styles.titleMain}>{getDestinationName(destination?.id as string)}</Text>
+          <Text style={styles.titleSub}>{translateField('entryInformation', destination?.id as string, language)}</Text>
         </View>
 
         {/* Most Important Info - Highlighted */}
         <View style={styles.importantSection}>
-          <Text style={styles.sectionTitle}>✓ {translateField('keyInformation', destination?.id, language)}</Text>
+          <Text style={styles.sectionTitle}>✓ {translateField('keyInformation', destination?.id as string, language)}</Text>
           {formData.filter(item => item.important).map((item, index) => (
             <View key={index} style={styles.formRowImportant}>
               <Text style={styles.labelPrimaryImportant}>{item.label}</Text>
@@ -139,7 +139,7 @@ const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: (
 
         {/* Additional Details */}
         <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>{translateField('additionalDetails', destination?.id, language)}</Text>
+          <Text style={styles.sectionTitle}>{translateField('additionalDetails', destination?.id as string, language)}</Text>
           {formData.filter(item => !item.important).map((item, index) => (
             <View key={index} style={styles.formRow}>
               <Text style={styles.labelPrimary}>{item.label}</Text>
@@ -152,26 +152,26 @@ const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: (
 
         {/* Common Questions Quick Reference */}
         <View style={styles.qaSection}>
-          <Text style={styles.sectionTitle}>💬 {translateField('commonQuestions', destination?.id, language)}</Text>
+          <Text style={styles.sectionTitle}>💬 {translateField('commonQuestions', destination?.id as string, language)}</Text>
           <View style={styles.qaCard}>
             <Text style={styles.qaQuestion}>
-              {translateField('purposeOfVisit', destination?.id, language)}?
+              {translateField('purposeOfVisit', destination?.id as string, language)}?
             </Text>
             <Text style={styles.qaAnswer}>
-              {translateField(convertPurposeToKey(travelInfo?.travelPurpose), destination?.id, language)}
+              {translateField(convertPurposeToKey(travelInfo?.travelPurpose as string | undefined), destination?.id as string, language)}
             </Text>
           </View>
           <View style={styles.qaCard}>
             <Text style={styles.qaQuestion}>
-              {translateField('howLongStay', destination?.id, language)}
+              {translateField('howLongStay', destination?.id as string, language)}
             </Text>
             <Text style={styles.qaAnswer}>
-              {travelInfo?.stayDuration || '7'} {translateField('days', destination?.id, language)}
+              {(travelInfo?.stayDuration as string) || '7'} {translateField('days', destination?.id as string, language)}
             </Text>
           </View>
           <View style={styles.qaCard}>
             <Text style={styles.qaQuestion}>
-              {translateField('returnFlightDate', destination?.id, language)}
+              {translateField('returnFlightDate', destination?.id as string, language)}
             </Text>
             <Text style={styles.qaAnswer}>
               {calculateDepartureDate()}
@@ -182,11 +182,11 @@ const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: (
         {/* Customs Declaration - Canada E311 */}
         {(destination?.id === 'ca' || destination?.name === '加拿大') && travelInfo && (
           <View style={styles.customsSection}>
-            <Text style={styles.sectionTitle}>🛃 {translateField('customsDeclaration', destination?.id, language)}</Text>
+            <Text style={styles.sectionTitle}>🛃 {translateField('customsDeclaration', destination?.id as string, language)}</Text>
             
             <View style={styles.declarationCard}>
               <Text style={styles.declarationQuestion}>
-                {translateField('arrivingFromCountry', destination?.id, language)}
+                {translateField('arrivingFromCountry', destination?.id as string, language)}
               </Text>
               <Text style={styles.declarationAnswer}>
                 {travelInfo.arrivingFrom === '美国' || travelInfo.arrivingFrom === 'United States' 
@@ -197,7 +197,7 @@ const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: (
 
             <View style={styles.declarationCard}>
               <Text style={styles.declarationQuestion}>
-                {translateField('currencyOverLimit', destination?.id, language)}
+                {translateField('currencyOverLimit', destination?.id as string, language)}
               </Text>
               <Text style={[styles.declarationAnswer, (travelInfo.hasHighCurrency === '是' || travelInfo.hasHighCurrency === true) && styles.declarationAnswerYes]}>
                 {(travelInfo.hasHighCurrency === '是' || travelInfo.hasHighCurrency === true) 
@@ -208,7 +208,7 @@ const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: (
 
             <View style={styles.declarationCard}>
               <Text style={styles.declarationQuestion}>
-                {translateField('exceedsDutyFree', destination?.id, language)}
+                {translateField('exceedsDutyFree', destination?.id as string, language)}
               </Text>
               <Text style={[styles.declarationAnswer, (travelInfo.exceedsDutyFree === '是' || travelInfo.exceedsDutyFree === true) && styles.declarationAnswerYes]}>
                 {(travelInfo.exceedsDutyFree === '是' || travelInfo.exceedsDutyFree === true)
@@ -219,7 +219,7 @@ const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: (
 
             <View style={styles.declarationCard}>
               <Text style={styles.declarationQuestion}>
-                {translateField('hasFirearms', destination?.id, language)}
+                {translateField('hasFirearms', destination?.id as string, language)}
               </Text>
               <Text style={[styles.declarationAnswer, (travelInfo.hasFirearms === '是' || travelInfo.hasFirearms === true) && styles.declarationAnswerYes]}>
                 {(travelInfo.hasFirearms === '是' || travelInfo.hasFirearms === true)
@@ -230,7 +230,7 @@ const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: (
 
             <View style={styles.declarationCard}>
               <Text style={styles.declarationQuestion}>
-                {translateField('hasCommercialGoods', destination?.id, language)}
+                {translateField('hasCommercialGoods', destination?.id as string, language)}
               </Text>
               <Text style={[styles.declarationAnswer, (travelInfo.hasCommercialGoods === '是' || travelInfo.hasCommercialGoods === true) && styles.declarationAnswerYes]}>
                 {(travelInfo.hasCommercialGoods === '是' || travelInfo.hasCommercialGoods === true)
@@ -241,7 +241,7 @@ const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: (
 
             <View style={styles.declarationCard}>
               <Text style={styles.declarationQuestion}>
-                {translateField('hasFoodAnimals', destination?.id, language)}
+                {translateField('hasFoodAnimals', destination?.id as string, language)}
               </Text>
               <Text style={[styles.declarationAnswer, (travelInfo.visitedFarm === '是' || travelInfo.visitedFarm === true) && styles.declarationAnswerYes]}>
                 {(travelInfo.visitedFarm === '是' || travelInfo.visitedFarm === true)
@@ -256,7 +256,7 @@ const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: (
         <View style={styles.qrSection}>
           <View style={styles.qrPlaceholder}>
             <Text style={styles.qrText}>{t('common.qrCode', { defaultValue: 'QR Code' })}</Text>
-            <Text style={styles.qrSubtext}>{translateField('scanForDetails', destination?.id, language)}</Text>
+            <Text style={styles.qrSubtext}>{translateField('scanForDetails', destination?.id as string, language)}</Text>
           </View>
         </View>
 
