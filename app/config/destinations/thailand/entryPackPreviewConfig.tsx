@@ -43,7 +43,8 @@ const formatDate = (dateString: string | null | undefined, locale: string = 'en'
 const ThailandHeader = (props: Record<string, unknown>) => {
   const ctx = getTemplateContext(props);
   const config = ctx.config as Record<string, unknown> | undefined;
-  return <HeaderBase title={(config as Record<string, unknown>)?.header?.title} subtitle={(config as Record<string, unknown>)?.header?.subtitle} onClose={undefined} />;
+  const headerConfig = (config as Record<string, unknown>)?.header as Record<string, unknown> | undefined;
+  return <HeaderBase title={headerConfig?.title as string | Record<string, unknown> | undefined} subtitle={headerConfig?.subtitle as string | Record<string, unknown> | undefined} onClose={undefined} />;
 };
 
 const ThailandDeadlineAlert = (props: Record<string, unknown> = {}) => {
@@ -51,7 +52,8 @@ const ThailandDeadlineAlert = (props: Record<string, unknown> = {}) => {
   const entryPack = ctx.entryPack as Record<string, unknown> | undefined;
   const { t, language } = useTranslation();
 
-  const arrivalDate = (entryPack as Record<string, unknown> | undefined)?.travel?.arrivalDate as string | undefined;
+  const epTravel = (entryPack as Record<string, unknown> | undefined)?.travel as Record<string, unknown> | undefined;
+  const arrivalDate = epTravel?.arrivalDate as string | undefined;
   if (!arrivalDate) {
     return null;
   }
@@ -90,13 +92,18 @@ const ThailandDeadlineAlert = (props: Record<string, unknown> = {}) => {
 
 
 const ThailandFooterActions = (props: Record<string, unknown> = {}) => {
-  const { navigation, passport, destination, entryPack } = getTemplateContext(props);
+  const ctx = getTemplateContext(props);
+  const nav = ctx.navigation as Record<string, unknown> & { navigate?: (screen: string, params?: Record<string, unknown>) => void };
+  const passport = ctx.passport as Record<string, unknown>;
+  const destination = ctx.destination as Record<string, unknown>;
+  const ep = ctx.entryPack as Record<string, unknown> | undefined;
   const { t } = useTranslation();
-  const isSubmitted = Boolean(entryPack?.tdacSubmission?.arrCardNo);
+  const tdacSubmission = ep?.tdacSubmission as Record<string, unknown> | undefined;
+  const isSubmitted = Boolean(tdacSubmission?.arrCardNo);
 
   const handleContinue = () => {
     PreviewHaptics.buttonPress?.();
-    navigation.navigate('ThailandEntryFlow', {
+    nav.navigate?.('ThailandEntryFlow', {
       passport,
       destination,
     });
@@ -104,13 +111,13 @@ const ThailandFooterActions = (props: Record<string, unknown> = {}) => {
 
   const handleSecondary = () => {
     PreviewHaptics.buttonPress?.();
-    if (isSubmitted && entryPack?.tdacSubmission?.qrUri) {
-      navigation.navigate('TDACWebView', {
-        qrUri: entryPack.tdacSubmission.qrUri,
+    if (isSubmitted && tdacSubmission?.qrUri) {
+      nav.navigate?.('TDACWebView', {
+        qrUri: tdacSubmission.qrUri as string,
       });
       return;
     }
-    navigation.navigate('TDACSelection', {
+    nav.navigate?.('TDACSelection', {
       passport,
       destination,
     });
@@ -134,14 +141,15 @@ const ThailandFooterActions = (props: Record<string, unknown> = {}) => {
 };
 
 const ThailandEntryPackDetails = (props: Record<string, unknown> = {}) => {
-  const { entryPack } = getTemplateContext(props);
+  const ctx = getTemplateContext(props);
+  const ep = ctx.entryPack as Record<string, unknown>;
 
   return (
     <EntryPackDisplay
-      entryPack={{ ...entryPack, country: 'th' }}
-      personalInfo={entryPack.personalInfo}
-      travelInfo={entryPack.travel}
-      funds={entryPack.funds || []}
+      entryPack={{ ...ep, country: 'th' }}
+      personalInfo={ep.personalInfo as Record<string, unknown>}
+      travelInfo={ep.travel as Record<string, unknown>}
+      funds={(ep.funds as unknown[]) || []}
       country="th"
     />
   );

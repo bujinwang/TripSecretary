@@ -48,9 +48,15 @@ interface EntryPackDataShape {
   [key: string]: unknown;
 }
 
+interface NavigationShape {
+  navigate?: (screen: string, params?: Record<string, unknown>) => void;
+  goBack?: () => void;
+  [key: string]: unknown;
+}
+
 interface PreviewContextValue {
   config: TemplateConfig;
-  navigation: Record<string, unknown>;
+  navigation: NavigationShape;
   route: Record<string, unknown>;
   passport: Record<string, unknown> | null;
   destination: Record<string, unknown> | null;
@@ -107,7 +113,7 @@ interface TemplateConfig {
 interface PreviewTemplateProps {
   children?: React.ReactNode;
   config: TemplateConfig;
-  navigation: Record<string, unknown>;
+  navigation: NavigationShape;
   route: { params?: Record<string, unknown>; [key: string]: unknown };
 }
 
@@ -132,8 +138,7 @@ const EntryPackPreviewTemplate = ({
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<unknown>(null);
 
-  const destinationId =
-    destination?.id || config?.destinationId || config?.countryCode || 'vietnam';
+  const destinationId = (destination?.id || config?.destinationId || config?.countryCode || 'vietnam') as string;
 
   useEffect(() => {
     let isMounted = true;
@@ -209,15 +214,15 @@ const EntryPackPreviewTemplate = ({
     const basePassport =
       userData?.passport || passport || entryPackData?.passport || {};
     const travel =
-      loadedTravelData ||
+      (loadedTravelData as Record<string, unknown>) ||
       userData?.travel ||
       entryPackData?.travel ||
-      {};
+      {} as Record<string, unknown>;
     const funds =
-      loadedFundsData ||
+      (loadedFundsData as unknown[]) ||
       userData?.funds ||
       entryPackData?.funds ||
-      [];
+      [] as unknown[];
 
     return {
       id: entryPackData?.id || 'preview',
@@ -436,15 +441,15 @@ const EntryPackPreviewTemplate = ({
       if (action.type === 'navigate' && navigation?.navigate) {
         const params =
           typeof action.buildParams === 'function'
-            ? action.buildParams({
+            ? (action.buildParams as (ctx: Record<string, unknown>) => Record<string, unknown>)({
                 passport,
                 destination,
                 entryPack,
                 userData,
                 entryPackData,
               })
-            : action.params;
-        navigation.navigate(action.screen, params);
+            : (action.params as Record<string, unknown> | undefined);
+        navigation.navigate(action.screen as string, params as Record<string, unknown>);
       }
     },
     [
@@ -577,7 +582,7 @@ const EntryPackPreviewTemplate = ({
     [baseContext, helpers, scrollViewRef, renderComponent, renderSlot, runHook]
   );
 
-  contextRef.current = contextValue;
+    contextRef.current = contextValue as PreviewContextValue;
 
   useEffect(() => {
     runHook('onScreenMount');
@@ -590,7 +595,7 @@ const EntryPackPreviewTemplate = ({
   }, [isLoading, runHook]);
 
   return (
-    <EntryPackPreviewTemplateContext.Provider value={contextValue}>
+    <EntryPackPreviewTemplateContext.Provider value={contextValue as PreviewContextValue}>
       <SafeAreaView style={styles.container}>{children}</SafeAreaView>
     </EntryPackPreviewTemplateContext.Provider>
   );
@@ -695,11 +700,11 @@ const EntryPackPreviewTemplateEntryPack = (props: Record<string, unknown>) => {
     <View style={styles.entryPackContainer}>
       <EntryPackDisplay
         entryPack={entryPack}
-        personalInfo={entryPack.personalInfo}
-        travelInfo={entryPack.travel}
-        funds={entryPack.funds || []}
+        personalInfo={entryPack.personalInfo as Record<string, unknown>}
+        travelInfo={entryPack.travel as Record<string, unknown>}
+        funds={(entryPack.funds as unknown[]) || []}
         isModal={false}
-        country={entryPack.country}
+        country={entryPack.country as string}
         {...props}
       />
     </View>
@@ -714,7 +719,7 @@ const EntryPackPreviewTemplateActions = () => {
     return null;
   }
 
-  const buttons = [actions.primary, actions.secondary].filter(Boolean);
+  const buttons = [actions.primary, actions.secondary].filter(Boolean) as Record<string, unknown>[];
   if (!buttons.length) {
     return null;
   }
@@ -723,12 +728,12 @@ const EntryPackPreviewTemplateActions = () => {
     <View style={styles.actionSection}>
       {buttons.map((action, index) => (
         <TouchableOpacity
-          key={action.id || index}
+          key={(action as Record<string, unknown>).id as string || index}
           style={[
             styles.actionButton,
             index === 0 ? styles.primaryButton : styles.secondaryButton,
           ]}
-          onPress={() => handleActionPress(action)}
+          onPress={() => handleActionPress(action as Record<string, unknown>)}
         >
           <Text
             style={[
@@ -736,7 +741,7 @@ const EntryPackPreviewTemplateActions = () => {
               index === 0 ? styles.primaryButtonText : styles.secondaryButtonText,
             ]}
           >
-            {resolveText(action?.label) || action?.label}
+            {resolveText(action?.label) || (action as Record<string, unknown>)?.label as string}
           </Text>
         </TouchableOpacity>
       ))}
@@ -762,7 +767,8 @@ const EntryPackPreviewTemplateInfoSection = () => {
       ? text
       : [];
 
-  const lines = resolveText(linesSource, { preserveArray: true });
+  const resolvedLines = resolveText(linesSource, { preserveArray: true });
+  const lines: string[] = Array.isArray(resolvedLines) ? resolvedLines as string[] : (typeof resolvedLines === 'string' ? [resolvedLines] : []);
 
   if (!lines.length) {
     return null;
@@ -802,7 +808,7 @@ const EntryPackPreviewTemplateErrorState = () => {
         {resolveText(config?.errorState?.title) || 'Failed to load entry pack'}
       </Text>
       <Text style={styles.errorMessage}>
-        {resolveText(config?.errorState?.message) || loadError.message}
+        {resolveText(config?.errorState?.message) || (loadError as Record<string, unknown>)?.message as string}
       </Text>
     </View>
   );
