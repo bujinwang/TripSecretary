@@ -5,6 +5,7 @@ import type { ParamListBase } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
+// @ts-ignore - missing types for prop-types
 import PropTypes from 'prop-types';
 import { useTranslation } from '../i18n/LocaleContext';
 
@@ -125,7 +126,7 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 // Tab Bar Icon Component
-const TabBarIcon = ({ emoji, focused }) => (
+const TabBarIcon = ({ emoji, focused }: { emoji: string; focused: boolean }) => (
   <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.5 }}>{emoji}</Text>
 );
 
@@ -200,13 +201,13 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
           headerShown: false,
           animation: 'slide_from_right',
           headerBackTitle: '',
-          headerBackTitleVisible: false,
+          ...({ headerBackTitleVisible: false } as Record<string, unknown>),
         }}
       >
         {/* Auth Stack */}
         <Stack.Screen
           name="Login"
-          component={LoginScreen as React.FC<Record<string, never>>}
+          component={LoginScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
           }}
@@ -430,7 +431,7 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
         />
         <Stack.Screen
           name="TWArrivalGuide"
-          component={TWArrivalGuideScreen as React.FC<Record<string, never>>}
+          component={TWArrivalGuideScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
           }}
@@ -512,7 +513,7 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
         />
         <Stack.Screen
           name="KoreaEntryGuide"
-          component={KoreaEntryGuideScreen as React.FC<Record<string, never>>}
+          component={KoreaEntryGuideScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
           }}
@@ -563,14 +564,14 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
         />
         <Stack.Screen
           name="USAEntryGuide"
-          component={USAEntryGuideScreen as React.FC<Record<string, never>>}
+          component={USAEntryGuideScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
           }}
         />
         <Stack.Screen
           name="CanadaEntryGuide"
-          component={CanadaEntryGuideScreen as React.FC<Record<string, never>>}
+          component={CanadaEntryGuideScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
           }}
@@ -609,14 +610,14 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
         />
         <Stack.Screen
           name="SGACAirportGuide"
-          component={SGACAirportGuideScreen as React.FC<Record<string, never>>}
+          component={SGACAirportGuideScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
           }}
         />
         <Stack.Screen
           name="SGACWebView"
-          component={SGACWebViewScreen as React.FC<Record<string, never>>}
+          component={SGACWebViewScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
             presentation: 'fullScreenModal',
@@ -624,7 +625,7 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
         />
         <Stack.Screen
           name="AirportArrival"
-          component={AirportArrivalScreen as React.FC<Record<string, never>>}
+          component={AirportArrivalScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
             gestureEnabled: false, // Prevent accidental back during immigration
@@ -684,7 +685,7 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
         />
         <Stack.Screen
           name="JapanEntryGuide"
-          component={JapanEntryGuideScreen as React.FC<Record<string, never>>}
+          component={JapanEntryGuideScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
           }}
@@ -779,7 +780,7 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
         />
         <Stack.Screen
           name="VietnamEntryGuide"
-          component={VietnamEntryGuideScreen as React.FC<Record<string, never>>}
+          component={VietnamEntryGuideScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
           }}
@@ -802,7 +803,7 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
         />
         <Stack.Screen
           name="EntryInfoDetail"
-          component={EntryInfoDetailScreen as React.FC<Record<string, never>>}
+          component={EntryInfoDetailScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
           }}
@@ -818,7 +819,7 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
         />
         <Stack.Screen
           name="EntryInfoHistory"
-          component={EntryInfoHistoryScreen as React.FC<Record<string, never>>}
+          component={EntryInfoHistoryScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
           }}
@@ -869,7 +870,7 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
         />
         <Stack.Screen
           name="HongKongEntryGuide"
-          component={HongKongEntryGuideScreen as React.FC<Record<string, never>>}
+          component={HongKongEntryGuideScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
           }}
@@ -897,7 +898,7 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
         />
         <Stack.Screen
           name="MalaysiaEntryGuide"
-          component={MalaysiaEntryGuideScreen as React.FC<Record<string, never>>}
+          component={MalaysiaEntryGuideScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
           }}
@@ -925,7 +926,7 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
         />
         <Stack.Screen
           name="SingaporeEntryGuide"
-          component={SingaporeEntryGuideScreen as React.FC<Record<string, never>>}
+          component={SingaporeEntryGuideScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false,
           }}
@@ -942,7 +943,7 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
         {/* Settings Screens */}
         <Stack.Screen
           name="NotificationSettings"
-          component={NotificationSettingsScreen as React.FC<Record<string, never>>}
+          component={NotificationSettingsScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: true,
             title: t('screenTitles.notificationSettings'),
@@ -955,7 +956,7 @@ const AppNavigator = React.forwardRef<NavigationContainerRef<ParamListBase>, Rec
 
         <Stack.Screen
           name="NotificationLog"
-          component={NotificationLogScreen as React.FC<Record<string, never>>}
+          component={NotificationLogScreen as unknown as React.FC<Record<string, never>>}
           options={{
             headerShown: false, // Using custom header in the screen
           }}

@@ -25,7 +25,7 @@ interface CountryData {
   visaRequirement: Record<string, string>;
 }
 
-interface CountryDisplay {
+export interface CountryDisplay {
   id: string;
   flag: string;
   name: string;
@@ -40,7 +40,7 @@ interface CountryDisplay {
   visaPriority: number;
 }
 
-type TranslateFunction = (key: string, options?: Record<string, unknown>) => string;
+export type TranslateFunction = (key: string, options?: Record<string, unknown>) => string;
 
 const FALLBACK_COUNTRIES: Record<string, CountryData> = {
   ca: {

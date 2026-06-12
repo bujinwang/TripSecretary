@@ -59,15 +59,39 @@ import TemplateFieldStateManager from './utils/TemplateFieldStateManager';
 
 type EnhancedTravelInfoTemplateProps = {
   config: TravelInfoConfig;
-  route: any;
-  navigation: any;
+  route: { params?: Record<string, unknown>; [key: string]: unknown };
+  navigation: { goBack: () => void; navigate: (screen: string, params?: Record<string, unknown>) => void; [key: string]: unknown };
   children?: React.ReactNode;
 };
 
 // ============================================
 // TEMPLATE CONTEXT
 // ============================================
-const EnhancedTemplateContext = React.createContext<any>(null);
+interface EnhancedTemplateContextType {
+  config: TravelInfoConfig;
+  formState: Record<string, unknown>;
+  updateFormState: (updates: Record<string, unknown>) => void;
+  updateField: (fieldName: string, value: unknown) => void;
+  toggleSection: (section: string) => void;
+  validation: Record<string, unknown>;
+  fundManagement: Record<string, unknown>;
+  photoManagement: Record<string, unknown>;
+  debouncedSave: () => void;
+  saveDataToUserDataService: () => Promise<void>;
+  handleContinue: () => Promise<void>;
+  handleGoBack: () => void;
+  userId: string | null;
+  destinationId: string | null;
+  passport: Record<string, unknown> | null;
+  locationData: Record<string, unknown>;
+  travelSectionConfig: Record<string, unknown>;
+  userInteractionTracker: Record<string, unknown>;
+  resolveSectionLabels: (sectionKey: string, sectionConfig: Record<string, unknown>, labelSource?: Record<string, unknown>) => Record<string, unknown>;
+  t: (key: string, options?: Record<string, unknown>) => string;
+  [key: string]: unknown;
+}
+
+const EnhancedTemplateContext = React.createContext<EnhancedTemplateContextType | null>(null);
 
 const useEnhancedTemplate = () => {
   const context = React.useContext(EnhancedTemplateContext);
@@ -89,18 +113,17 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
   // ✅ CRITICAL FIX: All hooks must be called BEFORE any conditional returns
   // This ensures hooks are always called in the same order (Rules of Hooks)
   const { t } = useLocale();
-  const {
-    passport: rawPassport,
-    destination,
-    userId: routeUserId,
-    entryInfo: routeEntryInfo,
-    travelInfo: routeTravelInfo,
-    personalInfo: routePersonalInfo,
-    user: routeUser,
-    userData: routeUserData,
-  } = route.params || {};
+  const routeParams = (route.params || {}) as Record<string, unknown>;
+  const rawPassport = routeParams.passport as Record<string, unknown> | undefined;
+  const destination = routeParams.destination as Record<string, unknown> | undefined;
+  const routeUserId = routeParams.userId as string | undefined;
+  const routeEntryInfo = routeParams.entryInfo as Record<string, unknown> | undefined;
+  const routeTravelInfo = routeParams.travelInfo as Record<string, unknown> | undefined;
+  const routePersonalInfo = routeParams.personalInfo as Record<string, unknown> | undefined;
+  const routeUser = routeParams.user as Record<string, unknown> | undefined;
+  const routeUserData = routeParams.userData as Record<string, unknown> | undefined;
 
-  const destinationId = useMemo(() => {
+  const destinationId = useMemo((): string | null => {
     if (config?.destinationId) {
       return config.destinationId;
     }
@@ -112,9 +135,9 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
     }
     if (typeof destination === 'object') {
       return (
-        destination.id ||
-        destination.destinationId ||
-        destination.code ||
+        (destination.id as string | undefined) ||
+        (destination.destinationId as string | undefined) ||
+        (destination.code as string | undefined) ||
         null
       );
     }
@@ -123,7 +146,7 @@ const EnhancedTravelInfoTemplate: React.FC<EnhancedTravelInfoTemplateProps> = ({
 
 // Helper function to resolve section labels using i18n
 const resolveSectionLabels = useCallback((sectionKey: string, sectionConfig: TravelInfoSectionConfig, labelSource: Record<string, unknown> = {}) => {
-  const resolvedLabels: Record<string, any> = { ...labelSource as Record<string, string> };
+  const resolvedLabels: Record<string, unknown> = { ...labelSource as Record<string, string> };
     const destId = config?.destinationId || destinationId || 'hongkong';
     
     // Resolve title using titleKey if available
@@ -365,14 +388,14 @@ const resolveSectionLabels = useCallback((sectionKey: string, sectionConfig: Tra
       // Resolve fund types
       const fundTypeKeys = ['cash', 'credit_card', 'bank_card', 'bank_balance', 'document', 'other'];
       if (!resolvedLabels.fundTypes) {
-        resolvedLabels.fundTypes = {};
+        resolvedLabels.fundTypes = {} as Record<string, unknown>;
       }
       
       fundTypeKeys.forEach(typeKey => {
         const translationKey = `${destId}.travelInfo.sections.funds.fundTypes.${typeKey}`;
         const translated: string | undefined = t(translationKey, { defaultValue: undefined });
         if (translated) {
-          resolvedLabels.fundTypes[typeKey] = translated;
+          (resolvedLabels.fundTypes as Record<string, unknown>)[typeKey] = translated;
         }
       });
     }
@@ -381,7 +404,7 @@ const resolveSectionLabels = useCallback((sectionKey: string, sectionConfig: Tra
   }, [t, config?.destinationId, destinationId]);
 
   // Memoize passport and userId
-  const passport = useMemo(() => UserDataService.toSerializablePassport(rawPassport), [rawPassport?.id, rawPassport?.passportNo]);
+  const passport = useMemo(() => UserDataService.toSerializablePassport(rawPassport as Parameters<typeof UserDataService.toSerializablePassport>[0]), [rawPassport?.id, rawPassport?.passportNo]);
 
   const userId = useMemo(() => {
     const candidateIds = [
@@ -497,10 +520,13 @@ interface FormState {
   entryInfoInitialized: boolean;
   lastEntryInfoUpdate: string | null;
   fundItemModalVisible: boolean;
-  currentFundItem: any;
+  currentFundItem: unknown;
   newFundItemType: string | null;
   scrollPosition: number;
-  [key: string]: any; // for dynamic form fields from config
+  setErrors?: (prev: unknown) => void;
+  setWarnings?: (prev: unknown) => void;
+  setLastEditedAt?: (date: Date) => void;
+  [key: string]: unknown; // for dynamic form fields from config
 }
 
   const [formState, setFormState] = useState<FormState>({
@@ -663,7 +689,7 @@ initialState.visaNumber = passport.visaNumber;
    // ============================================
    // ENTRY INFO MANAGEMENT
    // ============================================
-   const ensureEntryInfoRecord = useCallback(async (overrides: Record<string, any> = {}) => {
+   const ensureEntryInfoRecord = useCallback(async (overrides: Record<string, unknown> = {}) => {
     if (!destinationId) {
       LoggingService.warn('Template', 'Entry info sync skipped: destinationId is missing');
       return null;
@@ -691,25 +717,25 @@ initialState.visaNumber = passport.visaNumber;
          hasTravelOverride ? Promise.resolve(overrides['travelInfo']) : UserDataService.getTravelInfo(userId, destinationId),
        ]);
 
-       const normalizeRecord = (record: any) => {
-         if (!record) {
-           return record;
-         }
+       const normalizeRecord = (record: unknown): Record<string, unknown> | null => {
+          if (!record) {
+            return record as Record<string, unknown> | null;
+          }
 
-         if (typeof record.toJSON === 'function') {
-           try {
-             return record.toJSON();
-           } catch (jsonError) {
-             LoggingService.warn('Template', 'Failed to normalize record via toJSON', { error: jsonError });
-           }
-         }
+          if (typeof (record as Record<string, unknown>).toJSON === 'function') {
+            try {
+              return (record as Record<string, unknown>).toJSON() as Record<string, unknown>;
+            } catch (jsonError) {
+              LoggingService.warn('Template', 'Failed to normalize record via toJSON', { error: jsonError });
+            }
+          }
 
-         if (typeof record === 'object') {
-           return { ...record };
-         }
+          if (typeof record === 'object') {
+            return { ...(record as Record<string, unknown>) };
+          }
 
-         return record;
-       };
+          return record as Record<string, unknown>;
+        };
 
       const passportData = normalizeRecord(passportRaw) || {};
       const personalInfoData = normalizeRecord(personalInfoRaw) || {};
@@ -719,14 +745,15 @@ initialState.visaNumber = passport.visaNumber;
         : [];
 
       // Filter entries for this destination
-      const destinationEntries = (entryInfos || []).filter((info) => info.destinationId === destinationId);
+      const typedEntryInfos = (entryInfos || []) as Record<string, unknown>[];
+      const destinationEntries = typedEntryInfos.filter((info) => info.destinationId === destinationId);
       LoggingService.debug('Template', `Found ${destinationEntries.length} entry(ies) for destination ${destinationId}`, {
         entryCount: destinationEntries.length,
         destinationId,
         entries: destinationEntries.map(e => ({ id: e.id, created_at: e.createdAt, last_updated_at: e.lastUpdatedAt }))
       });
 
-      let entryInfo = null;
+      let entryInfo: Record<string, unknown> | null = null;
       
       // Strategy 1: Use entryInfoId from formState if it exists and matches an entry
       if (formState.entryInfoId) {
@@ -755,14 +782,14 @@ initialState.visaNumber = passport.visaNumber;
       }
       
       const timestamp = new Date().toISOString();
-      const fundIds = fundsData.map((item) => item.id).filter(Boolean);
+      const fundIds = (fundsData as Record<string, unknown>[]).map((item) => item.id).filter(Boolean);
 
       if (!entryInfo) {
         const entryInfoPayload = {
           userId,
-          passportId: passportRaw?.id || null,
-          personalInfoId: personalInfoRaw?.id || null,
-          travelInfoId: travelRaw?.id || null,
+          passportId: (passportRaw as Record<string, unknown> | null)?.id as string | null || null,
+          personalInfoId: (personalInfoRaw as Record<string, unknown> | null)?.id as string | null || null,
+          travelInfoId: (travelRaw as Record<string, unknown> | null)?.id as string | null || null,
           destinationId,
           status: 'incomplete',
           fundItemIds: fundIds,
@@ -790,14 +817,17 @@ initialState.visaNumber = passport.visaNumber;
           entryInfo.userId = userId;
         }
 
-        if (passportRaw?.id && entryInfo.passportId !== passportRaw.id) {
-          entryInfo.passportId = passportRaw.id;
+        const pRaw = passportRaw as Record<string, unknown> | null;
+        const piRaw = personalInfoRaw as Record<string, unknown> | null;
+        const tRaw = travelRaw as Record<string, unknown> | null;
+        if (pRaw?.id && entryInfo.passportId !== pRaw.id) {
+          entryInfo.passportId = pRaw.id as string;
         }
-        if (personalInfoRaw?.id && entryInfo.personalInfoId !== personalInfoRaw.id) {
-          entryInfo.personalInfoId = personalInfoRaw.id;
+        if (piRaw?.id && entryInfo.personalInfoId !== piRaw.id) {
+          entryInfo.personalInfoId = piRaw.id as string;
         }
-        if (travelRaw?.id && entryInfo.travelInfoId !== travelRaw.id) {
-          entryInfo.travelInfoId = travelRaw.id;
+        if (tRaw?.id && entryInfo.travelInfoId !== tRaw.id) {
+          entryInfo.travelInfoId = tRaw.id as string;
         }
         entryInfo.destinationId = destinationId;
       }
@@ -1028,7 +1058,7 @@ initialState.visaNumber = passport.visaNumber;
       let savedTravelInfo = null;
 
       // Get always-save fields from config
-      const alwaysSaveFields = TemplateFieldStateManager.getAlwaysSaveFieldsFromConfig(config as unknown as TemplateConfig);
+      const alwaysSaveFields: string[] = (config.features?.autoSave as Record<string, unknown> | undefined)?.immediateSaveFields as string[] | undefined || [];
 
       // Filter options
       const filterOptions = {
@@ -1211,11 +1241,25 @@ initialState.visaNumber = passport.visaNumber;
   }, [saveDataToUserDataService, config.features, updateFormState]);
 
   // ============================================
+  // FIELD UPDATE HANDLERS (must be declared before hooks that use it)
+  // ============================================
+  const updateField = useCallback((fieldName: string, value: unknown) => {
+    updateFormState({ [fieldName]: value });
+
+    // Mark as user-modified
+    if (userInteractionTracker.isInitialized) {
+      userInteractionTracker.markFieldAsModified(fieldName, value);
+    }
+
+    debouncedSave();
+  }, [userInteractionTracker, debouncedSave, updateFormState]);
+
+  // ============================================
   // HOOK: VALIDATION
   // ============================================
   const validation = useTemplateValidation({
-    config,
-    formState: { ...formState, setErrors: (fn: unknown) => updateFormState({ errors: typeof fn === 'function' ? fn(formState.errors) : fn }), setWarnings: (fn: unknown) => updateFormState({ warnings: typeof fn === 'function' ? fn(formState.warnings) : fn }), setLastEditedAt: (val: string) => updateFormState({ lastEditedAt: val }) },
+    config: config as unknown as Record<string, unknown>,
+    formState: { ...formState, setErrors: (fn: unknown) => updateFormState({ errors: typeof fn === 'function' ? (fn as (prev: Record<string, string>) => Record<string, string>)(formState.errors) : fn as Record<string, string> }), setWarnings: (fn: unknown) => updateFormState({ warnings: typeof fn === 'function' ? (fn as (prev: Record<string, string>) => Record<string, string>)(formState.warnings) : fn as Record<string, string> }), setLastEditedAt: (date: Date) => updateFormState({ lastEditedAt: date.toISOString() }) },
     userInteractionTracker,
     saveDataToUserDataService,
     debouncedSave,
@@ -1244,20 +1288,6 @@ initialState.visaNumber = passport.visaNumber;
     debouncedSave,
     t,
   });
-
-  // ============================================
-  // FIELD UPDATE HANDLERS
-  // ============================================
-  const updateField = useCallback((fieldName: string, value: string) => {
-    updateFormState({ [fieldName]: value });
-
-    // Mark as user-modified
-    if (userInteractionTracker.isInitialized) {
-      userInteractionTracker.markFieldAsModified(fieldName, value);
-    }
-
-    debouncedSave();
-  }, [userInteractionTracker, debouncedSave, updateFormState]);
 
   // ============================================
   // LOCATION CASCADE HANDLERS

@@ -13,9 +13,12 @@ import BackButton from '../components/BackButton';
 import UserDataService from '../services/data/UserDataService';
 import { useLocale } from '../i18n/LocaleContext';
 
-const PresentToCustomsScreen = ({ navigation, route }) => {
+const PresentToCustomsScreen = ({ navigation, route }: { navigation: { goBack: () => void }; route: { params?: Record<string, unknown> } }) => {
   const { t, language } = useLocale();
-  const { passport: rawPassport, destination, travelInfo } = route.params || {};
+  const rawParams = (route.params || {}) as Record<string, unknown>;
+  const rawPassport = rawParams.passport;
+  const destination = rawParams.destination as Record<string, unknown> | undefined;
+  const travelInfo = rawParams.travelInfo as Record<string, unknown> | undefined;
   const passport = UserDataService.toSerializablePassport(rawPassport);
   
   const destLang = language;
@@ -47,8 +50,8 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
   };
 
   // 获取目的地国家的名称（根据目的地语言）
-  const getDestinationName = (destId) => {
-    const nameMap = {
+  const getDestinationName = (destId: string | undefined) => {
+    const nameMap: Record<string, Record<string, string>> = {
       'hk': { 'zh-CN': '香港', 'zh-TW': '香港', 'en': 'Hong Kong' },
       'tw': { 'zh-CN': '台湾', 'zh-TW': '台灣', 'en': 'Taiwan' },
       'th': { 'zh-CN': '泰国', 'en': 'Thailand' },
@@ -70,15 +73,15 @@ const PresentToCustomsScreen = ({ navigation, route }) => {
   };
 
   // 将中文旅行目的转换为英文key
-  const convertPurposeToKey = (chinesePurpose) => {
-    const purposeMap = {
+  const convertPurposeToKey = (chinesePurpose: string | undefined) => {
+    const purposeMap: Record<string, string> = {
       '旅游': 'tourism',
       '商务': 'business',
       '探亲': 'visiting',
       '学习': 'study',
       '工作': 'work',
     };
-    return purposeMap[chinesePurpose] || 'tourism';
+    return (chinesePurpose ? purposeMap[chinesePurpose] : undefined) || 'tourism';
   };
 
   const formData = [

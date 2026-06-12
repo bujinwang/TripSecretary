@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native';
 import logger from '../../services/LoggingService';
+import { compressDocumentPhoto } from '../../utils/imageCompression';
 import { useLocale } from '../../i18n/LocaleContext';
 
 interface PhotoManagementParams {
@@ -72,7 +73,11 @@ export const useTemplatePhotoManagement = ({
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const photoUri = result.assets[0].uri;
+        let photoUri = result.assets[0].uri;
+        try {
+          const compressed = await compressDocumentPhoto(photoUri);
+          photoUri = compressed.uri;
+        } catch (e) { /* use original if compression fails */ }
         const { success } = await savePhoto('flightTicket', photoUri);
 
         if (success) {
@@ -106,7 +111,11 @@ export const useTemplatePhotoManagement = ({
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const photoUri = result.assets[0].uri;
+        let photoUri = result.assets[0].uri;
+        try {
+          const compressed = await compressDocumentPhoto(photoUri);
+          photoUri = compressed.uri;
+        } catch (e) { /* use original if compression fails */ }
         const { success } = await savePhoto('departureTicket', photoUri);
 
         if (success) {
@@ -140,7 +149,11 @@ export const useTemplatePhotoManagement = ({
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const photoUri = result.assets[0].uri;
+        let photoUri = result.assets[0].uri;
+        try {
+          const compressed = await compressDocumentPhoto(photoUri);
+          photoUri = compressed.uri;
+        } catch (e) { /* use original if compression fails */ }
         const { success } = await savePhoto('hotelReservation', photoUri);
 
         if (success) {

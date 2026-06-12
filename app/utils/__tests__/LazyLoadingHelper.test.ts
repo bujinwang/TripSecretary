@@ -52,10 +52,10 @@ describe('LazyLoadingHelper', () => {
       const props = helper.getOptimizedFlatListProps({ itemHeight: 100 });
       const {getItemLayout} = props;
       
-      const layout0 = getItemLayout([], 0);
+      const layout0 = getItemLayout!([], 0);
       expect(layout0).toEqual({ length: 100, offset: 0, index: 0 });
       
-      const layout2 = getItemLayout([], 2);
+      const layout2 = getItemLayout!([], 2);
       expect(layout2).toEqual({ length: 100, offset: 200, index: 2 });
     });
 
@@ -90,7 +90,7 @@ describe('LazyLoadingHelper', () => {
       const mockLoadFunction = jest.fn().mockResolvedValue(mockData);
       const loader = helper.createPaginatedLoader(mockLoadFunction, { pageSize: 2 });
       
-      const result = await loader.loadNextPage();
+      const result = await loader.loadNext();
       
       expect(result).toEqual(mockData);
       expect(mockLoadFunction).toHaveBeenCalledWith({
@@ -110,7 +110,7 @@ describe('LazyLoadingHelper', () => {
       const mockLoadFunction = jest.fn().mockResolvedValue(mockData);
       const loader = helper.createPaginatedLoader(mockLoadFunction, { pageSize: 2 });
       
-      await loader.loadNextPage();
+      await loader.loadNext();
       
       const state = loader.getState();
       expect(state.hasMore).toBe(false);
@@ -122,12 +122,12 @@ describe('LazyLoadingHelper', () => {
       const loader = helper.createPaginatedLoader(mockLoadFunction);
       
       // Load page first time
-      await loader.loadNextPage();
+      await loader.loadNext();
       expect(mockLoadFunction).toHaveBeenCalledTimes(1);
       
       // Reset and load same page again
       loader.reset();
-      await loader.loadNextPage();
+      await loader.loadNext();
       expect(mockLoadFunction).toHaveBeenCalledTimes(2); // Should call again after reset
     });
 
@@ -140,7 +140,7 @@ describe('LazyLoadingHelper', () => {
         preloadThreshold: 5 
       });
       
-      await loader.loadNextPage();
+      await loader.loadNext();
       
       expect(loader.shouldLoadMore(10)).toBe(false); // 10 remaining items > threshold
       expect(loader.shouldLoadMore(16)).toBe(true);  // 4 remaining items <= threshold
@@ -150,7 +150,7 @@ describe('LazyLoadingHelper', () => {
       const mockLoadFunction = jest.fn().mockResolvedValue([{ id: 1 }]);
       const loader = helper.createPaginatedLoader(mockLoadFunction);
       
-      await loader.loadNextPage();
+      await loader.loadNext();
       loader.reset();
       
       const state = loader.getState();
@@ -264,7 +264,7 @@ describe('LazyLoadingHelper', () => {
       const stats = chunker.getStats();
       expect(stats.totalChunks).toBe(4);
       expect(stats.totalChunks).toBe(4);
-      expect(stats.currentChunkIndex).toBe(0);
+      expect(stats.currentChunk).toBe(0);
       expect(stats.loadedChunks).toBe(0);
     });
 
@@ -293,7 +293,7 @@ describe('LazyLoadingHelper', () => {
       expect(nextChunk[0].id).toBe(3);
       
       const stats = chunker.getStats();
-      expect(stats.currentChunkIndex).toBe(1);
+      expect(stats.currentChunk).toBe(1);
     });
 
     it('should get all loaded data', () => {

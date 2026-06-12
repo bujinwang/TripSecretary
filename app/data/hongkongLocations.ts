@@ -32,7 +32,7 @@ export const hongkongRegions = [
 ];
 
 // Hong Kong Districts (18 districts organized by region)
-const hongkongDistricts = {
+export const hongkongDistricts: Record<string, Array<{ id: number; nameEn: string; nameZh: string; postalCode: string }>> = {
   "HONG_KONG_ISLAND": [
     {
       "id": 1,
@@ -215,6 +215,18 @@ export function getDistrictDisplayName(districtId: number | string) {
   return '';
 }
 
+/**
+ * Get all districts as a flat array
+ * @returns {Array} - All 18 districts flattened from all regions
+ */
+export function getAllDistricts(): Array<{ id: number; nameEn: string; nameZh: string; postalCode: string }> {
+  const all: Array<{ id: number; nameEn: string; nameZh: string; postalCode: string }> = [];
+  for (const regionKey in hongkongDistricts) {
+    all.push(...hongkongDistricts[regionKey]);
+  }
+  return all;
+}
+
 export default {
   hongkongRegions,
   hongkongDistricts,
@@ -223,4 +235,5 @@ export default {
   getSubDistrictsByDistrictId,
   getRegionDisplayName,
   getDistrictDisplayName,
+  getAllDistricts,
 };

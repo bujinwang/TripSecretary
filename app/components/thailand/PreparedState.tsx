@@ -36,6 +36,14 @@ import { colors, typography, spacing, shadows } from '../../theme';
  * @param {Function} props.renderPrimaryAction - Function to render primary action button
  * @param {string} props.entryPackStatus - Status of entry pack: 'submitted', 'in_progress', null
  */
+type PrimaryActionStateObj = {
+  title: string;
+  action: string;
+  disabled: boolean;
+  variant: string;
+  subtitle?: string;
+};
+
 const PreparedState = ({
   completionPercent,
   completionStatus,
@@ -55,7 +63,7 @@ const PreparedState = ({
   completionPercent: number;
   completionStatus: string;
   arrivalDate: string;
-  t: (key: string) => string;
+  t: (key: string, options?: { defaultValue?: string }) => string;
   passportParam: Record<string, unknown>;
   destination: Record<string, unknown>;
   userData: Record<string, unknown>;
@@ -64,8 +72,8 @@ const PreparedState = ({
   navigation: { navigate: (screen: string, params?: Record<string, unknown>) => void };
   renderPrimaryAction: () => React.ReactNode;
   entryPackStatus: string;
-  primaryActionState: string;
-  onPrimaryAction: () => void;
+  primaryActionState: PrimaryActionStateObj | null;
+  onPrimaryAction: (state: PrimaryActionStateObj) => void;
 }) => {
   const fallbackRenderPrimaryAction = () => {
     if (!primaryActionState && typeof onPrimaryAction !== 'function') {
@@ -94,7 +102,7 @@ const PreparedState = ({
         <Button
           title={state.title}
           onPress={handlePress}
-          variant={state.variant || 'primary'}
+          variant={(state.variant || 'primary') as React.ComponentProps<typeof Button>['variant']}
           disabled={state.disabled}
           style={styles.primaryActionButton}
         />

@@ -290,8 +290,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
   // instead of useEffect hooks to avoid unnecessary saves on every render
 
   const personalFields = useMemo<PersonalFieldConfig[]>(() => {
-    const destinationConfig = destination ? destinationRequirements[destination] : {};
-    const requiresContactInfo = destinationConfig.requiresContactInfo !== false; // Default to true if not specified
+    const destinationConfig = destination ? destinationRequirements[destination] : null;
+    const requiresContactInfo = destinationConfig?.requiresContactInfo !== false; // Default to true if not specified
 
     const fields: PersonalFieldConfig[] = [
       {
@@ -448,9 +448,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
   }, [personalFields, personalInfo]);
 
   const passportFieldsCount = useMemo(() => {
-    const passportFields = ['name', 'passportNo', 'nationality', 'expiry'];
+    const passportFields = ['name', 'passportNo', 'nationality', 'expiry'] as const;
     const filled = passportFields.filter(field => {
-      const value = passportData[field];
+      const value = passportData[field as keyof PassportForm];
       return value && value.toString().trim() !== '';
     }).length;
     return { filled, total: passportFields.length };
@@ -557,7 +557,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
       };
 
       // Export as JSON
-      const result = await DataExportService.exportAsJSON(mockEntryPackData, {
+      const result = await DataExportService.exportAsJSON(mockEntryPackData as unknown as Parameters<typeof DataExportService.exportAsJSON>[0], {
         includeMetadata: true,
         includeSubmissionHistory: false,
         includePhotos: true
@@ -577,7 +577,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
             },
             {
               text: t('profile.export.share', { defaultValue: 'Share' }),
-              onPress: () => shareExportedFile(result.sharingOptions)
+              onPress: () => shareExportedFile(result.sharingOptions as unknown as { available: boolean; share: (options: { title: string; message: string }) => Promise<void> })
             }
           ]
         );
@@ -593,7 +593,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
     }
   };
 
-  const shareExportedFile = async (sharingOptions) => {
+  const shareExportedFile = async (sharingOptions: { available: boolean; share: (options: { title: string; message: string }) => Promise<void> }) => {
     try {
       if (!sharingOptions.available) {
         Alert.alert(
@@ -1447,7 +1447,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
                         INVESTMENT: { icon: '📈' },
                       };
                       const defaultIcon = '💰';
-                      const typeIcon = (typeMeta[typeKey] || {}).icon || defaultIcon;
+                      const typeIcon = (typeMeta[typeKey as keyof typeof typeMeta] || {}).icon || defaultIcon;
 
                       const defaultTypeLabels = {
                         CASH: 'Cash',
@@ -1459,7 +1459,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
                         OTHER: 'Funding',
                       };
                       const typeLabel = t(`fundItem.types.${typeKey}`, {
-                        defaultValue: defaultTypeLabels[typeKey] || defaultTypeLabels.OTHER,
+                        defaultValue: defaultTypeLabels[typeKey as keyof typeof defaultTypeLabels] || defaultTypeLabels.OTHER,
                       });
 
                       const notProvidedLabel = t('fundItem.detail.notProvided', {
@@ -1469,7 +1469,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
                       const descriptionValue = item.description || item.details || '';
                       const currencyValue = item.currency ? item.currency.toUpperCase() : '';
 
-                      const normalizeAmount = (value) => {
+                      const normalizeAmount = (value: unknown) => {
                         if (value === null || value === undefined || value === '') {
                           return '';
                         }
@@ -1824,7 +1824,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
                       const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector')
                         ? personalFields
                         : fundingFields;
-                      return editingContext.fieldIndex < fields.length - 1 ? 'next' : 'done';
+                      return (editingContext.fieldIndex ?? 0) < fields.length - 1 ? 'next' : 'done';
                     })()}
                     onSubmitEditing={() => {
                       // Validate before navigating
@@ -1839,7 +1839,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
                       const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector')
                         ? personalFields
                         : fundingFields;
-                      if (editingContext.fieldIndex < fields.length - 1) {
+                      if ((editingContext.fieldIndex ?? 0) < fields.length - 1) {
                         handleNavigateField('next');
                       } else {
                         handleCancelEdit();
@@ -1869,23 +1869,23 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
                   textAlignVertical={editingContext?.multiline ? 'top' : 'center'}
                   keyboardType={editingContext?.keyboardType || 'default'}
                   autoFocus
-                  returnKeyType={(() => {
-                    if (!editingContext || editingContext?.multiline) {
-                      return 'default';
-                    }
-                    const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector')
-                      ? personalFields
-                      : fundingFields;
-                    return editingContext.fieldIndex < fields.length - 1 ? 'next' : 'done';
-                  })()}
-                  onSubmitEditing={() => {
-                    if (!editingContext || editingContext?.multiline) {
-                      return;
-                    }
-                    const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector')
-                      ? personalFields
-                      : fundingFields;
-                    if (editingContext.fieldIndex < fields.length - 1) {
+                    returnKeyType={(() => {
+                      if (!editingContext || editingContext?.multiline) {
+                        return 'default';
+                      }
+                      const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector')
+                        ? personalFields
+                        : fundingFields;
+                      return (editingContext.fieldIndex ?? 0) < fields.length - 1 ? 'next' : 'done';
+                    })()}
+                    onSubmitEditing={() => {
+                      if (!editingContext || editingContext?.multiline) {
+                        return;
+                      }
+                      const fields = (editingContext.type === 'personal' || editingContext.type === 'nationality-selector')
+                        ? personalFields
+                        : fundingFields;
+                      if ((editingContext.fieldIndex ?? 0) < fields.length - 1) {
                       handleNavigateField('next');
                     } else {
                       handleCancelEdit();
@@ -1967,7 +1967,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = (props) => {
           onClose={handleFundItemModalClose}
           onUpdate={handleFundItemUpdate}
           onCreate={handleFundItemCreate}
-          onDelete={handleFundItemDelete}
+          onDelete={handleFundItemDelete as unknown as (item: Record<string, unknown>) => void}
           onManageAll={handleManageFundItems}
         />
       )}

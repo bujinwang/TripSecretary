@@ -3,7 +3,7 @@
  * Extends EntryData with completion tracking, status management, and progressive filling support
  */
 
-import EntryData from './EntryData';
+import EntryData, { EntryDataParams } from './EntryData';
 import SecureStorageService from '../services/security/SecureStorageService';
 import entryCompletionCalculator from '../utils/EntryCompletionCalculator';
 
@@ -143,12 +143,7 @@ class EntryInfo extends EntryData {
   // Base class properties (from EntryData)
   id: string = '';
   userId: string = '';
-  passportId?: string;
-  personalInfoId?: string;
   fundingProof: Record<string, unknown> = {};
-  immigrationNotes?: string;
-  specialRequirements?: string;
-  submissionDate?: string;
   generatedAt: string = new Date().toISOString();
   lastModified: string = new Date().toISOString();
   
@@ -172,17 +167,17 @@ class EntryInfo extends EntryData {
   travel?: Record<string, unknown>;
 
   private static readonly completionCalculator: EntryCompletionCalculator =
-    entryCompletionCalculator as EntryCompletionCalculator;
+    entryCompletionCalculator as unknown as EntryCompletionCalculator;
 
   constructor(data: EntryInfoInit = {}) {
-    super(data);
+    super(data as EntryDataParams);
 
     const resolvedIdCandidates = [
       typeof data.id === 'string' ? data.id.trim() : null,
-      typeof (data as any).entryInfoId === 'string' ? (data as any).entryInfoId.trim() : null,
-      typeof (data as any).entry_info_id === 'string' ? (data as any).entry_info_id.trim() : null,
-      typeof (data as any).entryId === 'string' ? (data as any).entryId.trim() : null,
-    ].filter((value) => value && value.length > 0) as string[];
+      typeof data.entryInfoId === 'string' ? (data.entryInfoId as string).trim() : null,
+      typeof data.entry_info_id === 'string' ? (data.entry_info_id as string).trim() : null,
+      typeof data.entryId === 'string' ? (data.entryId as string).trim() : null,
+    ].filter((value): value is string => typeof value === 'string' && value.length > 0);
 
     if (resolvedIdCandidates.length > 0) {
       this.id = resolvedIdCandidates[0];
@@ -191,9 +186,9 @@ class EntryInfo extends EntryData {
     }
 
     const resolvedUserIdCandidates = [
-      typeof (data as any).userId === 'string' ? (data as any).userId.trim() : null,
-      typeof (data as any).user_id === 'string' ? (data as any).user_id.trim() : null,
-    ].filter((value) => value && value.length > 0) as string[];
+      typeof data.userId === 'string' ? data.userId.trim() : null,
+      typeof data.user_id === 'string' ? (data.user_id as string).trim() : null,
+    ].filter((value): value is string => typeof value === 'string' && value.length > 0);
 
     if (resolvedUserIdCandidates.length > 0) {
       this.userId = resolvedUserIdCandidates[0];

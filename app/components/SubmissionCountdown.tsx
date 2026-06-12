@@ -7,9 +7,18 @@ import {
 } from 'react-native';
 import { colors, typography, spacing } from '../theme';
 import ArrivalWindowCalculator from '../utils/thailand/ArrivalWindowCalculator';
-import CountdownFormatter from '../utils/CountdownFormatter';
+import CountdownFormatter, { CountdownResult } from '../utils/CountdownFormatter';
 import DateFormatter from '../utils/DateFormatter';
 import { useLocale } from '../i18n/LocaleContext';
+
+interface SubmissionCountdownProps {
+  arrivalDate: string | Date;
+  locale?: string;
+  showIcon?: boolean;
+  updateInterval?: number;
+  variant?: 'default' | 'compact';
+  showArrivalDate?: boolean;
+}
 
 const SubmissionCountdown = ({
    arrivalDate,
@@ -18,9 +27,9 @@ const SubmissionCountdown = ({
    updateInterval = 1000, // Update every second for real-time countdown
    variant = 'default',
    showArrivalDate = true,
- }) => {
+  }: SubmissionCountdownProps) => {
   const [windowInfo, setWindowInfo] = useState<Record<string, unknown> | null>(null);
-  const [timeRemaining, setTimeRemaining] = useState<string | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState<CountdownResult | null>(null);
   const isCompact = variant === 'compact';
 
   const { language } = useLocale();
@@ -125,31 +134,31 @@ const SubmissionCountdown = ({
   return (
     <View style={[
       styles.container,
-      isCompact && styles.compactContainer,
+      isCompact ? styles.compactContainer : undefined,
       { 
       backgroundColor: colorScheme.background,
       borderColor: colorScheme.border 
     }]}>
       {/* Status Icon */}
       {showIcon && (
-        <View style={[styles.iconContainer, isCompact && styles.iconContainerCompact]}>
-          <Text style={[styles.statusIcon, isCompact && styles.statusIconCompact]}>{windowInfo.icon}</Text>
+        <View style={[styles.iconContainer, isCompact ? styles.iconContainerCompact : undefined]}>
+          <Text style={[styles.statusIcon, isCompact ? styles.statusIconCompact : undefined]}>{windowInfo.icon as string}</Text>
         </View>
       )}
 
       {/* Main Message */}
-      <View style={[styles.messageContainer, isCompact && styles.messageContainerCompact]}>
+      <View style={[styles.messageContainer, isCompact ? styles.messageContainerCompact : undefined]}>
         <Text style={[
           styles.statusMessage,
-          isCompact && styles.statusMessageCompact,
+          isCompact ? styles.statusMessageCompact : undefined,
           { color: colorScheme.text }
         ]}>
-          {windowInfo.message}
+          {windowInfo.message as string}
         </Text>
       </View>
 
       {/* Countdown Display */}
-      {windowInfo.showCountdown && timeRemaining && (
+      {!!windowInfo.showCountdown && timeRemaining && (
         <View style={[styles.countdownContainer, isCompact && styles.countdownContainerCompact]}>
           <Text style={[
             styles.countdownLabel,
@@ -210,7 +219,7 @@ const SubmissionCountdown = ({
       )}
 
       {/* Submission Window Info */}
-      {windowInfo.state === 'pre-window' && windowInfo.submissionOpensAt && (
+      {windowInfo.state === 'pre-window' && !!windowInfo.submissionOpensAt && (
         <View style={[styles.windowInfoContainer, isCompact && styles.windowInfoContainerCompact]}>
           <Text style={[
             styles.windowInfoLabel,
@@ -223,7 +232,7 @@ const SubmissionCountdown = ({
             isCompact && styles.windowInfoTimeCompact
           ]}>
             {DateFormatter.formatDateTime(
-              windowInfo.submissionOpensAt,
+              windowInfo.submissionOpensAt as string | Date,
               localeToUse
             )}
           </Text>
@@ -383,7 +392,7 @@ const styles = StyleSheet.create({
   },
   windowInfoTimeCompact: {
     ...typography.body2,
-    fontSize: typography.body2.fontSize - 1,
+    fontSize: (typography.body2.fontSize ?? 14) - 1,
   },
 });
 

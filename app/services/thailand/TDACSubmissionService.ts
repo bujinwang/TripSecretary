@@ -93,7 +93,12 @@ interface ErrorResult {
   userMessage: string;
   technicalMessage: string;
   recoverable: boolean;
-  suggestions?: string[];
+  shouldRetry: boolean;
+  retryDelay: number;
+  attemptNumber: number;
+  maxRetries: number;
+  suggestions: string[];
+  timestamp: string;
 }
 
 class TDACSubmissionService {
@@ -191,7 +196,7 @@ class TDACSubmissionService {
     } catch (error) {
       console.error('❌ Failed to handle TDAC submission success:', error);
 
-      const errorResult = await TDACErrorHandler.handleSubmissionError(error, {
+      const errorResult = await TDACErrorHandler.handleSubmissionError(error as Error, {
         operation: 'digital_arrival_card_creation',
         submissionMethod: submissionData.submissionMethod,
         arrCardNo: submissionData.arrCardNo,
@@ -302,11 +307,11 @@ class TDACSubmissionService {
 
       if (snapshot) {
         console.log('✅ Entry info snapshot created successfully:', {
-          snapshotId: (snapshot as Record<string, unknown>).snapshotId,
+          snapshotId: (snapshot as unknown as Record<string, unknown>).snapshotId,
           entryInfoId,
           reason,
-          photoCount: (snapshot as Record<string, unknown>).getPhotoCount ? (snapshot as Record<string, { getPhotoCount: () => number }>).getPhotoCount() : 0,
-          createdAt: (snapshot as Record<string, unknown>).createdAt
+          photoCount: (snapshot as unknown as Record<string, unknown>).getPhotoCount ? (snapshot as unknown as { getPhotoCount: () => number }).getPhotoCount() : 0,
+          createdAt: (snapshot as unknown as Record<string, unknown>).createdAt
         });
 
         return snapshot;
@@ -347,17 +352,17 @@ class TDACSubmissionService {
       let entryInfo = await UserDataService.getEntryInfo(userId, destinationId);
 
       if (entryInfo) {
-        if ((entryInfo as Record<string, unknown>).status === 'submitted') {
+        if ((entryInfo as unknown as Record<string, unknown>).status === 'submitted') {
           console.log('⚠️ Existing entry info is already submitted, creating new record for resubmission');
         } else {
-          console.log('✅ Found existing entry info:', (entryInfo as Record<string, unknown>).id);
-          return (entryInfo as Record<string, unknown>).id as string;
+          console.log('✅ Found existing entry info:', (entryInfo as unknown as Record<string, unknown>).id);
+          return (entryInfo as unknown as Record<string, unknown>).id as string;
         }
       } else {
         const legacyEntryInfo = await UserDataService.getEntryInfo(userId, 'thailand');
-        if (legacyEntryInfo && (legacyEntryInfo as Record<string, unknown>).status !== 'submitted') {
-          console.log('🔁 Reusing legacy Thailand entry info:', (legacyEntryInfo as Record<string, unknown>).id);
-          return (legacyEntryInfo as Record<string, unknown>).id as string;
+        if (legacyEntryInfo && (legacyEntryInfo as unknown as Record<string, unknown>).status !== 'submitted') {
+          console.log('🔁 Reusing legacy Thailand entry info:', (legacyEntryInfo as unknown as Record<string, unknown>).id);
+          return (legacyEntryInfo as unknown as Record<string, unknown>).id as string;
         }
       }
 
@@ -370,7 +375,7 @@ class TDACSubmissionService {
 
       const entryInfoData = {
         destinationId,
-        passportId: (passport as Record<string, unknown>).id,
+        passportId: (passport as unknown as Record<string, unknown>).id,
         status: 'incomplete',
         completionMetrics: {
           passport: { complete: 0, total: 5, state: 'missing' },
@@ -382,9 +387,9 @@ class TDACSubmissionService {
       };
 
       entryInfo = await UserDataService.saveEntryInfo(entryInfoData, userId);
-      console.log('✅ Created new entry info:', (entryInfo as Record<string, unknown>).id);
+      console.log('✅ Created new entry info:', (entryInfo as unknown as Record<string, unknown>).id);
 
-      return (entryInfo as Record<string, unknown>).id as string;
+      return (entryInfo as unknown as Record<string, unknown>).id as string;
     } catch (error) {
       console.error('❌ Failed to find/create entry info ID:', error);
       return null;
@@ -411,11 +416,11 @@ class TDACSubmissionService {
       );
 
       console.log('✅ EntryInfo status updated successfully:', {
-        entryInfoId: (updatedEntryInfo as Record<string, unknown>).id,
+        entryInfoId: (updatedEntryInfo as unknown as Record<string, unknown>).id,
         oldStatus: 'ready',
-        newStatus: (updatedEntryInfo as Record<string, unknown>).status,
-        submissionDate: (updatedEntryInfo as Record<string, unknown>).submissionDate,
-        lastUpdatedAt: (updatedEntryInfo as Record<string, unknown>).lastUpdatedAt
+        newStatus: (updatedEntryInfo as unknown as Record<string, unknown>).status,
+        submissionDate: (updatedEntryInfo as unknown as Record<string, unknown>).submissionDate,
+        lastUpdatedAt: (updatedEntryInfo as unknown as Record<string, unknown>).lastUpdatedAt
       });
 
       console.log('📢 State change event triggered for notification system');

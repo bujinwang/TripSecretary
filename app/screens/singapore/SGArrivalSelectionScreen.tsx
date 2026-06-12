@@ -18,7 +18,7 @@ type SGArrivalSelectionProps = RootStackScreenProps<'SGArrivalSelection'>;
 
 const SGArrivalSelectionScreen: React.FC<SGArrivalSelectionProps> = ({ navigation, route }) => {
   const { passport: rawPassport, destination = null, travelInfo = null } = route.params ?? {};
-  const passport = UserDataService.toSerializablePassport(rawPassport) as SerializablePassport | null;
+  const passport = UserDataService.toSerializablePassport(rawPassport ?? null) as SerializablePassport | null;
   const { t } = useLocale();
 
   const goToGuide = () => {
@@ -51,15 +51,15 @@ const SGArrivalSelectionScreen: React.FC<SGArrivalSelectionProps> = ({ navigatio
         <Text style={styles.cardTitle}>{t('singapore.selection.smartFlow.title')}</Text>
         <Text style={styles.cardSubtitle}>{t('singapore.selection.smartFlow.subtitle')}</Text>
         <View style={styles.statsRow}>
-          {(t('singapore.selection.smartFlow.highlights', { returnObjects: true, defaultValue: [] }) as unknown[]).map((item: Record<string, unknown>, index: number) => (
+          {(t('singapore.selection.smartFlow.highlights', { returnObjects: true, defaultValue: [] } as unknown as Record<string, string | number | undefined>) as unknown as Record<string, unknown>[]).map((item, index) => (
             <View key={`sg-smart-${index}`} style={styles.stat}>
-              <Text style={styles.statValue}>{item.value}</Text>
-              <Text style={styles.statLabel}>{item.title}</Text>
+              <Text style={styles.statValue}>{item.value as string}</Text>
+              <Text style={styles.statLabel}>{item.title as string}</Text>
             </View>
           ))}
         </View>
         <View style={styles.features}>
-          {(t('singapore.selection.smartFlow.features', { returnObjects: true, defaultValue: [] }) as unknown[]).map((feature: string, index: number) => (
+          {(t('singapore.selection.smartFlow.features', { returnObjects: true, defaultValue: [] } as unknown as Record<string, string | number | undefined>) as unknown as string[]).map((feature, index) => (
             <Text key={`sg-feature-${index}`} style={styles.feature}>
               {feature}
             </Text>
@@ -74,7 +74,7 @@ const SGArrivalSelectionScreen: React.FC<SGArrivalSelectionProps> = ({ navigatio
         <Text style={styles.cardTitle}>{t('singapore.selection.webFlow.title')}</Text>
         <Text style={styles.cardSubtitle}>{t('singapore.selection.webFlow.subtitle')}</Text>
         <View style={styles.features}>
-          {t('singapore.selection.webFlow.features', { returnObjects: true, defaultValue: [] }).map((feature: string, index: number) => (
+          {(t('singapore.selection.webFlow.features', { returnObjects: true, defaultValue: [] } as unknown as Record<string, string | number | undefined>) as unknown as string[]).map((feature, index) => (
             <Text key={`sg-web-${index}`} style={styles.feature}>
               {feature}
             </Text>
@@ -89,7 +89,7 @@ const SGArrivalSelectionScreen: React.FC<SGArrivalSelectionProps> = ({ navigatio
 
       <View style={styles.notesCard}>
         <Text style={styles.notesTitle}>{t('singapore.selection.notes.title')}</Text>
-        {t('singapore.selection.notes.items', { returnObjects: true, defaultValue: [] }).map((note: string, index: number) => (
+        {(t('singapore.selection.notes.items', { returnObjects: true, defaultValue: [] } as unknown as Record<string, string | number | undefined>) as unknown as string[]).map((note, index) => (
           <Text key={`sg-note-${index}`} style={styles.note}>
             • {note}
           </Text>

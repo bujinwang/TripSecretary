@@ -52,16 +52,18 @@ import { useEffect, useCallback, useRef, useMemo } from 'react';
 import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+import { compressDocumentPhoto } from '../../utils/imageCompression';
 import DebouncedSave from '../../utils/DebouncedSave';
 import UserDataService from '../../services/data/UserDataService';
 import { parsePassportName } from '../../utils/NameParser';
 import { getPhoneCode } from '../../data/phoneCodes';
 import { findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
 import { TRAVEL_PURPOSE_VALUES, ACCOMMODATION_TYPE_VALUES, OCCUPATION_VALUES } from '../../screens/thailand/constants';
-import FieldStateManager from '../../utils/FieldStateManager';
+import FieldStateManager, { InteractionState } from '../../utils/FieldStateManager';
 import { hasValidValue } from '../../utils/fieldValueHelpers';
 import { useNavigationPersistence, useSaveStatusMonitor } from '../shared';
 import ErrorHandler, { ErrorType, ErrorSeverity } from '../../utils/ErrorHandler';
+import { useTranslation } from '../../i18n/LocaleContext';
 
 const DESTINATION_ALIAS_MAP: Record<string, string> = {
   th: 'th',
@@ -137,6 +139,8 @@ export const useThailandDataPersistence = ({
   const scrollViewRef = useRef(null);
   const shouldRestoreScrollPosition = useRef(false);
   const interactionTrackerRef = useRef(userInteractionTracker);
+  const saveDataToSecureStorageRef = useRef<((fieldOverrides?: Record<string, unknown>) => Promise<void>) | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     interactionTrackerRef.current = userInteractionTracker;
@@ -247,7 +251,7 @@ export const useThailandDataPersistence = ({
       await UserDataService.initialize(userId);
 
       const fundItems = await UserDataService.getFundItems(userId, options);
-      const normalized = (fundItems as Record<string, unknown>[]).map(normalizeFundItem);
+      const normalized = (fundItems as unknown as Record<string, unknown>[]).map(normalizeFundItem);
       setFunds(normalized);
     } catch (error) {
       console.error('Failed to refresh fund items:', error);
@@ -548,7 +552,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
   // Save photo to travel info
   const savePhoto = useCallback(async (photoType: string, photoUri: string) => {
     try {
-      let fieldName;
+      let fieldName = '';
 
       if (photoType === 'flightTicket') {
         fieldName = 'flightTicketPhoto';
@@ -562,16 +566,18 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
       }
 
       // Save to secure storage with override
-      await saveDataToSecureStorage({
-        [fieldName]: photoUri
-      });
+      if (saveDataToSecureStorageRef.current) {
+        await saveDataToSecureStorageRef.current({
+          [fieldName]: photoUri
+        });
+      }
 
       return { success: true };
     } catch (error) {
       console.error(`Failed to save ${photoType} photo:`, error);
       return { success: false, error };
     }
-  }, [setFlightTicketPhoto, setDepartureFlightTicketPhoto, setHotelReservationPhoto, saveDataToSecureStorage]);
+  }, [setFlightTicketPhoto, setDepartureFlightTicketPhoto, setHotelReservationPhoto]);
 
   // Handle flight ticket photo upload
   const handleFlightTicketPhotoUpload = useCallback(async (_t: unknown) => {
@@ -584,7 +590,11 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const photoUri = result.assets[0].uri;
+        let photoUri = result.assets[0].uri;
+        try {
+          const compressed = await compressDocumentPhoto(photoUri);
+          photoUri = compressed.uri;
+        } catch (e) { /* use original if compression fails */ }
         const { success } = await savePhoto('flightTicket', photoUri);
 
         if (success) {
@@ -620,7 +630,11 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const photoUri = result.assets[0].uri;
+        let photoUri = result.assets[0].uri;
+        try {
+          const compressed = await compressDocumentPhoto(photoUri);
+          photoUri = compressed.uri;
+        } catch (e) { /* use original if compression fails */ }
         const { success } = await savePhoto('hotelReservation', photoUri);
 
         if (success) {
@@ -656,7 +670,11 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const photoUri = result.assets[0].uri;
+        let photoUri = result.assets[0].uri;
+        try {
+          const compressed = await compressDocumentPhoto(photoUri);
+          photoUri = compressed.uri;
+        } catch (e) { /* use original if compression fails */ }
         const { success } = await savePhoto('departureFlightTicket', photoUri);
 
         if (success) {
@@ -1196,10 +1214,10 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
           // Update completion metrics using the EntryInfo model method
           // which now uses EntryCompletionCalculator internally
           entryInfo.updateCompletionMetrics(
-            (savedPassport as Record<string, unknown>) || {},
-            savedPersonalInfo || {},
-            savedFunds || [],
-            freshTravelInfo || {}
+            (savedPassport as unknown as Record<string, unknown>) || {},
+            (savedPersonalInfo || {}) as Record<string, unknown>,
+            (savedFunds || []) as unknown as Record<string, unknown>[],
+            (freshTravelInfo || {}) as Record<string, unknown>
           );
 
           // Save updated metrics back to database
@@ -1220,7 +1238,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
 
   // Save data to secure storage with field overrides
   const saveDataToSecureStorage = useCallback(async (fieldOverrides = {}) => {
-    const saveErrors = [];
+    const saveErrors: Array<{ section: string; error: unknown }> = [];
     const saveResults = {
       passport: { success: false, error: null },
       personalInfo: { success: false, error: null },
@@ -1229,7 +1247,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
 
     try {
       // Build interaction state
-      const interactionState = {};
+      const interactionState: Record<string, unknown> = {};
       const allFieldNames = [
         'passportNo', 'fullName', 'nationality', 'dob', 'expiryDate', 'sex',
         'phoneCode', 'phoneNumber', 'email', 'occupation', 'cityOfResidence', 'residentCountry',
@@ -1300,8 +1318,8 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
         console.error('Save operation completed with errors:', saveErrors);
         const successfulSaves = Object.values(saveResults).filter(result => result.success).length;
         if (successfulSaves === 0) {
-          const primaryError = saveErrors[0]?.error;
-          const errorMessage = primaryError?.message || primaryError?.code || 'Unknown error';
+          const primaryError = saveErrors[0]?.error as Record<string, unknown> | undefined;
+          const errorMessage = (primaryError?.message as string) || (primaryError?.code as string) || 'Unknown error';
           throw new Error(`Complete save failure: ${errorMessage}`);
         }
       }
@@ -1310,6 +1328,10 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
       throw error;
     }
   }, [userId, destination, getFormValues, isFieldUserModified, getFieldInteractionDetails, performSaveOperation]);
+
+  useEffect(() => {
+    saveDataToSecureStorageRef.current = saveDataToSecureStorage;
+  }, [saveDataToSecureStorage]);
 
   // Debounced save function
   const debouncedSaveData = useCallback(() => {

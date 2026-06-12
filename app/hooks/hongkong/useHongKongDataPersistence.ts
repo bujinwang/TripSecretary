@@ -55,7 +55,7 @@ import { parsePassportName } from '../../utils/NameParser';
 import { getPhoneCode } from '../../data/phoneCodes';
 import { findDistrictOption, findSubDistrictOption } from '../../utils/thailand/LocationHelpers';
 import { PREDEFINED_TRAVEL_PURPOSES, PREDEFINED_ACCOMMODATION_TYPES, OCCUPATION_VALUES } from '../../screens/hongkong/constants';
-import FieldStateManager from '../../utils/FieldStateManager';
+import FieldStateManager, { InteractionState } from '../../utils/FieldStateManager';
 import { useNavigationPersistence, useSaveStatusMonitor } from '../shared';
 import { HongKongFormStateType } from './useHongKongFormState';
 
@@ -132,7 +132,7 @@ export const useHongKongDataPersistence = ({
   const refreshFundItems = useCallback(async (options = {}) => {
     try {
       const fundItems = await UserDataService.getFundItems(userId, options);
-      const normalized = (fundItems as Record<string, unknown>[]).map(normalizeFundItem);
+      const normalized = (fundItems as unknown as Record<string, unknown>[]).map(normalizeFundItem);
       formStateRef.current?.setFunds(normalized);
     } catch (error) {
       console.error('Failed to refresh fund items:', error);
@@ -375,6 +375,9 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
       console.log('⚠️ No existing data found to migrate');
     }
   }, []);
+
+  // Forward declaration for saveDataToSecureStorage (defined below, referenced by savePhoto)
+  let saveDataToSecureStorage: (fieldOverrides?: Record<string, unknown>) => Promise<void> = async () => {};
 
   // Save photo to travel info
   const savePhoto = useCallback(async (photoType: string, photoUri: string) => {
@@ -847,8 +850,8 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
   }, [formState]);
 
   // Save data to secure storage with field overrides
-  const saveDataToSecureStorage = useCallback(async (fieldOverrides = {}) => {
-    const saveErrors = [];
+  saveDataToSecureStorage = useCallback(async (fieldOverrides = {}) => {
+    const saveErrors: { section: string; error: unknown }[] = [];
     const saveResults = {
       passport: { success: false, error: null },
       personalInfo: { success: false, error: null },
@@ -857,7 +860,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
 
     try {
       // Build interaction state
-      const interactionState = {};
+      const interactionState: InteractionState = {};
       const allFieldNames = [
         'passportNo', 'fullName', 'nationality', 'dob', 'expiryDate', 'sex',
         'phoneCode', 'phoneNumber', 'email', 'occupation', 'cityOfResidence', 'residentCountry',
@@ -870,7 +873,7 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
       allFieldNames.forEach(fieldName => {
         interactionState[fieldName] = {
           isUserModified: userInteractionTracker.isFieldUserModified(fieldName),
-          lastModified: userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified || null,
+          lastModified: (userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified as string) || undefined,
           initialValue: userInteractionTracker.getFieldInteractionDetails(fieldName)?.initialValue || null
         };
       });
@@ -921,13 +924,13 @@ existingDataToMigrate.isTransitPassenger = travelInfo.isTransitPassenger;
         funds: formState.funds
       };
 
-      await performSaveOperation(userId, fieldOverrides, saveResults, saveErrors, currentState as CurrentStateForSave);
+      await performSaveOperation(userId, fieldOverrides, saveResults, saveErrors, currentState as unknown as CurrentStateForSave);
 
       if (saveErrors.length > 0) {
         console.error('Save operation completed with errors:', saveErrors);
         const successfulSaves = Object.values(saveResults).filter(result => result.success).length;
         if (successfulSaves === 0) {
-          throw new Error(`Complete save failure: ${saveErrors[0].error.message}`);
+          throw new Error(`Complete save failure: ${(saveErrors[0].error as Error).message}`);
         }
       }
     } catch (error) {

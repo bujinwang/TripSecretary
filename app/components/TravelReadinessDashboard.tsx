@@ -14,8 +14,7 @@ const TravelReadinessDashboard = ({
   onTripPress,
   onActionPress,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  passportData: any;
+  passportData: Record<string, unknown>;
   activeEntryPacks: Array<Record<string, unknown>>;
   inProgressDestinations: Array<Record<string, unknown>>;
   upcomingTrips: Array<Record<string, unknown>>;
@@ -54,7 +53,7 @@ const TravelReadinessDashboard = ({
 
     // Check passport expiry (within 6 months)
     if (passportData.expiryDate) {
-      const expiryDate = new Date(passportData.expiryDate);
+      const expiryDate = new Date(passportData.expiryDate as string);
       const sixMonthsFromNow = new Date();
       sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
 
@@ -105,7 +104,7 @@ const TravelReadinessDashboard = ({
         type: 'active',
         destination: pack.destinationName || 'Unknown',
         flag: getDestinationFlag(pack.destinationId),
-        daysUntil: pack.arrivalDate ? Math.ceil((new Date(pack.arrivalDate) - new Date()) / (1000 * 60 * 60 * 24)) : null,
+        daysUntil: pack.arrivalDate ? Math.ceil((new Date(pack.arrivalDate as string).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null,
         status: 'submitted'
       })),
       ...inProgressDestinations.map(dest => ({
@@ -128,12 +127,12 @@ const TravelReadinessDashboard = ({
     return allTrips.sort((a, b) => (a.daysUntil || 0) - (b.daysUntil || 0))[0];
   }, [activeEntryPacks, inProgressDestinations, upcomingTrips]);
 
-  const getDestinationFlag = (destinationId) => {
-    const flagMap = {
+  const getDestinationFlag = (destinationId: unknown) => {
+    const flagMap: Record<string, string> = {
       'th': '🇹🇭', 'jp': '🇯🇵', 'sg': '🇸🇬', 'my': '🇲🇾',
       'hk': '🇭🇰', 'tw': '🇹🇼', 'kr': '🇰🇷', 'us': '🇺🇸'
     };
-    return flagMap[destinationId] || '🌍';
+    return flagMap[destinationId as string] || '🌍';
   };
 
   const getActionItems = () => {
@@ -160,7 +159,7 @@ const TravelReadinessDashboard = ({
       });
     }
 
-    if (nextTrip && nextTrip.daysUntil <= 7) {
+    if (nextTrip && nextTrip.daysUntil !== null && nextTrip.daysUntil <= 7) {
       actions.push({
         id: 'prepare_trip',
         icon: '🎯',
@@ -206,7 +205,7 @@ const TravelReadinessDashboard = ({
       {nextTrip && (
         <TouchableOpacity
           style={styles.tripCard}
-          onPress={() => onTripPress?.(nextTrip)}
+          onPress={() => onTripPress?.(nextTrip as Record<string, unknown>)}
           activeOpacity={0.7}
         >
           <View style={styles.tripHeader}>
@@ -226,7 +225,7 @@ const TravelReadinessDashboard = ({
                 ? t('home.trip.today', { defaultValue: '今天' })
                 : nextTrip.daysUntil === 1
                 ? t('home.trip.tomorrow', { defaultValue: '明天' })
-                : t('home.trip.inDays', { days: nextTrip.daysUntil, defaultValue: `${nextTrip.daysUntil}天后` })
+                : t('home.trip.inDays', { days: nextTrip.daysUntil as number, defaultValue: `${nextTrip.daysUntil as number}天后` })
               }
             </Text>
           )}

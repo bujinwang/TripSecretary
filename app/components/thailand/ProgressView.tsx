@@ -6,7 +6,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { designTokens, spacing, borderRadius, shadows, typography } from '../../theme/designTokens';
-import { animateValue, createAnimationValue, ANIMATIONS } from '../../utils/animations';
+import { animateValue, createAnimationValue, ANIMATION_DURATION, EASING } from '../../utils/animations';
 import ProgressRing from './ProgressRing';
 import StatusCard from './StatusCard';
 import ActionButton from './ActionButton';
@@ -41,8 +41,8 @@ const ProgressView = ({
 
   // Animate in on mount
   useEffect(() => {
-    animateValue(fadeAnim, { to: 1, duration: ANIMATIONS.duration.normal });
-    animateValue(slideAnim, { to: 0, duration: ANIMATIONS.duration.normal, easing: ANIMATIONS.easing.bounce });
+    animateValue(fadeAnim, { to: 1, duration: ANIMATION_DURATION.normal });
+    animateValue(slideAnim, { to: 0, duration: ANIMATION_DURATION.normal, easing: EASING.bounce });
   }, []);
 
   // Get progress message based on completion
@@ -73,6 +73,8 @@ const ProgressView = ({
           size={120}
           color={designTokens.primary}
           animated={true}
+          style={{}}
+          children={undefined}
         />
         <Text style={styles.progressMessage}>
           {getProgressMessage()}
@@ -94,9 +96,9 @@ const ProgressView = ({
             <StatusCard
               title={category.name}
               icon={category.icon}
-              status={category.status}
+              status={category.status as 'complete' | 'incomplete' | 'partial'}
               progress={Math.round((category.completedCount / category.totalCount) * 100)}
-              onPress={() => onCategoryPress(category)}
+              onPress={() => onCategoryPress?.(category)}
             />
           </Animated.View>
         ))}
@@ -135,7 +137,7 @@ const ProgressView = ({
       >
         <ActionButton
           title={primaryActionState.title}
-          variant={primaryActionState.variant}
+          variant={primaryActionState.variant as 'primary' | 'secondary' | 'success' | 'warning'}
           size="large"
           disabled={primaryActionState.disabled}
           onPress={onPrimaryAction}

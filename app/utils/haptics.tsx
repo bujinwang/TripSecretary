@@ -32,6 +32,9 @@ const HapticType = {
  * Centralized haptic feedback management with platform-specific handling
  */
 class HapticsManager {
+  private isEnabled: boolean;
+  private isSupported: boolean;
+
   constructor() {
     this.isEnabled = true;
     this.isSupported = this.checkSupport();
@@ -336,7 +339,7 @@ export const withHapticFeedback = (Component: React.ComponentType<Record<string,
     const handlePress = async (event: Record<string, unknown>) => {
       await hapticsManager.trigger(hapticType);
       if (props.onPress) {
-        props.onPress(event);
+        (props.onPress as (event: Record<string, unknown>) => void)(event);
       }
     };
 

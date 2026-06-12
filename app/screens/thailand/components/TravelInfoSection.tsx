@@ -50,7 +50,7 @@ const TravelInfoSection = ({ travelData, language, formatDateForDisplay, t }: Tr
              `วันและเวลาที่มาถึง / ${t('progressiveEntryFlow.immigrationOfficer.presentation.arrivalDateTime')}`}:
           </Text>
           <Text style={styles.infoValue}>
-            {formatDateForDisplay(travelData?.arrivalDate)}
+            {formatDateForDisplay(travelData?.arrivalDate as string | undefined)}
           </Text>
         </View>
 
@@ -62,7 +62,7 @@ const TravelInfoSection = ({ travelData, language, formatDateForDisplay, t }: Tr
                `วันที่เดินทางกลับ / ${t('progressiveEntryFlow.immigrationOfficer.presentation.departureDate')}`}:
             </Text>
             <Text style={styles.infoValue}>
-              {formatDateForDisplay(travelData.departureDate)}
+              {formatDateForDisplay(travelData.departureDate as string | undefined)}
             </Text>
           </View>
         )}
@@ -88,7 +88,7 @@ const TravelInfoSection = ({ travelData, language, formatDateForDisplay, t }: Tr
                   'ตั๋วเครื่องบิน / Flight Ticket'}
             </Text>
             <OptimizedImage
-              uri={travelData.arrivalFlightTicketPhotoUri}
+              uri={travelData.arrivalFlightTicketPhotoUri as string}
               style={styles.documentPhoto}
               resizeMode="contain"
               lazy={true}
@@ -169,7 +169,7 @@ const TravelInfoSection = ({ travelData, language, formatDateForDisplay, t }: Tr
                   'การจองโรงแรม / Hotel Booking'}
             </Text>
             <OptimizedImage
-              uri={travelData.hotelBookingPhotoUri}
+              uri={travelData.hotelBookingPhotoUri as string}
               style={styles.documentPhoto}
               resizeMode="contain"
               lazy={true}

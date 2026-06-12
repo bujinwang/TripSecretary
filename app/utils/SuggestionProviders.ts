@@ -3,6 +3,13 @@
  * 
  * Provides smart default suggestions for various form fields
  * based on user context, travel patterns, and common selections.
+ * 
+ * Features:
+ * - Travel purpose suggestions based on common travel reasons
+ * - Accommodation type suggestions with popular options first
+ * - Boarding country suggestions based on passport nationality
+ * - Context-aware suggestions that adapt to user data
+ */
 
 interface SuggestionContext {
   destination?: string;
@@ -14,13 +21,6 @@ interface SuggestionContext {
   passportNationality?: string;
   [key: string]: unknown;
 }
- * 
- * Features:
- * - Travel purpose suggestions based on common travel reasons
- * - Accommodation type suggestions with popular options first
- * - Boarding country suggestions based on passport nationality
- * - Context-aware suggestions that adapt to user data
- */
 
 import { getThailandTravelPurposes, getBasicTravelPurposes } from '../data/travelPurposes';
 
@@ -53,7 +53,7 @@ class SuggestionProviders {
     ];
 
     // Get display names for suggestions - use simple mapping for now
-    const purposeMapping = {
+    const purposeMapping: Record<string, string> = {
       'HOLIDAY': 'Holiday/Tourism',
       'BUSINESS': 'Business',
       'VISITING_FRIENDS_FAMILY': 'Visiting Friends/Family',
@@ -252,7 +252,7 @@ class SuggestionProviders {
    * @param {Object} context - User context for personalized suggestions
    * @returns {Array<string>} Array of suggestions for the field type
    */
-  static getSuggestions(fieldType, context = {}) {
+  static getSuggestions(fieldType: string, context: Record<string, unknown> = {}) {
     switch (fieldType) {
       case 'travelPurpose':
         return this.getTravelPurposeSuggestions(context);
@@ -279,41 +279,32 @@ class SuggestionProviders {
    * @returns {Object} Updated context
    */
   static updateContextWithSelection(fieldType: string, selectedValue: string, currentContext: Record<string, unknown> = {}) {
-    const updatedContext = { ...currentContext };
+    const updatedContext = { ...currentContext } as Record<string, unknown>;
 
     switch (fieldType) {
-      case 'travelPurpose':
-        if (!updatedContext.previousPurposes) {
-          updatedContext.previousPurposes = [];
-        }
-        if (!updatedContext.previousPurposes.includes(selectedValue)) {
-          updatedContext.previousPurposes.unshift(selectedValue);
-          // Keep only last 3 purposes
-          updatedContext.previousPurposes = updatedContext.previousPurposes.slice(0, 3);
+      case 'travelPurpose': {
+        const previousPurposes = (updatedContext.previousPurposes as string[]) || [];
+        if (!previousPurposes.includes(selectedValue)) {
+          updatedContext.previousPurposes = [selectedValue, ...previousPurposes].slice(0, 3);
         }
         break;
+      }
 
-      case 'accommodationType':
-        if (!updatedContext.previousAccommodations) {
-          updatedContext.previousAccommodations = [];
-        }
-        if (!updatedContext.previousAccommodations.includes(selectedValue)) {
-          updatedContext.previousAccommodations.unshift(selectedValue);
-          // Keep only last 3 accommodations
-          updatedContext.previousAccommodations = updatedContext.previousAccommodations.slice(0, 3);
+      case 'accommodationType': {
+        const previousAccommodations = (updatedContext.previousAccommodations as string[]) || [];
+        if (!previousAccommodations.includes(selectedValue)) {
+          updatedContext.previousAccommodations = [selectedValue, ...previousAccommodations].slice(0, 3);
         }
         break;
+      }
 
-      case 'boardingCountry':
-        if (!updatedContext.previousBoardingCountries) {
-          updatedContext.previousBoardingCountries = [];
-        }
-        if (!updatedContext.previousBoardingCountries.includes(selectedValue)) {
-          updatedContext.previousBoardingCountries.unshift(selectedValue);
-          // Keep only last 3 boarding countries
-          updatedContext.previousBoardingCountries = updatedContext.previousBoardingCountries.slice(0, 3);
+      case 'boardingCountry': {
+        const previousBoardingCountries = (updatedContext.previousBoardingCountries as string[]) || [];
+        if (!previousBoardingCountries.includes(selectedValue)) {
+          updatedContext.previousBoardingCountries = [selectedValue, ...previousBoardingCountries].slice(0, 3);
         }
         break;
+      }
     }
 
     return updatedContext;
@@ -326,7 +317,7 @@ class SuggestionProviders {
    * @param {Object} context - User context
    * @returns {string} Placeholder text
    */
-  static getSuggestionPlaceholder(fieldType, context = {}) {
+  static getSuggestionPlaceholder(fieldType: string, context: Record<string, unknown> = {}) {
     const suggestionCount = this.getSuggestions(fieldType, context).length;
     
     switch (fieldType) {

@@ -6,7 +6,7 @@
  */
 
 import { renderHook, act, RenderHookResult } from '@testing-library/react-native';
-import { useThailandLocationCascade } from '../useThailandLocationCascade';
+import { useThailandLocationCascade, ThailandLocationFormState } from '../useThailandLocationCascade';
 
 interface RenderHookResultWithUpdate<P, R> extends RenderHookResult<P, R> {
   waitForNextUpdate: (options?: { timeout?: number }) => Promise<void>;
@@ -79,9 +79,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result, waitForNextUpdate } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       ) as RenderHookResultWithUpdate<unknown, unknown>;
 
@@ -100,9 +100,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result, waitForNextUpdate } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       ) as RenderHookResultWithUpdate<unknown, unknown>;
 
@@ -120,9 +120,9 @@ describe('useThailandLocationCascade', () => {
 
       renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 
@@ -140,9 +140,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result, waitForNextUpdate } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       ) as RenderHookResultWithUpdate<unknown, unknown>;
 
@@ -162,9 +162,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result, waitForNextUpdate } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       ) as RenderHookResultWithUpdate<unknown, unknown>;
 
@@ -183,9 +183,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result, waitForNextUpdate } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       ) as RenderHookResultWithUpdate<unknown, unknown>;
 
@@ -205,9 +205,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 
@@ -226,9 +226,9 @@ describe('useThailandLocationCascade', () => {
     it('should trigger field blur for province', () => {
       const { result } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 
@@ -246,9 +246,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 
@@ -268,9 +268,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 
@@ -290,9 +290,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 
@@ -313,9 +313,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 
@@ -333,14 +333,14 @@ describe('useThailandLocationCascade', () => {
     it('should handle null selection gracefully', async () => {
       const { result } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 
       await act(async () => {
-        await result.current.handleDistrictSelect(null);
+        await result.current.handleDistrictSelect(null as unknown as Record<string, unknown>);
       });
 
       expect(mockFormState.setDistrict).not.toHaveBeenCalled();
@@ -358,9 +358,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 
@@ -383,9 +383,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 
@@ -409,9 +409,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 
@@ -425,14 +425,14 @@ describe('useThailandLocationCascade', () => {
     it('should handle null selection gracefully', async () => {
       const { result } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 
       await act(async () => {
-        await result.current.handleSubDistrictSelect(null);
+        await result.current.handleSubDistrictSelect(null as unknown as Record<string, unknown>);
       });
 
       expect(mockFormState.setSubDistrict).not.toHaveBeenCalled();
@@ -449,9 +449,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 
@@ -471,9 +471,9 @@ describe('useThailandLocationCascade', () => {
     it('should handle full location selection flow', async () => {
       const { result } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 
@@ -523,9 +523,9 @@ describe('useThailandLocationCascade', () => {
 
       const { result } = renderHook(() =>
         useThailandLocationCascade({
-          formState: mockFormState,
+          formState: mockFormState as unknown as ThailandLocationFormState,
           handleFieldBlur: mockHandleFieldBlur,
-          saveDataToSecureStorage: mockSaveDataToSecureStorage,
+          saveDataToSecureStorage: mockSaveDataToSecureStorage as unknown as (overrides: Record<string, unknown>) => Promise<void>,
         })
       );
 

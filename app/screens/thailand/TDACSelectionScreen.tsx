@@ -22,9 +22,9 @@ import { useLocale } from '../../i18n/LocaleContext';
 import TDACSubmissionService from '../../services/thailand/TDACSubmissionService';
 import UserDataService from '../../services/data/UserDataService';
 
-const TDACSelectionScreen = ({ navigation, route }) => {
+const TDACSelectionScreen = ({ navigation, route }: { navigation: { goBack: () => void; navigate: (screen: string, params?: Record<string, unknown>) => void }; route: { params?: Record<string, unknown> } }) => {
   const { t } = useLocale();
-  const incomingTravelerInfo = (route.params && route.params.travelerInfo) || {};
+  const incomingTravelerInfo = ((route.params as Record<string, unknown> | undefined)?.travelerInfo as Record<string, unknown>) || {};
   
   /**
    * Sanitize sensitive data before logging
@@ -83,13 +83,13 @@ return data;
    * This is called when user returns from successful TDAC submission
    * Wrapped with useCallback to prevent stale closures in event listener
    */
-  const handleTDACSubmissionSuccess = useCallback(async (submissionData: any) => {
+  const handleTDACSubmissionSuccess = useCallback(async (submissionData: Record<string, unknown>) => {
     const result = await TDACSubmissionService.handleTDACSubmissionSuccess(submissionData, travelerInfo);
 
     if (!result.success) {
       // Show error dialog if submission failed
       TDACSubmissionService.showErrorDialog(
-        result.errorResult,
+        result.errorResult as Parameters<typeof TDACSubmissionService.showErrorDialog>[0],
         () => {
           // Retry later
           console.log('User chose to retry later');
@@ -109,7 +109,8 @@ return data;
   // Event-driven TDAC submission listener instead of polling AsyncStorage
   React.useEffect(() => {
     // Subscribe to TDAC submission events from UserDataService
-    const unsubscribe = UserDataService.addDataChangeListener((event) => {
+    const unsubscribe = UserDataService.addDataChangeListener((rawEvent) => {
+      const event = rawEvent as { type: string; data: Record<string, unknown> };
       console.log('📡 TDAC submission event received:', event.type);
 
       if (event.type === 'TDAC_SUBMISSION_SUCCESS') {
@@ -362,6 +363,11 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: '#4CAF50',
     backgroundColor: '#fafcfa',
+  },
+  stableCard: {
+    borderWidth: 2,
+    borderColor: colors.border,
+    backgroundColor: colors.white,
   },
 
   // 推荐徽章

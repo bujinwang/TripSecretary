@@ -11,6 +11,8 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  TextStyle,
+  ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing } from '../theme';
@@ -19,10 +21,9 @@ import UserDataService from '../services/data/UserDataService';
 import { useLocale } from '../i18n/LocaleContext';
 import { RequirementsScreenConfig } from '../config/destinations/types';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const normalizeItems = (value: any): string[] => {
-  if (Array.isArray(value)) {
-    return value;
+const normalizeItems = (value: unknown): string[] => {
+  if (Array.isArray(value) && value.every((v: unknown) => typeof v === 'string')) {
+    return value as string[];
   }
   if (typeof value === 'string' && value.length > 0) {
     return [value];
@@ -30,36 +31,42 @@ const normalizeItems = (value: any): string[] => {
   return [];
 };
 
+interface EntryRequirementsRouteParams {
+  passport: unknown;
+  destination: unknown;
+  [key: string]: unknown;
+}
+
 interface EntryRequirementsTemplateProps {
   navigation: {
     goBack: () => void;
     navigate: (screen: string, params?: Record<string, unknown>) => void;
   };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  route: any;
+  route: { params?: EntryRequirementsRouteParams; [key: string]: unknown };
   config: RequirementsScreenConfig;
 }
 
 const EntryRequirementsTemplate = ({ navigation, route, config }: EntryRequirementsTemplateProps) => {
   const { t } = useLocale();
-  const { passport: rawPassport, destination } = route.params || {};
-  const passport = UserDataService.toSerializablePassport(rawPassport);
+  const routeParams = route.params || {};
+  const { passport: rawPassport, destination } = routeParams as EntryRequirementsRouteParams;
+  const passport = UserDataService.toSerializablePassport(rawPassport as Parameters<typeof UserDataService.toSerializablePassport>[0]);
 
-  const headerTitle = config?.headerTitleKey
+  const headerTitle: string = config?.headerTitleKey
     ? t(config.headerTitleKey, { defaultValue: config.headerTitleDefault as string | undefined })
-    : config?.headerTitle || '';
+    : (config?.headerTitle as string) || '';
 
-  const backLabel = config?.backLabelKey
-    ? t(config.backLabelKey, { defaultValue: (config.backLabelDefault as string) || t('common.back') })
-    : config?.backLabel || t('common.back');
+  const backLabel: string = config?.backLabelKey
+    ? t(config.backLabelKey as string, { defaultValue: (config.backLabelDefault as string) || t('common.back') })
+    : (config?.backLabel as string) || t('common.back');
 
-  const introTitle = config?.introTitleKey
+  const introTitle: string = config?.introTitleKey
     ? t(config.introTitleKey, { defaultValue: config.introTitleDefault as string | undefined })
-    : config?.introTitle || '';
+    : (config?.introTitle as string) || '';
 
-  const introSubtitle = config?.introSubtitleKey
+  const introSubtitle: string = config?.introSubtitleKey
     ? t(config.introSubtitleKey, { defaultValue: config.introSubtitleDefault as string | undefined })
-    : config?.introSubtitle || '';
+    : (config?.introSubtitle as string) || '';
 
   interface ResolvedRequirement {
     key: string;
@@ -81,20 +88,20 @@ const EntryRequirementsTemplate = ({ navigation, route, config }: EntryRequireme
         ? t(req.descriptionKey, { defaultValue: req.descriptionDefault })
         : req.description || '',
       details: normalizeItems(
-        req.detailsKey
-          ? t(req.detailsKey, { defaultValue: (req.detailsDefault as any) || [] })
-          : req.details || []
+        req.detailsKey != null
+          ? t(req.detailsKey, { defaultValue: (Array.isArray(req.detailsDefault) ? req.detailsDefault.join('\n') : (req.detailsDefault as string | undefined)) || '' })
+          : (req.details || []) as string | string[]
       ),
     }));
   }, [config?.requirements, t]);
 
-  const infoBoxTitle = config?.infoBox?.titleKey
-    ? t(config.infoBox.titleKey, { defaultValue: config.infoBox.titleDefault as string })
-    : config?.infoBox?.title || '';
-  const infoBoxSubtitle = config?.infoBox?.subtitleKey
-    ? t(config.infoBox.subtitleKey, { defaultValue: config.infoBox.subtitleDefault as string })
-    : config?.infoBox?.subtitle || '';
-  const infoBoxIcon = config?.infoBox?.icon || '📝';
+  const infoBoxTitle: string = config?.infoBox?.titleKey
+    ? t(config.infoBox.titleKey as string, { defaultValue: config.infoBox.titleDefault as string })
+    : (config?.infoBox?.title as string) || '';
+  const infoBoxSubtitle: string = config?.infoBox?.subtitleKey
+    ? t(config.infoBox.subtitleKey as string, { defaultValue: config.infoBox.subtitleDefault as string })
+    : (config?.infoBox?.subtitle as string) || '';
+  const infoBoxIcon: string = (config?.infoBox?.icon as string) || '📝';
 
   const handlePrimaryAction = () => {
     if (!config?.primaryAction?.screen) {
@@ -109,31 +116,34 @@ const EntryRequirementsTemplate = ({ navigation, route, config }: EntryRequireme
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <BackButton onPress={() => navigation.goBack()} label={backLabel} style={styles.backButton} />
-        <Text style={styles.headerTitle}>{headerTitle}</Text>
+        <BackButton
+          onPress={() => navigation.goBack()}
+          label={backLabel}
+        />
+        <Text style={styles.headerTitle as unknown as TextStyle}>{headerTitle}</Text>
         <View style={styles.headerRight} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.titleSection}>
-          <Text style={styles.title}>{introTitle}</Text>
-          <Text style={styles.subtitle}>{introSubtitle}</Text>
+        <View style={styles.titleSection as unknown as ViewStyle}>
+          <Text style={styles.title as unknown as TextStyle}>{introTitle}</Text>
+          <Text style={styles.subtitle as unknown as TextStyle}>{introSubtitle}</Text>
         </View>
 
         <View style={styles.requirementsList}>
           {requirements.map((item) => (
-            <View key={item.key} style={styles.requirementCard}>
+            <View key={item.key} style={styles.requirementCard as unknown as ViewStyle}>
               <View style={styles.requirementHeader}>
                 <View style={styles.bulletContainer}>
                   <View style={styles.bullet} />
                 </View>
                 <View style={styles.requirementContent}>
-                  <Text style={styles.requirementTitle}>{item.title}</Text>
-                  <Text style={styles.requirementDescription}>{item.description}</Text>
+                  <Text style={styles.requirementTitle as unknown as TextStyle}>{item.title}</Text>
+                  <Text style={styles.requirementDescription as unknown as TextStyle}>{item.description}</Text>
                 </View>
               </View>
               {item.details.map((detail, idx) => (
-                <Text key={idx} style={styles.requirementDetails}>
+                <Text key={idx} style={styles.requirementDetails as unknown as TextStyle}>
                   {detail}
                 </Text>
               ))}
@@ -142,19 +152,19 @@ const EntryRequirementsTemplate = ({ navigation, route, config }: EntryRequireme
         </View>
 
         <View style={styles.statusSection}>
-          <View style={styles.infoCard}>
-            <Text style={styles.infoIcon}>{infoBoxIcon}</Text>
-            <Text style={styles.infoText}>{infoBoxTitle}</Text>
-            <Text style={styles.infoSubtext}>{infoBoxSubtitle}</Text>
+          <View style={styles.infoCard as unknown as ViewStyle}>
+            <Text style={styles.infoIcon as unknown as TextStyle}>{infoBoxIcon}</Text>
+            <Text style={styles.infoText as unknown as TextStyle}>{infoBoxTitle}</Text>
+            <Text style={styles.infoSubtext as unknown as TextStyle}>{infoBoxSubtitle}</Text>
           </View>
         </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.continueButton} onPress={handlePrimaryAction}>
-            <Text style={styles.continueButtonText}>
-              {config?.primaryAction?.labelKey
+          <TouchableOpacity style={styles.continueButton as unknown as ViewStyle} onPress={handlePrimaryAction}>
+            <Text style={styles.continueButtonText as unknown as TextStyle}>
+              {(config?.primaryAction?.labelKey
                 ? t(config.primaryAction.labelKey, { defaultValue: config.primaryAction.labelDefault as string | undefined })
-                : config?.primaryAction?.label || t('common.continue', { defaultValue: 'Continue' })}
+                : config?.primaryAction?.label || t('common.continue', { defaultValue: 'Continue' })) as string}
             </Text>
           </TouchableOpacity>
         </View>
@@ -176,15 +186,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-  },
-  backButton: { marginLeft: -spacing.sm },
+  } as ViewStyle,
   headerTitle: { ...typography.body2, fontWeight: '600', color: colors.text },
   headerRight: { width: 40 },
   titleSection: {
     alignItems: 'center',
     paddingVertical: spacing.xl,
     paddingHorizontal: spacing.md,
-  },
+  } as ViewStyle,
   title: { ...typography.h3, color: colors.primary, marginBottom: spacing.xs, textAlign: 'center', fontWeight: 'bold' },
   subtitle: { ...typography.body1, color: colors.textSecondary, textAlign: 'center' },
   requirementsList: { paddingHorizontal: spacing.md },
@@ -195,7 +204,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
-  },
+  } as ViewStyle,
   requirementHeader: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: spacing.md },
   bulletContainer: {
     width: 32,
@@ -218,7 +227,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(76, 175, 80, 0.4)',
     alignItems: 'center',
     gap: spacing.xs,
-  },
+  } as ViewStyle,
   infoIcon: { fontSize: 28, marginBottom: spacing.xs / 2 },
   infoText: { ...typography.body1, fontWeight: '700', color: colors.text, textAlign: 'center' },
   infoSubtext: { ...typography.body2, color: colors.textSecondary, textAlign: 'center', lineHeight: 20 },
@@ -228,7 +237,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: spacing.md,
     alignItems: 'center',
-  },
+  } as ViewStyle,
   continueButtonText: { ...typography.body1, color: colors.white, fontWeight: '700' },
 });
 

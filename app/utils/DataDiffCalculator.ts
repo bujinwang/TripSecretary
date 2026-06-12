@@ -68,10 +68,10 @@ class DataDiffCalculator {
         addedFields: [],
         removedFields: [],
         categories: {
-          passport: { hasChanges: false, changes: [] },
-          personalInfo: { hasChanges: false, changes: [] },
-          funds: { hasChanges: false, changes: [] },
-          travel: { hasChanges: false, changes: [] }
+          passport: { hasChanges: false, changes: [], category: 'passport' as const },
+          personalInfo: { hasChanges: false, changes: [], category: 'personalInfo' as const },
+          funds: { hasChanges: false, changes: [], category: 'funds' as const },
+          travel: { hasChanges: false, changes: [], category: 'travel' as const }
         },
         summary: {
           totalChanges: 0,
@@ -136,10 +136,10 @@ class DataDiffCalculator {
         addedFields: [],
         removedFields: [],
         categories: {
-          passport: { hasChanges: false, changes: [] },
-          personalInfo: { hasChanges: false, changes: [] },
-          funds: { hasChanges: false, changes: [] },
-          travel: { hasChanges: false, changes: [] }
+          passport: { hasChanges: false, changes: [], category: 'passport' as const },
+          personalInfo: { hasChanges: false, changes: [], category: 'personalInfo' as const },
+          funds: { hasChanges: false, changes: [], category: 'funds' as const },
+          travel: { hasChanges: false, changes: [], category: 'travel' as const }
         },
         summary: { totalChanges: 0, significantChanges: 0, minorChanges: 0 },
         error: (error as Error).message

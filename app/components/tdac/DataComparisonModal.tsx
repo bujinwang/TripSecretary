@@ -6,6 +6,7 @@
  */
 
 import React from 'react';
+// @ts-ignore - prop-types has no TypeScript declarations
 import PropTypes from 'prop-types';
 import { View, Text, Modal, ScrollView, TouchableOpacity, Alert, Clipboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -65,7 +66,12 @@ return;
           </TouchableOpacity>
         </View>
 
-        {comparisonData && (
+        {comparisonData && (() => {
+          const data = comparisonData as Record<string, unknown>;
+          const summary = data.summary as Record<string, number>;
+          const validationResults = data.validationResults as Record<string, boolean>;
+          const fieldMappings = data.fieldMappings as Record<string, FieldMapping>;
+          return (
           <ScrollView style={styles.comparisonContent} showsVerticalScrollIndicator={true}>
             {/* Summary Section */}
             <View style={styles.comparisonSection}>
@@ -73,24 +79,24 @@ return;
               <View style={styles.comparisonSummary}>
                 <View style={styles.comparisonSummaryItem}>
                   <Text style={styles.comparisonSummaryLabel}>Total Fields:</Text>
-                  <Text style={styles.comparisonSummaryValue}>{comparisonData.summary.totalFields}</Text>
+                  <Text style={styles.comparisonSummaryValue}>{summary.totalFields}</Text>
                 </View>
                 <View style={styles.comparisonSummaryItem}>
                   <Text style={styles.comparisonSummaryLabel}>Valid Mappings:</Text>
                   <Text style={[
                     styles.comparisonSummaryValue,
-                    { color: comparisonData.summary.accuracy >= 90 ? '#4CAF50' : comparisonData.summary.accuracy >= 70 ? '#FF9800' : '#F44336' }
+                    { color: summary.accuracy >= 90 ? '#4CAF50' : summary.accuracy >= 70 ? '#FF9800' : '#F44336' }
                   ]}>
-                    {comparisonData.summary.validFields}/{comparisonData.summary.totalFields} ({comparisonData.summary.accuracy}%)
+                    {summary.validFields}/{summary.totalFields} ({summary.accuracy}%)
                   </Text>
                 </View>
                 <View style={styles.comparisonSummaryItem}>
                   <Text style={styles.comparisonSummaryLabel}>Overall Status:</Text>
                   <Text style={[
                     styles.comparisonSummaryValue,
-                    { color: comparisonData.validationResults.overall ? '#4CAF50' : '#F44336' }
+                    { color: validationResults.overall ? '#4CAF50' : '#F44336' }
                   ]}>
-                    {comparisonData.validationResults.overall ? '✅ VALID' : '❌ ISSUES'}
+                    {validationResults.overall ? '✅ VALID' : '❌ ISSUES'}
                   </Text>
                 </View>
               </View>
@@ -99,7 +105,7 @@ return;
             {/* Field Mappings */}
             <View style={styles.comparisonSection}>
               <Text style={styles.comparisonSectionTitle}>🔄 Field Mappings</Text>
-              {Object.entries(comparisonData.fieldMappings).map(([fieldName, mapping]: [string, FieldMapping]) => (
+              {Object.entries(fieldMappings).map(([fieldName, mapping]: [string, FieldMapping]) => (
                 <View key={fieldName} style={[
                   styles.comparisonFieldItem,
                   mapping.status === 'error' && styles.comparisonFieldItemError,
@@ -115,24 +121,24 @@ return;
                     </Text>
                   </View>
 
-                  <View style={styles.comparisonFieldRow}>
-                    <Text style={styles.comparisonFieldLabel}>Source:</Text>
+                  <View style={styles.comparisonRow}>
+                    <Text style={styles.comparisonLabel}>Source:</Text>
                     <Text style={styles.comparisonFieldSource}>{mapping.source}</Text>
                   </View>
 
-                  <View style={styles.comparisonFieldRow}>
-                    <Text style={styles.comparisonFieldLabel}>Original:</Text>
-                    <Text style={styles.comparisonFieldValue}>{String(mapping.originalValue)}</Text>
+                  <View style={styles.comparisonRow}>
+                    <Text style={styles.comparisonLabel}>Original:</Text>
+                    <Text style={styles.comparisonValue}>{String(mapping.originalValue)}</Text>
                   </View>
 
-                  <View style={styles.comparisonFieldRow}>
-                    <Text style={styles.comparisonFieldLabel}>TDAC:</Text>
-                    <Text style={styles.comparisonFieldValue}>{String(mapping.tdacValue)}</Text>
+                  <View style={styles.comparisonRow}>
+                    <Text style={styles.comparisonLabel}>TDAC:</Text>
+                    <Text style={styles.comparisonValue}>{String(mapping.tdacValue)}</Text>
                   </View>
 
                   {mapping.transformation && (
-                    <View style={styles.comparisonFieldRow}>
-                      <Text style={styles.comparisonFieldLabel}>Transform:</Text>
+                    <View style={styles.comparisonRow}>
+                      <Text style={styles.comparisonLabel}>Transform:</Text>
                       <Text style={styles.comparisonFieldTransform}>{mapping.transformation}</Text>
                     </View>
                   )}
@@ -176,7 +182,8 @@ return;
               </TouchableOpacity>
             </View>
           </ScrollView>
-        )}
+          );
+        })()}
       </SafeAreaView>
     </Modal>
   );

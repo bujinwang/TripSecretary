@@ -6,10 +6,10 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { designTokens, spacing, borderRadius, typography } from '../../theme/designTokens';
-import { animateValue, createAnimationValue, ANIMATIONS } from '../../utils/animations';
+import { animateValue, createAnimationValue, ANIMATION_DURATION, EASING } from '../../utils/animations';
 import ActionButton from './ActionButton';
 
-const EmptyStateView = ({ onStartPreparation }) => {
+const EmptyStateView = ({ onStartPreparation }: { onStartPreparation: () => void }) => {
   // Animation refs
   const fadeAnim = useRef(createAnimationValue(0)).current;
   const scaleAnim = useRef(createAnimationValue(0.8)).current;
@@ -17,9 +17,9 @@ const EmptyStateView = ({ onStartPreparation }) => {
 
   // Animate in on mount
   useEffect(() => {
-    animateValue(fadeAnim, { to: 1, duration: ANIMATIONS.duration.normal });
-    animateValue(scaleAnim, { to: 1, duration: ANIMATIONS.duration.normal, easing: ANIMATIONS.easing.bounce });
-    animateValue(slideAnim, { to: 0, duration: ANIMATIONS.duration.normal, easing: ANIMATIONS.easing.bounce });
+    animateValue(fadeAnim, { to: 1, duration: ANIMATION_DURATION.normal });
+    animateValue(scaleAnim, { to: 1, duration: ANIMATION_DURATION.normal, easing: EASING.bounce });
+    animateValue(slideAnim, { to: 0, duration: ANIMATION_DURATION.normal, easing: EASING.bounce });
   }, []);
 
   return (
@@ -108,7 +108,7 @@ const EmptyStateView = ({ onStartPreparation }) => {
           variant="primary"
           size="large"
           gradient={true}
-          style={styles.ctaButton}
+          style={styles.ctaButton as Record<string, unknown>}
         />
       </Animated.View>
     </Animated.View>
@@ -130,14 +130,15 @@ const styles = StyleSheet.create({
     color: designTokens.text,
     textAlign: 'center',
     marginBottom: spacing.md,
-    fontWeight: '600',
+    fontWeight: '600' as const,
   },
   description: {
     ...typography.body1,
     color: designTokens.textSecondary,
-    textAlign: 'center',
+    textAlign: 'center' as const,
     lineHeight: 22,
     marginBottom: spacing.lg,
+    fontWeight: '400' as const,
   },
   hintsContainer: {
     backgroundColor: designTokens.primaryLight,
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
   hintsTitle: {
     ...typography.body1,
     color: designTokens.primary,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     marginBottom: spacing.sm,
   },
   hintsList: {
@@ -159,6 +160,7 @@ const styles = StyleSheet.create({
     ...typography.body2,
     color: designTokens.primary,
     lineHeight: 18,
+    fontWeight: '400' as const,
   },
   ctaButton: {
     minWidth: 200,

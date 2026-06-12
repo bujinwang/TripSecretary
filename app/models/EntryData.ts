@@ -5,7 +5,7 @@
 
 import SecureStorageService from '../services/security/SecureStorageService';
 
-interface EntryDataParams {
+export interface EntryDataParams {
   id?: string;
   userId?: string;
   passportId?: string;
@@ -45,7 +45,7 @@ class EntryData {
   userId: string | undefined;
   passportId: string | undefined;
   personalInfoId: string | undefined;
-  travelInfoId: string | undefined;
+  travelInfoId: string | null | undefined;
   fundingProof: Record<string, unknown>;
   fundItemIds: string[];
   immigrationNotes: string | undefined;
@@ -209,6 +209,14 @@ class EntryData {
     };
 
     return completeData;
+  }
+
+  getSummary(): Record<string, unknown> {
+    return this.toJSON();
+  }
+
+  async exportData(): Promise<Record<string, unknown>> {
+    return this.toJSON();
   }
 
   toJSON(): Record<string, unknown> {

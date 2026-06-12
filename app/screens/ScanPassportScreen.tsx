@@ -16,6 +16,7 @@ import Button from '../components/Button';
 import BackButton from '../components/BackButton';
 import { colors, typography, spacing, borderRadius } from '../theme';
 import { LocalOCRService } from '../services/ocr';
+import { compressPassportPhoto } from '../utils/imageCompression';
 import { useLocale } from '../i18n/LocaleContext';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -48,8 +49,15 @@ const ScanPassportScreen = ({ navigation, route }: any) => {
           base64: false,
         });
 
+        // Compress the passport photo before OCR
+        let photoUri = photo.uri;
+        try {
+          const compressed = await compressPassportPhoto(photoUri);
+          photoUri = compressed.uri;
+        } catch (e) { /* use original if compression fails */ }
+
         // Process the image with OCR
-        await processPassportImage(photo.uri);
+        await processPassportImage(photoUri);
       } catch (error) {
         console.error('Error taking picture:', error);
         Alert.alert(

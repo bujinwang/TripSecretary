@@ -16,7 +16,7 @@ jest.mock('../../services/data/UserDataService', () => ({
 }));
 
 describe('EntryCompletionCalculator Multi-Destination', () => {
-  let calculator;
+  let calculator: typeof EntryCompletionCalculator;
 
   beforeEach(() => {
     calculator = EntryCompletionCalculator; // Use the singleton instance
@@ -62,16 +62,16 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
       expect(result.destinations).toHaveProperty('sg');
 
       // Thailand should be complete with validated travel details
-      expect(result.destinations.th.totalPercent).toBe(100);
-      expect(result.destinations.th.isReady).toBe(true);
+      expect((result.destinations.th as Record<string, unknown>).totalPercent).toBe(100);
+      expect((result.destinations.th as Record<string, unknown>).isReady).toBe(true);
 
       // Japan should be partial (missing funds and some travel info)
-      expect(result.destinations.jp.totalPercent).toBeLessThan(100);
-      expect(result.destinations.jp.isReady).toBe(false);
+      expect((result.destinations.jp as Record<string, unknown>).totalPercent).toBeLessThan(100);
+      expect((result.destinations.jp as Record<string, unknown>).isReady).toBe(false);
 
       // Singapore should be empty
-      expect(result.destinations.sg.totalPercent).toBe(0);
-      expect(result.destinations.sg.isReady).toBe(false);
+      expect((result.destinations.sg as Record<string, unknown>).totalPercent).toBe(0);
+      expect((result.destinations.sg as Record<string, unknown>).isReady).toBe(false);
 
       // Summary should reflect the overall state
       expect(result.summary.totalDestinations).toBe(3);
@@ -126,7 +126,7 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
         lastUpdatedAt: '2024-10-17T10:00:00Z'
       };
 
-      const result = calculator.getDestinationCompletionSummary('th', entryInfo);
+      const result = calculator.getDestinationCompletionSummary('th', entryInfo) as Record<string, unknown>;
 
       expect(result.destinationId).toBe('th');
       expect(result.totalPercent).toBe(100);
@@ -222,6 +222,12 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
   });
 
   describe('cache management', () => {
+    // Access private members for testing
+    const calcInternals = calculator as unknown as {
+      cache: Map<string, unknown>;
+      destinationProgressCache: Map<string, unknown>;
+    };
+
     it('should cache and retrieve destination-specific results', () => {
       const entryInfo = {
         passport: { passportNumber: 'E12345678' },
@@ -237,7 +243,7 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
       const result2 = calculator.getDestinationCompletionSummary('th', entryInfo);
 
       expect(result1).toEqual(result2);
-      expect(calculator.destinationProgressCache.size).toBeGreaterThan(0);
+      expect(calcInternals.destinationProgressCache.size).toBeGreaterThan(0);
     });
 
     it('should clear destination-specific cache', () => {
@@ -246,14 +252,14 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
       calculator.getDestinationCompletionSummary('th', entryInfo);
       calculator.getDestinationCompletionSummary('jp', entryInfo);
       
-      expect(calculator.destinationProgressCache.size).toBeGreaterThan(0);
+      expect(calcInternals.destinationProgressCache.size).toBeGreaterThan(0);
       
       calculator.clearDestinationCache('th');
       
       // Should still have jp cache but not th
-      const hasThailandCache = Array.from(calculator.destinationProgressCache.keys())
+      const hasThailandCache = Array.from(calcInternals.destinationProgressCache.keys())
         .some((key: unknown) => (key as string).includes('destination_th_'));
-      const hasJapanCache = Array.from(calculator.destinationProgressCache.keys())
+      const hasJapanCache = Array.from(calcInternals.destinationProgressCache.keys())
         .some((key: unknown) => (key as string).includes('destination_jp_'));
         
       expect(hasThailandCache).toBe(false);
@@ -266,13 +272,13 @@ describe('EntryCompletionCalculator Multi-Destination', () => {
       calculator.getCompletionSummary(entryInfo);
       calculator.getDestinationCompletionSummary('th', entryInfo);
       
-      expect(calculator.cache.size).toBeGreaterThan(0);
-      expect(calculator.destinationProgressCache.size).toBeGreaterThan(0);
+      expect(calcInternals.cache.size).toBeGreaterThan(0);
+      expect(calcInternals.destinationProgressCache.size).toBeGreaterThan(0);
       
       calculator.clearAllCaches();
       
-      expect(calculator.cache.size).toBe(0);
-      expect(calculator.destinationProgressCache.size).toBe(0);
+      expect(calcInternals.cache.size).toBe(0);
+      expect(calcInternals.destinationProgressCache.size).toBe(0);
     });
   });
 });

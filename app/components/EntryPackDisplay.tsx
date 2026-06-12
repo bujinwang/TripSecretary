@@ -15,8 +15,33 @@ import { useLocale } from '../i18n/LocaleContext';
 const { width: screenWidth } = Dimensions.get('window');
 const QR_SIZE = Math.min(screenWidth * 0.6, 250);
 
+interface CountryConfig {
+  entryCardName: string;
+  entryCardTab: string;
+  entryCardTitle: string;
+  personalInfoTitle: string;
+  travelInfoTitle: string;
+  fundsTitle: string;
+  currency: string;
+  currencyName: string;
+  notProvided: string;
+  fallbackHotelText: string;
+  labels: Record<string, string>;
+  dateLocales: string[];
+  placeholderTitle?: string;
+  placeholderDescription?: string;
+  placeholderNote?: string;
+}
+
+interface FundItem {
+  amount: number | string;
+  currency?: string;
+  type?: string;
+  [key: string]: unknown;
+}
+
 // Country-specific configurations
-const countryConfigs: Record<string, any> = {
+const countryConfigs: Record<string, CountryConfig> = {
   th: {
     entryCardName: 'TDAC',
     entryCardTab: 'tdac',
@@ -332,7 +357,7 @@ const EntryPackDisplay = ({
   const [photoViewerVisible, setPhotoViewerVisible] = useState(false);
   const [selectedPhotoUri, setSelectedPhotoUri] = useState<string | null>(null);
   const tdacSubmission = (entryPack as Record<string, unknown>)?.tdacSubmission || null;
-  const tdacPdfCandidate = (tdacSubmission as any)?.pdfUrl || (tdacSubmission as any)?.pdfPath || null;
+  const tdacPdfCandidate = (tdacSubmission as Record<string, unknown>)?.pdfUrl as string | undefined || (tdacSubmission as Record<string, unknown>)?.pdfPath as string | undefined || null;
   const [resolvedTdacPdfUri, setResolvedTdacPdfUri] = useState(tdacPdfCandidate || null);
 
   useEffect(() => {
@@ -352,7 +377,7 @@ const EntryPackDisplay = ({
           setResolvedTdacPdfUri(result.uri || tdacPdfCandidate);
         }
       } catch (_error) {
-        console.warn('EntryPackDisplay', 'Failed to resolve TDAC PDF path', error);
+        console.warn('EntryPackDisplay', 'Failed to resolve TDAC PDF path', _error);
         if (isMounted) {
           setResolvedTdacPdfUri(tdacPdfCandidate);
         }
@@ -634,35 +659,35 @@ return display;
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>{config.labels.fullName}:</Text>
           <Text style={styles.infoValue}>
-            {(entryPack as Record<string, unknown>)?.passport && ((entryPack as Record<string, unknown>).passport as Record<string, string>).fullName || personalInfo?.fullName || config.notProvided}
+            {(((entryPack as Record<string, unknown>)?.passport && ((entryPack as Record<string, unknown>).passport as Record<string, string>).fullName) || (personalInfo?.fullName as string | undefined) || config.notProvided) as string}
           </Text>
         </View>
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>{config.labels.passportNumber}:</Text>
           <Text style={styles.infoValue}>
-            {(entryPack as Record<string, unknown>)?.passport && ((entryPack as Record<string, unknown>).passport as Record<string, string>).passportNumber || personalInfo?.passportNumber || config.notProvided}
+            {(((entryPack as Record<string, unknown>)?.passport && ((entryPack as Record<string, unknown>).passport as Record<string, string>).passportNumber) || (personalInfo?.passportNumber as string | undefined) || config.notProvided) as string}
           </Text>
         </View>
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>{config.labels.nationality}:</Text>
           <Text style={styles.infoValue}>
-            {(entryPack as Record<string, unknown>)?.passport && ((entryPack as Record<string, unknown>).passport as Record<string, string>).nationality || personalInfo?.nationality || config.notProvided}
+            {(((entryPack as Record<string, unknown>)?.passport && ((entryPack as Record<string, unknown>).passport as Record<string, string>).nationality) || (personalInfo?.nationality as string | undefined) || config.notProvided) as string}
           </Text>
         </View>
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>{config.labels.passportExpiryDate}:</Text>
           <Text style={styles.infoValue}>
-            {formatBilingualDate(((entryPack as Record<string, unknown>)?.passport as Record<string, string>)?.expiryDate || personalInfo?.expiryDate) || config.notProvided}
+            {formatBilingualDate((((entryPack as Record<string, unknown>)?.passport as Record<string, string>)?.expiryDate || personalInfo?.expiryDate) as string) || config.notProvided}
           </Text>
         </View>
 
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>{config.labels.dateOfBirth}:</Text>
           <Text style={styles.infoValue}>
-            {formatBilingualDate(((entryPack as Record<string, unknown>)?.passport as Record<string, string>)?.dateOfBirth || personalInfo?.dateOfBirth)}
+            {formatBilingualDate((((entryPack as Record<string, unknown>)?.passport as Record<string, string>)?.dateOfBirth || personalInfo?.dateOfBirth) as string)}
           </Text>
         </View>
       </View>
@@ -761,7 +786,7 @@ return config.notProvided;
           {hasLengthOfStay && (
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>{config.labels.lengthOfStay}:</Text>
-              <Text style={styles.infoValue}>{lengthOfStayRaw}</Text>
+              <Text style={styles.infoValue}>{lengthOfStayRaw as string | number | undefined}</Text>
             </View>
           )}
         </View>
@@ -800,7 +825,7 @@ return config.notProvided;
 
         {funds && funds.length > 0 ? (
           (funds as Record<string, unknown>[]).map((fund: Record<string, unknown>, index: number) => (
-            <View key={index} style={styles.fundItem}>
+            <View key={String(index)} style={styles.fundItem}>
               <View style={styles.fundHeader}>
                 <Text style={styles.fundType}>
                   {getFundTypeLabel(fund.type as string)}
@@ -810,13 +835,13 @@ return config.notProvided;
                 </Text>
               </View>
 
-              {(fund.details || fund.description) && (
+              {(fund.details || fund.description) ? (
                 <Text style={styles.fundDescription}>
-                  {fund.details || fund.description}
+                  {(fund.details || fund.description) as string}
                 </Text>
-              )}
+              ) : null}
 
-              {(fund.photoUri || fund.proofPhoto) && (
+              {(fund.photoUri || fund.proofPhoto) ? (
                 <TouchableOpacity
                   onPress={() => handleOpenPhotoViewer((fund.photoUri || fund.proofPhoto) as string)}
                   style={styles.fundProofContainer}
@@ -833,7 +858,7 @@ return config.notProvided;
                      'แตะเพื่อดูรูป'}
                   </Text>
                 </TouchableOpacity>
-              )}
+              ) : null}
             </View>
           ))
         ) : (
@@ -893,7 +918,7 @@ return config.notProvided;
 
     return (
       <View style={styles.section}>
-        {tdacSubmission && (tdacSubmission as any).arrCardNo ? (
+        {tdacSubmission && (tdacSubmission as Record<string, unknown>).arrCardNo ? (
           <>
             {/* PDF Viewer Section */}
             {resolvedTdacPdfUri && (
@@ -902,6 +927,7 @@ return config.notProvided;
                   source={{ uri: resolvedTdacPdfUri }}
                   style={styles.pdfViewer}
                   showPageIndicator={true}
+                  onLoadComplete={() => {}}
                   onError={(error: unknown) => {
                     console.error('PDF display error:', error);
                   }}
@@ -949,6 +975,7 @@ return config.notProvided;
                   showPageIndicator={true}
                   showWatermark={true}
                   watermarkText="ตัวอย่าง"
+                  onLoadComplete={() => {}}
                   onError={(error: unknown) => {
                     console.error('Sample PDF display error:', error);
                   }}
@@ -973,17 +1000,21 @@ return config.notProvided;
   };
 
   const getTipsConfig = () => {
-    const tipsConfig: Record<string, any> = {
+    interface TipsConfigEntry {
+      title: string;
+      questions: Array<{ q: string; a: string }>;
+    }
+    const tipsConfig: Record<string, TipsConfigEntry> = {
       thailand: {
         title: '💡 คำถามที่พบบ่อยจากเจ้าหน้าที่ตรวจคนเข้าเมือง / Immigration Officer FAQs',
         questions: [
           {
             q: 'Q: จุดประสงค์ในการมาไทยคืออะไร? / What is the purpose of your visit?',
-            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'ท่องเที่ยว / Tourism'
+            a: (travelInfo?.travelPurpose as string | undefined) || (travelInfo?.purposeOfVisit as string | undefined) || 'ท่องเที่ยว / Tourism'
           },
           {
             q: 'Q: คุณจะพำนักในประเทศไทยนานเท่าใด? / How long will you stay in Thailand?',
-            a: travelInfo?.lengthOfStay || '30 วัน / 30 days'
+            a: (travelInfo?.lengthOfStay as string | undefined) || '30 วัน / 30 days'
           },
           {
             q: 'Q: คุณจะพักที่ไหน? / Where will you be staying?',
@@ -1000,11 +1031,11 @@ return config.notProvided;
         questions: [
           {
             q: 'Q: 您來臺灣的目的是什麼？ / What is the purpose of your visit to Taiwan?',
-            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || '旅遊 / Tourism'
+            a: (travelInfo?.travelPurpose as string | undefined) || (travelInfo?.purposeOfVisit as string | undefined) || '旅遊 / Tourism'
           },
           {
             q: 'Q: 您會在臺灣停留多久？ / How long will you stay in Taiwan?',
-            a: travelInfo?.lengthOfStay || '7 天 / 7 days'
+            a: (travelInfo?.lengthOfStay as string | undefined) || '7 天 / 7 days'
           },
           {
             q: 'Q: 您會住在哪裡？ / Where will you be staying?',
@@ -1019,8 +1050,8 @@ return config.notProvided;
       malaysia: {
         title: '💡 Immigration Officer FAQs / Soalan Lazim Pegawai Imigresen',
         questions: [
-          { q: 'Q: What is the purpose of your visit? / Apakah tujuan lawatan anda?', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / Pelancongan' },
-          { q: 'Q: How long will you stay? / Berapa lama anda akan tinggal?', a: travelInfo?.lengthOfStay || '7 days / 7 hari' },
+          { q: 'Q: What is the purpose of your visit? / Apakah tujuan lawatan anda?', a: (travelInfo?.travelPurpose as string | undefined) || (travelInfo?.purposeOfVisit as string | undefined) || 'Tourism / Pelancongan' },
+          { q: 'Q: How long will you stay? / Berapa lama anda akan tinggal?', a: (travelInfo?.lengthOfStay as string | undefined) || '7 days / 7 hari' },
           { q: 'Q: Where will you be staying? / Di mana anda akan tinggal?', a: stayLocationAnswer },
           { q: 'Q: How much money do you have? / Berapa banyak wang yang anda ada?', a: `${formatBilingualCurrency(totalFunds)} (Cash and cards / Tunai dan kad)` }
         ]
@@ -1028,8 +1059,8 @@ return config.notProvided;
       usa: {
         title: '💡 CBP Officer FAQs',
         questions: [
-          { q: 'Q: What is the purpose of your visit?', a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism' },
-          { q: 'Q: How long will you stay?', a: travelInfo?.lengthOfStay || '7 days' },
+          { q: 'Q: What is the purpose of your visit?', a: (travelInfo?.travelPurpose as string | undefined) || (travelInfo?.purposeOfVisit as string | undefined) || 'Tourism' },
+          { q: 'Q: How long will you stay?', a: (travelInfo?.lengthOfStay as string | undefined) || '7 days' },
           { q: 'Q: Where will you be staying?', a: stayLocationAnswer },
           { q: 'Q: How much money do you have?', a: `${formatBilingualCurrency(totalFunds)} (Cash and bank cards)` }
         ]
@@ -1039,11 +1070,11 @@ return config.notProvided;
         questions: [
           {
             q: 'Q: What is the purpose of your visit to Singapore? / 你来新加坡的目的是什么？',
-            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Tourism / 旅游'
+            a: (travelInfo?.travelPurpose as string | undefined) || (travelInfo?.purposeOfVisit as string | undefined) || 'Tourism / 旅游'
           },
           {
             q: 'Q: How long will you stay in Singapore? / 你会在新加坡停留多久？',
-            a: travelInfo?.lengthOfStay || '7 days / 7天'
+            a: (travelInfo?.lengthOfStay as string | undefined) || '7 days / 7天'
           },
           {
             q: 'Q: Where will you be staying? / 你会住在哪里？',
@@ -1064,11 +1095,11 @@ return config.notProvided;
         questions: [
           {
             q: 'Q: 你來香港的目的是什麼？ / What is the purpose of your visit?',
-            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || '旅遊 / Tourism'
+            a: (travelInfo?.travelPurpose as string | undefined) || (travelInfo?.purposeOfVisit as string | undefined) || '旅遊 / Tourism'
           },
           {
             q: 'Q: 你會在香港停留多久？ / How long will you stay in Hong Kong?',
-            a: travelInfo?.lengthOfStay || '7 天 / 7 days'
+            a: (travelInfo?.lengthOfStay as string | undefined) || '7 天 / 7 days'
           },
           {
             q: 'Q: 你會住在哪裡？ / Where will you be staying?',
@@ -1085,11 +1116,11 @@ return config.notProvided;
         questions: [
           {
             q: 'Q: 日本への渡航目的は何ですか？ / What is the purpose of your visit to Japan?',
-            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || '観光 / Tourism'
+            a: (travelInfo?.travelPurpose as string | undefined) || (travelInfo?.purposeOfVisit as string | undefined) || '観光 / Tourism'
           },
           {
             q: 'Q: 日本にどのくらい滞在しますか？ / How long will you stay in Japan?',
-            a: travelInfo?.lengthOfStay || '7日間 / 7 days'
+            a: (travelInfo?.lengthOfStay as string | undefined) || '7日間 / 7 days'
           },
           {
             q: 'Q: 日本での滞在先はどこですか？ / Where will you be staying in Japan?',
@@ -1106,11 +1137,11 @@ return config.notProvided;
         questions: [
           {
             q: 'Q: Bạn đến Việt Nam với mục đích gì?',
-            a: travelInfo?.travelPurpose || travelInfo?.purposeOfVisit || 'Du lịch'
+            a: (travelInfo?.travelPurpose as string | undefined) || (travelInfo?.purposeOfVisit as string | undefined) || 'Du lịch'
           },
           {
             q: 'Q: Bạn sẽ ở lại Việt Nam bao lâu?',
-            a: travelInfo?.lengthOfStay || '7 ngày'
+            a: (travelInfo?.lengthOfStay as string | undefined) || '7 ngày'
           },
           {
             q: 'Q: Bạn sẽ lưu trú ở đâu?',

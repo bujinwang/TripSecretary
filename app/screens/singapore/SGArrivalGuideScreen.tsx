@@ -23,7 +23,7 @@ const SGArrivalGuideScreen: React.FC<SGArrivalGuideProps> = ({ navigation, route
     destination = null,
     travelInfo = null,
   } = route.params ?? {};
-  const passport = UserDataService.toSerializablePassport(rawPassport) as SerializablePassport | null;
+  const passport = UserDataService.toSerializablePassport(rawPassport ?? null) as SerializablePassport | null;
   const { t } = useLocale();
 
   const steps = useMemo(
@@ -33,7 +33,7 @@ const SGArrivalGuideScreen: React.FC<SGArrivalGuideProps> = ({ navigation, route
         defaultValue: [],
         passport,
         travelInfo,
-      }) as unknown[]),
+      } as unknown as Record<string, string | number | undefined>) as unknown as Record<string, unknown>[]),
     [t, passport, travelInfo]
   );
 
@@ -42,7 +42,7 @@ const SGArrivalGuideScreen: React.FC<SGArrivalGuideProps> = ({ navigation, route
       (t('singapore.guide.quickActions.items', {
         returnObjects: true,
         defaultValue: [],
-      }) as unknown[]),
+      } as unknown as Record<string, string | number | undefined>) as unknown as Record<string, unknown>[]),
     [t]
   );
 
@@ -73,38 +73,42 @@ const SGArrivalGuideScreen: React.FC<SGArrivalGuideProps> = ({ navigation, route
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('singapore.guide.stepSectionTitle')}</Text>
-          {steps.map((step: Record<string, unknown>, index: number) => (
+          {steps.map((step, index: number) => {
+            const s = step as Record<string, unknown>;
+            return (
             <View key={`sg-step-${index}`} style={styles.stepCard}>
               <View style={styles.stepHeader}>
                 <View style={styles.stepNumber}>
                   <Text style={styles.stepNumberText}>{index + 1}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.stepTitle}>{step.title}</Text>
-                  <Text style={styles.stepSubtitle}>{step.subtitle}</Text>
+                  <Text style={styles.stepTitle}>{s.title as string}</Text>
+                  <Text style={styles.stepSubtitle}>{s.subtitle as string}</Text>
                 </View>
               </View>
               <View style={styles.stepBody}>
-                {step.details?.map((detail: string, detailIndex: number) => (
+                {(s.details as string[] | undefined)?.map((detail: string, detailIndex: number) => (
                   <Text key={`sg-step-${index}-detail-${detailIndex}`} style={styles.stepBullet}>
                     • {detail}
                   </Text>
                 ))}
               </View>
             </View>
-          ))}
+          )})}
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('singapore.guide.quickActions.title')}</Text>
           <View style={styles.quickActions}>
-            {quickActions.map((action: Record<string, unknown>, index: number) => (
+            {quickActions.map((action, index: number) => {
+              const a = action as Record<string, unknown>;
+              return (
               <View key={`sg-action-${index}`} style={styles.quickActionCard}>
-                <Text style={styles.quickActionIcon}>{action.icon}</Text>
-                <Text style={styles.quickActionTitle}>{action.title}</Text>
-                <Text style={styles.quickActionDescription}>{action.description}</Text>
+                <Text style={styles.quickActionIcon}>{a.icon as string}</Text>
+                <Text style={styles.quickActionTitle}>{a.title as string}</Text>
+                <Text style={styles.quickActionDescription}>{a.description as string}</Text>
               </View>
-            ))}
+            )})}
           </View>
         </View>
 

@@ -664,7 +664,7 @@ class SnapshotService {
       const snapshotPhotoDir = `${this.snapshotStorageDir}${snapshotId}/`;
 
       const directory = new FileSystem.Directory(snapshotPhotoDir);
-      if (directory.exists) {
+      if ((directory as unknown as Record<string, unknown>).exists) {
         directory.delete();
         logger.info('SnapshotService', 'Snapshot photos deleted', { snapshotPhotoDir });
       }
@@ -869,16 +869,16 @@ class SnapshotService {
 
   private async ensureDirectory(path: string): Promise<void> {
     const directory = new FileSystem.Directory(path);
-    if (directory.exists) {
+    if ((directory as unknown as Record<string, unknown>).exists) {
       return;
     }
 
     const file = new FileSystem.File(path);
-    if (file.exists) {
+    if ((file as unknown as Record<string, unknown>).exists) {
       throw new Error(`Expected directory at path: ${path}`);
     }
 
-    directory.create({ intermediates: true, idempotent: true });
+    directory.create({ intermediates: true, idempotent: true } as unknown as Record<string, unknown>);
   }
 
   private async listDirectory(path: string): Promise<string[]> {
@@ -887,7 +887,11 @@ class SnapshotService {
       return [];
     }
 
-    return directory.list().map((entry: any) => entry.name ?? entry.uri ?? String(entry));
+    const items = await directory.list();
+    return items.map((entry) => {
+      const e = entry as unknown as Record<string, unknown>;
+      return (e.name ?? e.uri ?? String(entry)) as string;
+    });
   }
 
   private async getFileInfo(path: string): Promise<FileSystem.FileInfo | null> {
@@ -901,7 +905,7 @@ class SnapshotService {
         exists: true,
         uri: file.uri,
         size: file.size ?? 0,
-        modificationTime: file.modificationTime ?? undefined
+        modificationTime: (file as unknown as Record<string, unknown>).modificationTime ?? undefined
       } as FileSystem.FileInfo;
     } catch {
       return null;
@@ -915,7 +919,7 @@ class SnapshotService {
 
   private async getFileSize(path: string): Promise<number> {
     const file = new FileSystem.File(path);
-    return file.exists ? file.size ?? 0 : 0;
+    return (file as unknown as Record<string, unknown>).exists ? file.size ?? 0 : 0;
   }
 
   private async readFile(path: string, encoding?: FileEncoding): Promise<string> {
@@ -933,9 +937,9 @@ class SnapshotService {
 
   private async writeFile(path: string, data: string, encoding?: FileEncoding): Promise<void> {
     const file = new FileSystem.File(path);
-    const parent = file.parentDirectory;
+    const parent = (file as unknown as Record<string, unknown>).parentDirectory as FileSystem.Directory;
     if (!parent.exists) {
-      parent.create({ intermediates: true, idempotent: true });
+      parent.create({ intermediates: true, idempotent: true } as unknown as Record<string, unknown>);
     }
 
     file.write(data, encoding ? { encoding } : undefined);
@@ -948,17 +952,17 @@ class SnapshotService {
     }
 
     const destination = new FileSystem.File(to);
-    const parent = destination.parentDirectory;
+    const parent = (destination as unknown as Record<string, unknown>).parentDirectory as FileSystem.Directory;
     if (!parent.exists) {
-      parent.create({ intermediates: true, idempotent: true });
+      parent.create({ intermediates: true, idempotent: true } as unknown as Record<string, unknown>);
     }
 
-    source.copy(destination);
+    source.copy(destination.uri);
   }
 
   private async deleteFile(path: string): Promise<void> {
     const file = new FileSystem.File(path);
-    if (file.exists) {
+    if ((file as unknown as Record<string, unknown>).exists) {
       file.delete();
     }
   }
@@ -987,7 +991,7 @@ class SnapshotService {
               const photoInfo = await this.getFileInfo(photo.snapshotPath);
               if (photoInfo) {
                 const base64 = await this.readFile(photo.snapshotPath, FileSystem.EncodingType.Base64);
-                photoData[photo.fundItemId] = base64;
+                photoData[photo.fundItemId ?? ''] = base64;
               }
             }
           } catch (photoError: any) {
@@ -1254,7 +1258,7 @@ class SnapshotService {
         return 0;
       }
 
-      const items = directory.list();
+      const items = await directory.list();
 
       for (const item of items) {
         if (item instanceof FileSystem.Directory) {

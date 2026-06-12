@@ -1256,11 +1256,6 @@ const baseTranslations = {
         localStorage: 'All information is saved locally on your device only',
       },
     },
-    tabs: {
-      home: 'Home',
-      history: 'Archive',
-      profile: 'Profile',
-    },
     screenTitles: {
       scanPassport: 'Scan Document',
       selectDestination: 'Select Destination',
@@ -1943,20 +1938,6 @@ const baseTranslations = {
             help: 'Please enter relationship (in English)',
           },
         },
-        photo: {
-          choose: 'Choose Photo',
-          takePhoto: 'Take Photo',
-          fromLibrary: 'Choose from Library',
-          cancel: 'Cancel',
-          cameraPermission: 'Camera Permission Required',
-          cameraPermissionMessage: 'Please allow camera access in settings',
-          cameraError: 'Camera Error',
-          cameraErrorMessage: 'Camera not supported in simulator, please use a real device or choose from library',
-          libraryPermission: 'Photo Library Permission Required',
-          libraryPermissionMessage: 'Please allow photo library access in settings',
-          chooseFailed: 'Failed to Choose Photo',
-          chooseFailedMessage: 'Please try again',
-        },
         continueButton: 'Continue',
       },
       tdacWebView: {
@@ -2288,23 +2269,6 @@ const baseTranslations = {
           duplicateSubmission: 'This entry has already been submitted',
           rateLimitExceeded: 'Too many attempts - please wait {{minutes}} minutes',
         },
-      },
-    },
-    sg: {
-      navigation: {
-        submitButton: {
-          default: '保存并继续',
-          incomplete: '请先补全必填信息',
-          almostDone: '已接近完成，请再检查一遍',
-          ready: '准备就绪，可提交 SG Arrival 信息',
-        },
-      },
-      travelInfo: sgTravelInfoZh,
-      result: {
-        digitalBadge: '抵达前3天提交',
-        digitalTitle: '新加坡 SG Arrival Card',
-        digitalHighlight: '利用通关包快速完成SG Arrival Card，请保留确认邮件或短信以备入境查验。',
-        digitalButton: '启动SG Arrival助手',
       },
     },
     japan: {
@@ -2657,214 +2621,6 @@ const baseTranslations = {
         printFailed: 'Print failed',
       },
     },
-    profile: {
-      header: 'Profile',
-      user: {
-        phone: 'Phone: {{phone}}',
-      },
-      common: {
-        notFilled: 'Not filled',
-      },
-      personal: {
-        title: 'Personal Information',
-        subtitle: 'Update border details',
-        collapsedHint: 'Tap to expand personal information',
-        fields: {
-          dateOfBirth: {
-            title: 'Date of Birth',
-            subtitle: 'Date of Birth',
-            placeholder: 'YYYY-MM-DD',
-          },
-          gender: {
-            title: 'Gender',
-            subtitle: 'Gender',
-            placeholder: 'MALE / FEMALE',
-          },
-          occupation: {
-            title: 'Occupation',
-            subtitle: 'Occupation',
-            placeholder: 'Occupation',
-          },
-          provinceCity: {
-            title: 'City / Province',
-            subtitle: 'Province / City of Residence',
-            placeholder: 'Province / City',
-          },
-          countryRegion: {
-            title: 'Country / Region',
-            subtitle: 'Country / Region',
-            placeholder: 'Country / Region',
-          },
-          phone: {
-            title: 'Phone Number',
-            subtitle: 'Phone',
-            placeholder: '+86 1234567890',
-          },
-          email: {
-            title: 'Email Address',
-            subtitle: 'Email',
-            placeholder: 'your@email.com',
-          },
-        },
-      },
-      funding: {
-        title: 'Funding Proof Checklist',
-        subtitle: 'Show quickly at immigration',
-        collapsedHint: 'Tap to expand funding checklist',
-        addButton: 'Add Fund Item',
-        selectType: 'Select Fund Item Type',
-        selectTypeMessage: 'Choose the type of fund item to add',
-        empty: 'No fund items yet. Tap below to add your first item.',
-        footerNote: 'Information syncs to your entry pack for immigration checks.',
-        actions: {
-          scanProof: 'Scan / Upload Funding Proof',
-        },
-        fields: {
-          cashAmount: {
-            title: 'Cash on hand',
-            placeholder: 'e.g. 10,000 THB cash + 500 USD',
-            sample: '10,000 THB equivalent cash (about ¥2,000)',
-          },
-          bankCards: {
-            title: 'Bank cards & balances',
-            placeholder: 'e.g.\nCMB Visa (****1234) · Balance 20,000 CNY',
-            sample:
-              'CMB Visa (****1234) · Balance 20,000 CNY\nICBC Debit (****8899) · Balance 15,000 CNY',
-          },
-          supportingDocs: {
-            title: 'Supporting documents',
-            placeholder: 'e.g. bank balance screenshots, transaction PDFs, statements',
-            sample: 'Bank app screenshots and recent transaction PDFs saved',
-          },
-        },
-      },
-      fundItem: {
-        create: {
-          title: 'Add Fund Item',
-          success: 'Fund item added successfully',
-        },
-        detail: {
-          title: 'Fund Item Details',
-          editTitle: 'Edit Fund Item',
-          edit: 'Edit',
-          delete: 'Delete',
-          save: 'Save Changes',
-          cancel: 'Cancel',
-          manageAll: 'Manage All Funds',
-          addPhoto: 'Add Photo',
-          replacePhoto: 'Replace Photo',
-          viewPhoto: 'Tap to view full size',
-          noPhoto: 'No photo attached',
-          photo: 'Photo',
-          photoOptions: 'Choose an option',
-          takePhoto: 'Take Photo',
-          chooseFromLibrary: 'Choose from Library',
-          photoHint: 'Pinch to zoom, drag to pan',
-        },
-        fields: {
-          amount: 'Amount',
-          currency: 'Currency',
-          description: 'Description',
-          descriptionPlaceholder: 'Add a description (optional)',
-          type: 'Type',
-          selectCurrency: 'Select Currency',
-        },
-        types: {
-          CASH: 'Cash',
-          BANK_CARD: 'Bank Card',
-          DOCUMENT: 'Supporting Document',
-        },
-        deleteConfirm: {
-          title: 'Delete Fund Item',
-          message: 'Are you sure you want to delete this fund item?',
-          confirm: 'Delete',
-          cancel: 'Cancel',
-        },
-        validation: {
-          amountRequired: 'Amount is required',
-          amountInvalid: 'Amount must be a valid number',
-          amountPositive: 'Amount must be greater than 0',
-          currencyRequired: 'Currency is required',
-          currencyFormat: 'Currency must be a 3-letter code',
-        },
-        errors: {
-          loadFailed: 'Failed to load fund item details',
-          updateFailed: 'Failed to save changes. Please try again.',
-          deleteFailed: 'Failed to delete fund item. Please try again.',
-          photoFailed: 'Failed to update photo. Please try again.',
-          permissionTitle: 'Permission Required',
-          permissionMessage: 'Please grant permission to access your photo library.',
-          cameraPermissionMessage: 'Please grant permission to access your camera.',
-        },
-        success: {
-          photoUpdated: 'Success',
-          photoUpdatedMessage: 'Photo has been updated successfully.',
-        },
-        accessibility: {
-          amountHint: 'Enter the amount of money for this fund item',
-          currencyHint: 'Opens currency picker to select a currency',
-          descriptionHint: 'Enter an optional description for this fund item',
-          photoPreview: 'Fund item photo preview',
-          photoPreviewHint: 'Double tap to view full size photo',
-          addPhotoHint: 'Opens options to take a photo or choose from library',
-          replacePhotoHint: 'Opens options to take a new photo or choose from library',
-          saveHint: 'Saves your changes and returns to view mode',
-          cancelHint: 'Discards your changes and returns to view mode',
-          editHint: 'Opens edit mode to modify fund item details',
-          deleteHint: 'Deletes this fund item after confirmation',
-          manageAllHint: 'Navigates to the full fund management screen',
-          closeModalHint: 'Closes the fund item detail modal',
-          backHint: 'Returns to the previous screen',
-          closeCurrencyPickerHint: 'Closes the currency picker',
-          selectCurrencyHint: 'Selects this currency',
-        },
-      },
-      passport: {
-        title: 'My Passport',
-        subtitle: '{{passportNo}} · Valid until {{expiry}}',
-        collapsedHint: 'Tap to expand passport details',
-        updateButton: 'Update passport info',
-        fields: {
-          passportNo: 'Passport Number',
-          nationality: 'Nationality',
-          expiry: 'Expiry Date',
-          issueDate: 'Issue Date',
-          issuePlace: 'Issue Place',
-        },
-      },
-      vip: {
-        title: 'Upgrade to Premium',
-        subtitle: 'Unlimited generations, priority processing',
-        upgradeButton: 'Upgrade now',
-      },
-      sections: {
-        myServices: 'My Services',
-        settings: 'Settings & Help',
-      },
-      menu: {
-        documents: { title: 'My Documents', badge: '({{count}})' },
-        history: { title: 'Generation History', badge: '({{count}})' },
-        backup: {
-          title: 'Cloud Backup',
-          subtitle: 'Recent: {{time}}',
-          defaultTime: 'Today',
-        },
-        language: {
-          title: 'Language',
-          subtitle: 'Current: {{language}}',
-        },
-        settings: { title: 'Settings' },
-        help: { title: 'Help Center' },
-        about: { title: 'About Us' },
-        notifications: { title: 'Notification Settings' },
-        notificationLogs: { title: 'Notification Logs', subtitle: 'View notification history and analytics' },
-      },
-      editModal: {
-        save: 'Save',
-      },
-      logout: 'Log out',
-      version: 'Version {{version}}',
-    },
     generating: {
       title: 'Processing',
       message: 'AI is generating your entry pack',
@@ -2885,7 +2641,6 @@ const baseTranslations = {
       },
     },
     immigrationGuide: {
-      openEntryPack: '打开通关包',
       back: 'Back',
       needHelp: 'Need Help',
       previousStep: 'Previous',
@@ -3085,7 +2840,6 @@ const baseTranslations = {
           titleZh: '美国入境指引',
         },
       },
-      hongkong: { entryGuide: { title: 'Hong Kong Entry Guide', titleZh: '香港入境指引' } },
       singapore: { entryGuide: { title: 'Singapore Entry Guide', titleZh: '新加坡入境指引' } },
       malaysia: { entryGuide: { title: 'Malaysia Entry Guide', titleZh: '马来西亚入境指引' } },
       japan: { entryGuide: { title: 'Japan Entry Guide', titleZh: '日本入境指引' } },
@@ -3100,9 +2854,6 @@ const baseTranslations = {
           qr: 'No saved QR codes found',
         },
       },
-    },
-    screenTitles: {
-      tdacFiles: 'Saved TDAC Files',
     },
   },
   zh: {
@@ -4983,20 +4734,6 @@ const baseTranslations = {
             help: '请输入关系 (请使用英文)',
           },
         },
-        photo: {
-          choose: '选择照片',
-          takePhoto: '拍照',
-          fromLibrary: '从相册选择',
-          cancel: '取消',
-          cameraPermission: '需要相机权限',
-          cameraPermissionMessage: '请在设置中允许访问相机',
-          cameraError: '相机错误',
-          cameraErrorMessage: '模拟器不支持相机功能，请使用真机测试或选择相册照片',
-          libraryPermission: '需要相册权限',
-          libraryPermissionMessage: '请在设置中允许访问相册',
-          chooseFailed: '选择照片失败',
-          chooseFailedMessage: '请重试',
-        },
         continueButton: '继续',
       },
       tdacWebView: {
@@ -5408,133 +5145,6 @@ const baseTranslations = {
         printFailed: '打印失败',
       },
     },
-    profile: {
-      header: '我的',
-      user: {
-        phone: '电话：{{phone}}',
-      },
-      common: {
-        notFilled: '未填写',
-      },
-      personal: {
-        title: '个人信息',
-        subtitle: '更新边检所需信息',
-        collapsedHint: '点击展开个人信息',
-        fields: {
-          dateOfBirth: {
-            title: '出生日期',
-            subtitle: '出生日期',
-            placeholder: 'YYYY-MM-DD',
-          },
-          gender: {
-            title: '性别',
-            subtitle: '性别',
-            placeholder: '男 / 女',
-          },
-          occupation: {
-            title: '职业',
-            subtitle: '职业',
-            placeholder: '职业',
-          },
-          provinceCity: {
-            title: '城市 / 省份',
-            subtitle: '居住的省份或城市',
-            placeholder: '省份 / 城市',
-          },
-          countryRegion: {
-            title: '国家 / 地区',
-            subtitle: '国家 / 地区',
-            placeholder: '选择您的国家/地区',
-          },
-          phone: {
-            title: '电话号码',
-            subtitle: '电话',
-            placeholder: '+86 123456789',
-          },
-          email: {
-            title: '电子邮箱',
-            subtitle: '邮箱',
-            placeholder: 'your@email.com',
-          },
-        },
-      },
-      funding: {
-        title: '资金证明清单',
-        subtitle: '在入境时快速出示',
-        collapsedHint: '点击查看资金证明清单',
-        tip: {
-          title: '资金充足',
-          subtitle: '每人至少携带等值 10,000 THB 或等效证明',
-          description:
-            '移民官可能检查现金或银行余额。请准备截图或账单，并列出现金、银行卡及余额以便快速核验。',
-        },
-        footerNote: '信息会同步到入境包以便检查。',
-        actions: {
-          scanProof: '扫描/上传资金证明',
-        },
-        fields: {
-          cashAmount: {
-            title: '随身现金',
-            placeholder: '例如：10000 THB 现金 + 500 USD',
-            sample: '等值 10000 THB 现金（约 ¥2000）',
-          },
-          bankCards: {
-            title: '银行卡及余额',
-            placeholder: '例如：\n招商 Visa(****1234) · 余额 20,000 CNY',
-            sample:
-              '招商 Visa(****1234) · 余额 20,000 CNY\n工行 借记(****8899) · 余额 15,000 CNY',
-          },
-          supportingDocs: {
-            title: '证明文件',
-            placeholder: '例如：App 截图、PDF 账单、银行证明',
-            sample: '保存银行 App 截图及近期账单',
-          },
-        },
-      },
-      passport: {
-        title: '我的护照',
-        subtitle: '{{passportNo}} · 有效期至 {{expiry}}',
-        collapsedHint: '点击展开详情',
-        updateButton: '更新',
-        fields: {
-          passportNo: '护照号码',
-          nationality: '国籍',
-          expiry: '有效期',
-          issueDate: '签发日期',
-          issuePlace: '签发地',
-        },
-      },
-      vip: {
-        title: '升级到高级版',
-        subtitle: '无限生成，优先处理',
-        upgradeButton: '立即升级',
-      },
-      sections: { myServices: '我的服务', settings: '设置与帮助' },
-      menu: {
-        documents: { title: '我的文件', badge: '({{count}})' },
-        history: { title: '历史记录', badge: '({{count}})' },
-        backup: {
-          title: '云备份',
-          subtitle: '最近：{{time}}',
-          defaultTime: '今天',
-        },
-        language: {
-          title: '语言',
-          subtitle: '当前：{{language}}',
-        },
-        settings: { title: '设置' },
-        help: { title: '帮助中心' },
-        about: { title: '关于' },
-        notifications: { title: '通知' },
-        notificationLogs: { title: '通知日志', subtitle: '查看通知历史与分析' },
-        exportData: { title: '导出我的数据', subtitle: '下载入境包数据为 JSON' },
-      },
-      editModal: {
-        save: '保存',
-      },
-      logout: '退出登录',
-      version: '版本 {{version}}',
-    },
     generating: {
       title: 'Traitement',
       message: 'L\'IA génère votre pack',
@@ -5666,7 +5276,6 @@ const baseTranslations = {
           titleZh: '美国入境指引',
         },
       },
-      hongkong: { entryGuide: { title: '香港入境指引', titleZh: '香港入境指引' } },
       singapore: { entryGuide: { title: '新加坡入境指引', titleZh: '新加坡入境指引' } },
       malaysia: { entryGuide: { title: '马来西亚入境指引', titleZh: '马来西亚入境指引' } },
       japan: { entryGuide: { title: '日本入境指引', titleZh: '日本入境指引' } },
@@ -5681,9 +5290,6 @@ const baseTranslations = {
           qr: '未找到已保存的二维码',
         },
       },
-    },
-    screenTitles: {
-      tdacFiles: '已保存的 TDAC 文件',
     },
   },
 };
@@ -6282,11 +5888,13 @@ const countryLangKeys = Object.keys(countryTranslations).filter(
 );
 countryLangKeys.forEach((lang) => {
   try {
-    const base = translations[lang] || {};
-    const countryData = countryTranslations[lang];
+    const translationsRecord = translations as Record<string, Record<string, unknown>>;
+    const countryRecord = countryTranslations as Record<string, Record<string, unknown>>;
+    const base = translationsRecord[lang] || {};
+    const countryData = countryRecord[lang];
     // Only merge if countryData exists and is not a getter
     if (countryData && typeof countryData === 'object') {
-      translations[lang] = deepMergeTranslations(base, countryData);
+      translationsRecord[lang] = deepMergeTranslations(base, countryData);
     }
   } catch (error) {
     console.error(`Error merging translations for ${lang}:`, error);

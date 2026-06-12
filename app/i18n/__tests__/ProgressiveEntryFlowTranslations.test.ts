@@ -15,7 +15,7 @@ import deTranslations from '../translations/countries.de.json';
 
 describe('Progressive Entry Flow Translations', () => {
   const supportedLanguages = ['zh-CN', 'en', 'es', 'fr', 'de'];
-  const translationFiles = {
+  const translationFiles: Record<string, Record<string, unknown>> = {
     'zh-CN': zhTranslations,
     'en': enTranslations,
     'es': esTranslations,
@@ -101,7 +101,7 @@ describe('Progressive Entry Flow Translations', () => {
             const value = getNestedValue(translations, key);
             expect(value).toBeDefined();
             expect(typeof value).toBe('string');
-            expect(value.length).toBeGreaterThan(0);
+            expect((value as unknown as string).length).toBeGreaterThan(0);
           });
         });
       });
@@ -145,7 +145,7 @@ describe('Progressive Entry Flow Translations', () => {
         actionKeys.forEach(key => {
           const value = getNestedValue(translations, key);
           expect(value).toBeDefined();
-          expect(value.length).toBeLessThan(20); // Action buttons should be concise
+          expect((value as unknown as string).length).toBeLessThan(20); // Action buttons should be concise
         });
       });
     });
@@ -163,7 +163,7 @@ describe('Progressive Entry Flow Translations', () => {
         statusKeys.forEach(key => {
           const value = getNestedValue(translations, key);
           expect(value).toBeDefined();
-          expect(value.length).toBeLessThan(15); // Status should be short
+          expect((value as unknown as string).length).toBeLessThan(15); // Status should be short
         });
       });
     });

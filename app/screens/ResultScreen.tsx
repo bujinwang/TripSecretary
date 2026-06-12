@@ -24,29 +24,33 @@ import { getAvailableFeatures, getEntryInstructions } from '../config/destinatio
 import { useTranslation } from '../i18n/LocaleContext';
 import UserDataService from '../services/data/UserDataService';
 
-const ResultScreen = ({ navigation, route }) => {
+interface ResultScreenNavigation {
+  navigate: (screen: string, params?: Record<string, unknown>) => void;
+}
+
+const ResultScreen = ({ navigation, route }: { navigation: ResultScreenNavigation; route: { params?: Record<string, unknown> } }) => {
   const { t } = useTranslation();
-  const routeParams = route.params || {};
+  const routeParams: Record<string, unknown> = route.params || {};
   const { generationId, fromHistory = false, userId, context } = routeParams;
-  const initialAction = routeParams.initialAction || 'guide';
+  const initialAction = (routeParams.initialAction as string) || 'guide';
 
   const [pdfUri, setPdfUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [resultData, setResultData] = useState<Record<string, any> | null>(null);
-  const [shareSession, setShareSession] = useState<Record<string, any> | null>(null);
+  const [resultData, setResultData] = useState<Record<string, unknown> | null>(null);
+  const [shareSession, setShareSession] = useState<Record<string, unknown> | null>(null);
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [japanTravelerData, setJapanTravelerData] = useState<Record<string, any> | null>(null);
+  const [japanTravelerData, setJapanTravelerData] = useState<Record<string, unknown> | null>(null);
 
   // Animation values
   const pulseAnimation = useMemo(() => new Animated.Value(1), []);
   const fadeAnimation = useMemo(() => new Animated.Value(0), []);
 
-  const currentPassport = resultData?.passport || routeParams.passport;
-  const currentDestination = resultData?.destination || routeParams.destination;
-  const currentTravelInfo = resultData?.travelInfo || routeParams.travelInfo;
+  const currentPassport = (resultData?.passport || routeParams.passport) as Record<string, unknown> | undefined;
+  const currentDestination = (resultData?.destination || routeParams.destination) as Record<string, unknown> | undefined;
+  const currentTravelInfo = (resultData?.travelInfo || routeParams.travelInfo) as Record<string, unknown> | undefined;
 
-  const passport = UserDataService.toSerializablePassport(currentPassport);
+  const passport = UserDataService.toSerializablePassport(currentPassport as Parameters<typeof UserDataService.toSerializablePassport>[0]);
   const destination = currentDestination;
   const travelInfo = currentTravelInfo;
   const isThailand = destination?.id === 'th';
@@ -59,8 +63,8 @@ const ResultScreen = ({ navigation, route }) => {
   const initialActionHandledRef = useRef(false);
 
   // 获取目的地特定的功能配置
-  const features = getAvailableFeatures(destination?.id);
-  const entryInstructions = getEntryInstructions(destination?.id);
+  const features = getAvailableFeatures(destination?.id as string);
+  const entryInstructions = getEntryInstructions(destination?.id as string);
   const isHistoryItem = Boolean(fromHistory || resultData?.fromHistory);
 
   useEffect(() => {
@@ -109,7 +113,7 @@ const ResultScreen = ({ navigation, route }) => {
 
   const loadGenerationResult = async () => {
     try {
-      const data = await api.getHistoryItem(generationId);
+      const data = await api.getHistoryItem(generationId as string);
       setResultData(data);
       if (data.pdfUrl) {
         setPdfUri(data.pdfUrl);
@@ -268,9 +272,9 @@ const ResultScreen = ({ navigation, route }) => {
     );
   }, [passport]);
 
-  const flightNumberDisplay = travelInfo?.flightNumber || travelInfo?.flightNo || t('result.pending', { defaultValue: '待确认' });
-  const departureDateDisplay = travelInfo?.departureDate || t('result.pending', { defaultValue: '待确认' });
-  const arrivalDateDisplay = travelInfo?.arrivalDate || t('result.pending', { defaultValue: '待确认' });
+  const flightNumberDisplay = (travelInfo?.flightNumber || travelInfo?.flightNo) as string || t('result.pending', { defaultValue: '待确认' });
+  const departureDateDisplay = travelInfo?.departureDate as string || t('result.pending', { defaultValue: '待确认' });
+  const arrivalDateDisplay = travelInfo?.arrivalDate as string || t('result.pending', { defaultValue: '待确认' });
   const accommodationDisplay = useMemo(() => {
     const parts = [];
     const hotelName = travelInfo?.hotelName || travelInfo?.accommodationName;
@@ -334,9 +338,9 @@ parts.push(contactPhone);
     if (!generatedAtSource) {
       return new Date().toLocaleString();
     }
-    const parsed = new Date(generatedAtSource);
+    const parsed = new Date(generatedAtSource as string | number);
     return Number.isNaN(parsed.getTime())
-      ? generatedAtSource
+      ? String(generatedAtSource)
       : parsed.toLocaleString();
   }, [generatedAtSource]);
 
@@ -516,7 +520,7 @@ return;
   };
 
   const isShareSessionActive = shareSession
-    ? new Date(shareSession.expiresAt).getTime() > Date.now()
+    ? new Date(shareSession.expiresAt as string).getTime() > Date.now()
     : false;
 
   const handleShare = () => {
@@ -758,7 +762,7 @@ return;
         ? data.customTravelPurpose
         : data.travelPurpose;
 
-    const fundTypeLabels = {
+    const fundTypeLabels: Record<string, string> = {
       cash: '现金 Cash',
       credit_card: '信用卡 Credit Card',
       bank_balance: '银行存款 Bank Balance',
@@ -781,19 +785,26 @@ return;
       }
     };
 
-    const renderSection = (title: string, icon: string, rows: Array<Record<string, unknown>>) => (
+    interface JapanManualRow {
+      label: string;
+      value?: unknown;
+      fullWidth?: boolean;
+      multiline?: boolean;
+    }
+
+    const renderSection = (title: string, icon: string, rows: JapanManualRow[]) => (
       <View key={title} style={styles.japanManualSectionCard}>
         <View style={styles.japanManualSectionHeader}>
           <Text style={styles.japanManualSectionIcon}>{icon}</Text>
           <Text style={styles.japanManualSectionTitle}>{title}</Text>
         </View>
         <View style={styles.japanManualSectionBody}>
-          {rows.map((row: Record<string, unknown>, index: number) => {
+          {rows.map((row: JapanManualRow, index: number) => {
             if (!row) {
 return null;
 }
             const isLastRow = index === rows.length - 1;
-            const value = row.value ?? '—';
+            const value = row.value !== undefined && row.value !== null ? String(row.value) : '—';
             const isMultiline =
               row.multiline || (typeof value === 'string' && value.length > 22);
 
@@ -843,14 +854,14 @@ return null;
           </View>
         </View>
 
-        {renderSection(t('japan.result.manualEntry.sections.passport', { defaultValue: '护照信息 Passport' }), '🛂', [
+        {renderSection(t('japan.result.manualEntry.sections.passport', { defaultValue: '护照信息 Passport' }), '🛂', ([
           { label: t('japan.result.manualEntry.fields.fullName', { defaultValue: '姓名 Full Name' }), value: data.fullName },
           { label: t('japan.result.manualEntry.fields.passportNo', { defaultValue: '护照号 Passport No.' }), value: data.passportNo },
           { label: t('japan.result.manualEntry.fields.nationality', { defaultValue: '国籍 Nationality' }), value: data.nationality },
           { label: t('japan.result.manualEntry.fields.dateOfBirth', { defaultValue: '出生日期 Date of Birth' }), value: data.dateOfBirth },
           data.gender ? { label: t('japan.result.manualEntry.fields.gender', { defaultValue: '性别 Gender' }), value: data.gender } : null,
           data.expiryDate ? { label: t('japan.result.manualEntry.fields.passportExpiry', { defaultValue: '护照有效期 Passport Expiry' }), value: data.expiryDate } : null,
-        ].filter(Boolean))}
+        ].filter(Boolean) as JapanManualRow[]))}
 
         {renderSection(t('japan.result.manualEntry.sections.personal', { defaultValue: '个人信息 Personal' }), '🙋‍♀️', [
           { label: t('japan.result.manualEntry.fields.occupation', { defaultValue: '职业 Occupation' }), value: data.occupation },
@@ -886,11 +897,13 @@ return null;
             <Text style={styles.japanManualSectionTitle}>{t('japan.result.manualEntry.funds', { defaultValue: '资金证明 Funds & Assets' })}</Text>
           </View>
           <View style={styles.japanManualSectionBody}>
-            {Array.isArray(data.fundItems) && data.fundItems.length > 0 ? (
+            {Array.isArray(data.fundItems) && (data.fundItems as unknown[]).length > 0 ? (
               <View style={styles.japanManualFundsList}>
-                {data.fundItems.map((item, index) => {
-                  const label = fundTypeLabels[item.type] || '资金证明';
-                  const isLast = index === data.fundItems.length - 1;
+                {(data.fundItems as unknown[]).map((rawItem, index) => {
+                  const item = rawItem as Record<string, unknown>;
+                  const fundItemsArr = data.fundItems as unknown[];
+                  const label = fundTypeLabels[item.type as string] || '资金证明';
+                  const isLast = index === fundItemsArr.length - 1;
 
                   return (
                     <View
@@ -900,27 +913,27 @@ return null;
                         isLast && styles.japanManualFundItemLast,
                       ]}
                     >
-                      <Text style={styles.japanManualFundIcon}>{getFundIcon(item.type)}</Text>
+                      <Text style={styles.japanManualFundIcon}>{getFundIcon(item.type as string)}</Text>
                       <View style={styles.japanManualFundTextContainer}>
                         <Text style={styles.japanManualFundTitle}>
-                          {item.details || label}
+                          {(item.details as string) || label}
                         </Text>
-                        {(item.amount || item.currency) && (
+                        {Boolean(item.amount || item.currency) ? (
                           <Text style={styles.japanManualFundSubtitle}>
                             {[item.currency, item.amount].filter(Boolean).join(' ')}
                           </Text>
-                        )}
+                        ) : null}
                       </View>
                     </View>
                   );
                 })}
-                {data.totalFunds && Object.keys(data.totalFunds).length > 0 && (
+                {data.totalFunds && Object.keys(data.totalFunds as Record<string, unknown>).length > 0 ? (
                   <Text style={styles.japanManualTotalFunds}>
-                    {Object.entries(data.totalFunds)
+                    {Object.entries(data.totalFunds as Record<string, unknown>)
                       .map(([currency, amount]) => `${currency} ${amount}`)
                       .join(' · ')}
                   </Text>
-                )}
+                ) : null}
               </View>
             ) : (
               <Text style={styles.japanManualEmptyText}>
@@ -998,9 +1011,9 @@ return null;
 
             <View style={styles.successContent}>
               <View style={styles.successTitleRow}>
-                <Text style={styles.successFlag}>{destination?.flag || '🇨🇳'}</Text>
+                <Text style={styles.successFlag}>{(destination?.flag as string) || '🇨🇳'}</Text>
                 <Text style={styles.successTitle}>
-                  {t('result.title', { flag: '', country: destination?.name || '' })}
+                  {t('result.title', { flag: '', country: (destination?.name as string) || '' })}
                 </Text>
               </View>
 
@@ -1165,7 +1178,7 @@ return null;
                         travelInfo,
                       });
                     } else {
-                      Linking.openURL(features.digitalInfo.url);
+                      Linking.openURL(features.digitalInfo!.url);
                     }
                   }}
                   style={styles.digitalInfoButton}
@@ -1218,8 +1231,8 @@ return null;
                   {isShareSessionActive && shareSession && (
                   <Text style={styles.shareStatusText}>
                     {t('result.share.expiryText', { 
-                      time: new Date(shareSession.expiresAt).toLocaleString(),
-                      defaultValue: `有效至 ${new Date(shareSession.expiresAt).toLocaleString()}`
+                      time: new Date(shareSession.expiresAt as string).toLocaleString(),
+                      defaultValue: `有效至 ${new Date(shareSession.expiresAt as string).toLocaleString()}`
                     })}
                   </Text>
                 )}
@@ -1384,11 +1397,11 @@ return null;
                   </Text>
                   <View style={styles.shareInfoRow}>
                     <Text style={styles.shareInfoValue} numberOfLines={1}>
-                      {shareSession?.link}
+                      {shareSession?.link as string}
                     </Text>
                     <TouchableOpacity
                       style={styles.shareCopyButton}
-                      onPress={() => handleCopy(shareSession?.link || '', 'link')}
+                      onPress={() => handleCopy((shareSession?.link as string) || '', 'link')}
                       activeOpacity={0.7}
                     >
                       <Text style={styles.shareCopyText}>
@@ -1408,10 +1421,10 @@ return null;
                     {t('result.share.passwordLabel', { defaultValue: '访问密码' })}
                   </Text>
                   <View style={styles.shareInfoRow}>
-                    <Text style={styles.sharePasswordValue}>{shareSession?.password}</Text>
+                    <Text style={styles.sharePasswordValue}>{shareSession?.password as string}</Text>
                     <TouchableOpacity
                       style={styles.shareCopyButton}
-                      onPress={() => handleCopy(shareSession?.password || '', 'password')}
+                      onPress={() => handleCopy((shareSession?.password as string) || '', 'password')}
                       activeOpacity={0.7}
                     >
                       <Text style={styles.shareCopyText}>
@@ -1428,8 +1441,8 @@ return null;
 
                 <Text style={styles.shareExpiryText}>
                   {t('result.share.expiryText', {
-                    time: shareSession ? new Date(shareSession.expiresAt).toLocaleString() : '--',
-                    defaultValue: `有效期至：${shareSession ? new Date(shareSession.expiresAt).toLocaleString() : '--'}`
+                    time: shareSession ? new Date(shareSession.expiresAt as string).toLocaleString() : '--',
+                    defaultValue: `有效期至：${shareSession ? new Date(shareSession.expiresAt as string).toLocaleString() : '--'}`
                   })}
                 </Text>
 

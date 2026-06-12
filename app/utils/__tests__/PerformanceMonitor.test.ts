@@ -31,10 +31,10 @@ describe('PerformanceMonitor', () => {
       const metrics = PerformanceMonitor.endTiming(operationId!, { completed: true });
       
       expect(metrics).toBeTruthy();
-      expect(metrics.operationName).toBe('testOperation');
-      expect(metrics.duration).toBeGreaterThan(0);
-      expect(metrics.metadata.test).toBe(true);
-      expect(metrics.metadata.completed).toBe(true);
+      expect(metrics!.operationName).toBe('testOperation');
+      expect(metrics!.duration).toBeGreaterThan(0);
+      expect((metrics!.metadata as Record<string, unknown>).test).toBe(true);
+      expect((metrics!.metadata as Record<string, unknown>).completed).toBe(true);
     });
 
     it('should handle invalid operation IDs gracefully', () => {
@@ -107,10 +107,11 @@ describe('PerformanceMonitor', () => {
       const summary = PerformanceMonitor.getPerformanceSummary();
        
       expect(summary.totalOperations).toBe(4);
-      expect(summary.operationTypes).toHaveProperty('dataLoading');
-      expect(summary.operationTypes).toHaveProperty('rendering');
-      expect(summary.operationTypes).toHaveProperty('calculation');
-      expect(summary.operationTypes.dataLoading.count).toBe(2);
+      const opTypes = summary.operationTypes as Record<string, { count: number }>;
+      expect(opTypes).toHaveProperty('dataLoading');
+      expect(opTypes).toHaveProperty('rendering');
+      expect(opTypes).toHaveProperty('calculation');
+      expect(opTypes.dataLoading.count).toBe(2);
     });
   });
 
@@ -158,7 +159,7 @@ describe('PerformanceMonitor', () => {
       const recommendations = PerformanceMonitor.getRecommendations();
       const slowOpRecommendation = recommendations.find(r => r.category === 'slow_operations');
       expect(slowOpRecommendation).toBeTruthy();
-      expect(slowOpRecommendation.priority).toBe('high');
+      expect(slowOpRecommendation!.priority).toBe('high');
     });
   });
 

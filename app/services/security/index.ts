@@ -4,6 +4,12 @@
  * Centralized export of all security-related services
  */
 
+import * as SecureStore from 'expo-secure-store';
+import EncryptionServiceDefault from './EncryptionService';
+import SecureStorageServiceDefault from './SecureStorageService';
+import KeyManagementServiceDefault from './KeyManagementService';
+import GDPRComplianceServiceDefault from './GDPRComplianceService';
+
 export { default as EncryptionService } from './EncryptionService';
 export { default as SecureStorageService } from './SecureStorageService';
 export { default as KeyManagementService } from './KeyManagementService';
@@ -12,9 +18,9 @@ export { default as GDPRComplianceService } from './GDPRComplianceService';
 // Convenience function to initialize all security services
 export const initializeSecurityServices = async (userId: string, masterKey: string | null = null) => {
   try {
-    const { KeyManagementService } = await import('./KeyManagementService');
-    const { SecureStorageService } = await import('./SecureStorageService');
-    const { GDPRComplianceService } = await import('./GDPRComplianceService');
+    const { default: KeyManagementService } = await import('./KeyManagementService');
+    const { default: SecureStorageService } = await import('./SecureStorageService');
+    const { default: GDPRComplianceService } = await import('./GDPRComplianceService');
 
     // Initialize key management first
     await KeyManagementService.initialize(masterKey);
@@ -196,10 +202,10 @@ return data;
 };
 
 export default {
-  EncryptionService,
-  SecureStorageService,
-  KeyManagementService,
-  GDPRComplianceService,
+  EncryptionService: EncryptionServiceDefault,
+  SecureStorageService: SecureStorageServiceDefault,
+  KeyManagementService: KeyManagementServiceDefault,
+  GDPRComplianceService: GDPRComplianceServiceDefault,
   initializeSecurityServices,
   SECURITY_CONFIG,
   SecurityUtils

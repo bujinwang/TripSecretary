@@ -271,6 +271,44 @@ class TDACValidationService {
     
     return { isValid: true, warnings };
   }
+
+  getValidationSummary(validationResult: {
+    isValid: boolean;
+    errors: string[];
+    warnings?: string[];
+    fieldErrors?: Record<string, string[]>;
+  }): {
+    status: string;
+    errorCount: number;
+    warningCount: number;
+    hasFieldErrors: boolean;
+    criticalErrors: string[];
+    formatErrors: string[];
+    message: string;
+  } {
+    const errors = validationResult.errors || [];
+    const warnings = validationResult.warnings || [];
+    const fieldErrors = validationResult.fieldErrors || {};
+
+    const criticalErrors = errors.filter((e: string) =>
+      e.toLowerCase().includes('required') || e.toLowerCase().includes('missing'),
+    );
+    const formatErrors = errors.filter((e: string) =>
+      e.toLowerCase().includes('format') || e.toLowerCase().includes('invalid'),
+    );
+
+    return {
+      status: validationResult.isValid ? 'valid' : 'invalid',
+      errorCount: errors.length,
+      warningCount: warnings.length,
+      hasFieldErrors: Object.keys(fieldErrors).length > 0,
+      criticalErrors,
+      formatErrors,
+      message: validationResult.isValid
+        ? 'Validation passed'
+        : `Validation failed with ${errors.length} error(s)`,
+    };
+  }
 }
 
 export default new TDACValidationService();

@@ -12,11 +12,13 @@ import BackButton from '../../components/BackButton';
 import { useLocale } from '../../i18n/LocaleContext';
 import UserDataService from '../../services/data/UserDataService';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const MDACSelectionScreen = ({ navigation, route }: any) => {
+const MDACSelectionScreen = ({ navigation, route }: {
+  navigation: { navigate: (screen: string, params?: Record<string, unknown>) => void; goBack: () => void };
+  route: { params?: Record<string, unknown> };
+}) => {
   const params = route.params || {};
   const { passport: rawPassport, destination, travelInfo } = params;
-  const passport = UserDataService.toSerializablePassport(rawPassport);
+  const passport = UserDataService.toSerializablePassport(rawPassport as Parameters<typeof UserDataService.toSerializablePassport>[0]);
   const { t } = useLocale();
 
   const goToGuide = () => {
@@ -51,16 +53,16 @@ const MDACSelectionScreen = ({ navigation, route }: any) => {
         <Text style={styles.cardSubtitle}>{t('malaysia.selection.smartFlow.subtitle')}</Text>
 
         <View style={styles.statsRow}>
-          {(t('malaysia.selection.smartFlow.highlights', { returnObjects: true, defaultValue: [] }) as unknown[]).map((item: Record<string, unknown>, index: number) => (
-            <View key={item.title || `smart-${index}`} style={styles.stat}>
-              <Text style={styles.statValue}>{item.value}</Text>
-              <Text style={styles.statLabel}>{item.title}</Text>
+          {(t('malaysia.selection.smartFlow.highlights', { returnObjects: true, defaultValue: [] } as unknown as Record<string, string | number | undefined>) as unknown as Record<string, unknown>[]).map((item, index) => (
+            <View key={(item.title as string) || `smart-${index}`} style={styles.stat}>
+              <Text style={styles.statValue}>{item.value as string}</Text>
+              <Text style={styles.statLabel}>{item.title as string}</Text>
             </View>
           ))}
         </View>
 
         <View style={styles.features}>
-          {(t('malaysia.selection.smartFlow.features', { returnObjects: true, defaultValue: [] }) as unknown[]).map((feature: string, index: number) => (
+          {(t('malaysia.selection.smartFlow.features', { returnObjects: true, defaultValue: [] } as unknown as Record<string, string | number | undefined>) as unknown as string[]).map((feature, index) => (
             <Text key={`smart-feature-${index}`} style={styles.feature}>
               {feature}
             </Text>
@@ -78,7 +80,7 @@ const MDACSelectionScreen = ({ navigation, route }: any) => {
         <Text style={styles.cardSubtitle}>{t('malaysia.selection.webFlow.subtitle')}</Text>
 
         <View style={styles.features}>
-          {(t('malaysia.selection.webFlow.features', { returnObjects: true, defaultValue: [] }) as unknown[]).map((feature: string, index: number) => (
+          {(t('malaysia.selection.webFlow.features', { returnObjects: true, defaultValue: [] } as unknown as Record<string, string | number | undefined>) as unknown as string[]).map((feature, index) => (
             <Text key={`web-feature-${index}`} style={styles.feature}>
               {feature}
             </Text>
@@ -95,7 +97,7 @@ const MDACSelectionScreen = ({ navigation, route }: any) => {
       {/* Notes */}
       <View style={styles.notesCard}>
         <Text style={styles.notesTitle}>{t('malaysia.selection.notes.title')}</Text>
-        {(t('malaysia.selection.notes.items', { returnObjects: true, defaultValue: [] }) as unknown[]).map((note: string, index: number) => (
+        {(t('malaysia.selection.notes.items', { returnObjects: true, defaultValue: [] } as unknown as Record<string, string | number | undefined>) as unknown as string[]).map((note, index) => (
           <Text key={`note-${index}`} style={styles.note}>
             • {note}
           </Text>

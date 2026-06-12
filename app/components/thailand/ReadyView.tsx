@@ -7,7 +7,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { designTokens, spacing, borderRadius, shadows, typography } from '../../theme/designTokens';
-import { animateValue, createAnimationValue, ANIMATIONS } from '../../utils/animations';
+import { animateValue, createAnimationValue, ANIMATION_DURATION, EASING } from '../../utils/animations';
 import ProgressRing from './ProgressRing';
 import ActionButton from './ActionButton';
 import SubmissionCountdown from '../SubmissionCountdown';
@@ -38,9 +38,9 @@ const ReadyView = ({
 
   // Animate in on mount
   useEffect(() => {
-    animateValue(fadeAnim, { to: 1, duration: ANIMATIONS.duration.normal });
-    animateValue(slideAnim, { to: 0, duration: ANIMATIONS.duration.normal, easing: ANIMATIONS.easing.bounce });
-    animateValue(scaleAnim, { to: 1, duration: ANIMATIONS.duration.slow, easing: ANIMATIONS.easing.elastic });
+    animateValue(fadeAnim, { to: 1, duration: ANIMATION_DURATION.normal });
+    animateValue(slideAnim, { to: 0, duration: ANIMATION_DURATION.normal, easing: EASING.bounce });
+    animateValue(scaleAnim, { to: 1, duration: ANIMATION_DURATION.slow, easing: EASING.elastic });
   }, []);
 
   return (
@@ -63,6 +63,8 @@ const ReadyView = ({
           size={120}
           color={designTokens.success}
           animated={true}
+          style={{}}
+          children={undefined}
         />
         <Text style={styles.successTitle}>
           泰国准备就绪！🌴
@@ -84,7 +86,7 @@ const ReadyView = ({
           ]}
         >
           <SubmissionCountdown
-            arrivalDate={arrivalDate}
+            arrivalDate={arrivalDate as string}
             locale={language === 'zh' ? 'zh' : 'en'}
             showIcon={true}
             updateInterval={1000}
@@ -105,7 +107,7 @@ const ReadyView = ({
       >
         <ActionButton
           title={primaryActionState.title}
-          variant={primaryActionState.variant}
+          variant={primaryActionState.variant as 'primary' | 'secondary' | 'success' | 'warning'}
           size="large"
           disabled={primaryActionState.disabled}
           onPress={onPrimaryAction}

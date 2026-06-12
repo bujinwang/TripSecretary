@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type MetricsRecord = Record<string, any>;
+type MetricsRecord = Record<string, unknown>;
 
 /**
  * PerformanceMonitor - Utility for monitoring and optimizing app performance
@@ -122,14 +121,18 @@ return null;
    * @returns {Promise<*>} - Function result with timing
    */
   async timeFunction<T>(operationName: string, fn: () => Promise<T>, metadata: MetricsRecord = {}): Promise<T> {
-    const operationId = this.startTiming(operationName, metadata);
+    const operationId: string | null = this.startTiming(operationName, metadata);
     
     try {
       const result = await fn();
-      this.endTiming(operationId, { success: true });
+      if (operationId) {
+        this.endTiming(operationId, { success: true });
+      }
       return result;
     } catch (error) {
-      this.endTiming(operationId, { success: false, error: (error as Error).message });
+      if (operationId) {
+        this.endTiming(operationId, { success: false, error: (error as Error).message });
+      }
       throw error;
     }
   }
@@ -174,18 +177,20 @@ return;
    * @param {Object} metrics - Performance metrics
    */
   storeMetrics(metrics: MetricsRecord): void {
-    const operationType = this.getOperationType(metrics.operationName);
+    const operationType = this.getOperationType(metrics.operationName as string);
     
     if (!this.metrics.has(operationType)) {
       this.metrics.set(operationType, []);
     }
 
     const typeMetrics = this.metrics.get(operationType);
-    typeMetrics.push(metrics);
+    if (typeMetrics) {
+      typeMetrics.push(metrics);
 
-    // Keep only recent metrics
-    if (typeMetrics.length > this.maxMetricsHistory) {
-      typeMetrics.splice(0, typeMetrics.length - this.maxMetricsHistory);
+      // Keep only recent metrics
+      if (typeMetrics.length > this.maxMetricsHistory) {
+        typeMetrics.splice(0, typeMetrics.length - this.maxMetricsHistory);
+      }
     }
   }
 
@@ -225,7 +230,7 @@ return;
   isSlowOperation(operationName: string, duration: number): boolean {
     const operationType = this.getOperationType(operationName);
     const threshold = this.performanceThresholds[operationType];
-    return threshold && duration > threshold;
+    return threshold !== undefined && duration > threshold;
   }
 
   /**
@@ -234,7 +239,14 @@ return;
    * @returns {Object} - Performance summary
    */
   getPerformanceSummary(operationType: string | null = null): MetricsRecord {
-    const summary = {
+    const summary: {
+      totalOperations: number;
+      slowOperations: number;
+      averageDuration: number;
+      operationTypes: Record<string, unknown>;
+      recentSlowOperations: unknown[];
+      generatedAt: string;
+    } = {
       totalOperations: 0,
       slowOperations: 0,
       averageDuration: 0,
@@ -252,8 +264,8 @@ return;
     }
 
     summary.totalOperations = metricsToAnalyze.length;
-    summary.slowOperations = metricsToAnalyze.filter(m => m.isSlowOperation).length;
-    summary.averageDuration = metricsToAnalyze.reduce((sum, m) => sum + m.duration, 0) / metricsToAnalyze.length;
+    summary.slowOperations = metricsToAnalyze.filter(m => m.isSlowOperation as boolean).length;
+    summary.averageDuration = metricsToAnalyze.reduce((sum: number, m) => sum + (m.duration as number), 0) / metricsToAnalyze.length;
 
     // Group by operation type
     for (const [type, metrics] of this.metrics.entries()) {
@@ -263,22 +275,22 @@ continue;
       
       summary.operationTypes[type] = {
         count: metrics.length,
-        averageDuration: metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length,
-        slowCount: metrics.filter(m => m.isSlowOperation).length,
+        averageDuration: metrics.reduce((sum: number, m) => sum + (m.duration as number), 0) / metrics.length,
+        slowCount: metrics.filter(m => m.isSlowOperation as boolean).length,
         threshold: this.performanceThresholds[type] || null
       };
     }
 
     // Get recent slow operations
     summary.recentSlowOperations = metricsToAnalyze
-      .filter(m => m.isSlowOperation)
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .filter(m => m.isSlowOperation as boolean)
+      .sort((a, b) => new Date(b.timestamp as string).getTime() - new Date(a.timestamp as string).getTime())
       .slice(0, 10)
       .map(m => ({
-        operationName: m.operationName,
-        duration: m.duration,
-        timestamp: m.timestamp,
-        metadata: m.metadata
+        operationName: m.operationName as string,
+        duration: m.duration as number,
+        timestamp: m.timestamp as string,
+        metadata: m.metadata as Record<string, unknown>
       }));
 
     return summary;
@@ -321,7 +333,7 @@ continue;
    * @param {Object} thresholds - New thresholds
    */
   updateThresholds(thresholds: MetricsRecord): void {
-    this.performanceThresholds = { ...this.performanceThresholds, ...thresholds };
+    this.performanceThresholds = { ...this.performanceThresholds, ...thresholds as unknown as PerformanceThresholds };
     console.log('[Performance] Thresholds updated:', this.performanceThresholds);
   }
 
@@ -345,8 +357,12 @@ continue;
    * @returns {Array} - Array of performance recommendations
    */
   getRecommendations(): MetricsRecord[] {
-    const recommendations = [];
-    const summary = this.getPerformanceSummary();
+    const recommendations: MetricsRecord[] = [];
+    const summary = this.getPerformanceSummary() as unknown as {
+      slowOperations: number;
+      totalOperations: number;
+      operationTypes: Record<string, { averageDuration: number }>;
+    };
 
     // Check for slow operations
     if (summary.slowOperations > 0) {
@@ -361,9 +377,9 @@ continue;
     }
 
     // Check average duration by type
-    for (const [type, typeMetrics] of Object.entries(summary.operationTypes) as [string, { averageDuration: number }][]) {
+    for (const [type, typeMetrics] of Object.entries(summary.operationTypes as Record<string, { averageDuration: number }>)) {
       const threshold = this.performanceThresholds[type];
-      if (threshold && typeMetrics.averageDuration > threshold * 0.8) {
+      if (threshold !== undefined && typeMetrics.averageDuration > threshold * 0.8) {
         recommendations.push({
           type: 'info',
           category: 'approaching_threshold',

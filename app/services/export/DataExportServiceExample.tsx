@@ -7,8 +7,28 @@
  */
 
 import React, { useState } from 'react';
-import { Alert, TouchableOpacity, Text, View } from 'react-native';
-import DataExportService from './DataExportService';
+import { Alert, TouchableOpacity, Text, View, StyleSheet } from 'react-native';
+import DataExportService, { ExportResult, SharingOptions } from './DataExportService';
+
+interface ExportDataPayload {
+  exportInfo: { exportedAt: string };
+  entryPack: { id: string; destinationId: string; status: string };
+  passport?: unknown;
+  personalInfo?: unknown;
+  funds?: unknown[];
+  travel?: unknown;
+  metadata?: {
+    totalSubmissionAttempts?: number;
+    exportStats?: { completionPercent?: number };
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+interface ExportButtonsProps {
+  entryPackId: string;
+  onExportComplete?: (result: ExportResult) => void;
+}
 
 /**
  * Example: Export entry pack as JSON with all options
@@ -41,7 +61,7 @@ export async function exportEntryPackExample(entryPackId: string) {
             { text: 'Cancel', style: 'cancel' },
             { 
               text: 'Share', 
-              onPress: () => shareExportedFile(result.sharingOptions as unknown as Record<string, unknown>)
+              onPress: () => shareExportedFile(result.sharingOptions)
             }
           ]
         );
@@ -96,7 +116,7 @@ export async function exportEntryPackAsPDF(entryPackId: string) {
             { text: 'Cancel', style: 'cancel' },
             { 
               text: 'Share PDF', 
-              onPress: () => shareExportedFile(result.sharingOptions as unknown as Record<string, unknown>)
+              onPress: () => shareExportedFile(result.sharingOptions)
             }
           ]
         );
@@ -174,7 +194,7 @@ export async function exportEntryPackForProcessing(entryPackId: string) {
 
     if (result.success && result.exportData) {
       // Process the exported data
-      const processedData = processExportedData(result.exportData);
+      const processedData = processExportedData(result.exportData as Record<string, unknown>);
       console.log('Data processed:', processedData);
       
       return {
@@ -193,9 +213,9 @@ export async function exportEntryPackForProcessing(entryPackId: string) {
 /**
  * Example: Share exported file
  */
-async function shareExportedFile(sharingOptions: Record<string, unknown>) {
+async function shareExportedFile(sharingOptions: SharingOptions) {
   try {
-    if (!sharingOptions.available) {
+    if (!sharingOptions.available || !sharingOptions.share) {
       Alert.alert('Sharing Not Available', 'Sharing is not supported on this device');
       return;
     }
@@ -217,17 +237,22 @@ async function shareExportedFile(sharingOptions: Record<string, unknown>) {
  * Example: Process exported data
  */
 function processExportedData(exportData: Record<string, unknown>) {
+  const exportInfo = exportData.exportInfo as Record<string, unknown> | undefined;
+  const entryPack = exportData.entryPack as Record<string, unknown> | undefined;
+  const fundsArr = exportData.funds as unknown[] | undefined;
+  const metadata = exportData.metadata as Record<string, unknown> | undefined;
+  
   const summary = {
-    exportedAt: exportData.exportInfo.exportedAt,
-    entryPackId: exportData.entryPack.id,
-    destination: exportData.entryPack.destinationId,
-    status: exportData.entryPack.status,
+    exportedAt: exportInfo?.exportedAt,
+    entryPackId: entryPack?.id,
+    destination: entryPack?.destinationId,
+    status: entryPack?.status,
     hasPassport: !!exportData.passport,
     hasPersonalInfo: !!exportData.personalInfo,
-    fundItemCount: (exportData.funds || []).length,
+    fundItemCount: (fundsArr || []).length,
     hasTravelInfo: !!exportData.travel,
-    submissionAttempts: exportData.metadata?.totalSubmissionAttempts || 0,
-    completionPercent: exportData.metadata?.exportStats?.completionPercent || 0
+    submissionAttempts: metadata?.totalSubmissionAttempts || 0,
+    completionPercent: (metadata?.exportStats as Record<string, unknown>)?.completionPercent || 0
   };
 
   return summary;
@@ -326,7 +351,7 @@ export async function getExportDirectoryInfoExample() {
 /**
  * Example: Integration with React Native component - Export buttons
  */
-export const ExportButtons = ({ entryPackId, onExportComplete }) => {
+export const ExportButtons = ({ entryPackId, onExportComplete }: ExportButtonsProps) => {
   const [isExporting, setIsExporting] = useState(false);
   const [exportFormat, setExportFormat] = useState<string | null>(null);
 
@@ -379,7 +404,7 @@ return;
   );
 };
 
-const styles = {
+const styles = StyleSheet.create({
   exportButtonContainer: {
     flexDirection: 'row',
     gap: 12,
@@ -403,4 +428,4 @@ const styles = {
     fontWeight: 'bold',
     fontSize: 14
   }
-};
+});

@@ -1,5 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type CalculationData = Record<string, any>;
+type CalculationData = Record<string, unknown>;
 
 /**
  * EntryCompletionCalculator - Utility for calculating entry information completion status
@@ -19,7 +18,7 @@ interface CompletionMetrics {
 }
 
 interface CachedResult {
-  result: CompletionMetrics;
+  result: unknown;
   timestamp: number;
 }
 
@@ -217,7 +216,7 @@ return false;
     // Check cache first
     const cached = this.getCachedResult(cacheKey);
     if (cached) {
-      return cached;
+      return cached as CompletionMetrics;
     }
 
     const metrics = {
@@ -228,9 +227,9 @@ return false;
     };
 
     // Cache the result
-    this.setCachedResult(cacheKey, metrics as CompletionMetrics);
+    this.setCachedResult(cacheKey, metrics as unknown as CompletionMetrics);
 
-    return metrics;
+    return metrics as unknown as CompletionMetrics;
   }
 
   /**
@@ -581,6 +580,10 @@ return false;
   getMissingFields(metrics: Record<string, CategoryMetrics> | null | undefined) {
     const missing: Record<string, string[]> = {};
 
+    if (!metrics) {
+      return missing;
+    }
+
     Object.keys(metrics).forEach(category => {
       const categoryMetrics = metrics[category];
       
@@ -835,7 +838,7 @@ return false;
     // Check destination cache first
     const cached = this.getDestinationCachedResult(cacheKey);
     if (cached) {
-      return cached;
+      return cached as Record<string, unknown>;
     }
 
     const metrics = this.calculateCompletionMetrics(entryInfo);
@@ -908,7 +911,7 @@ return false;
         }
       }
 
-      return this.calculateMultiDestinationMetrics(allDestinationData);
+      return this.calculateMultiDestinationMetrics(allDestinationData as Record<string, EntryInfo | null>);
     } catch (error) {
       console.error('Failed to get multi-destination progress:', error);
       return {
@@ -940,7 +943,12 @@ return false;
       // Get all entry infos for the user
       const allEntryInfos = await UserDataService.getAllEntryInfosForUser(userId);
       
-      const destinationsWithProgress = [];
+      const destinationsWithProgress: Array<{
+        destinationId: string;
+        completionPercent: number;
+        isReady: boolean;
+        lastUpdated: string | undefined;
+      }> = [];
       
       for (const entryInfo of allEntryInfos) {
         if (entryInfo.destinationId) {
@@ -963,7 +971,7 @@ return false;
         if (a.completionPercent !== b.completionPercent) {
           return b.completionPercent - a.completionPercent;
         }
-        return new Date(b.lastUpdated || 0) - new Date(a.lastUpdated || 0);
+        return new Date(b.lastUpdated || 0).getTime() - new Date(a.lastUpdated || 0).getTime();
       });
       
       return destinationsWithProgress;
@@ -1001,12 +1009,12 @@ return false;
       
       return {
         fromDestination: {
+          ...fromSummary,
           destinationId: fromDestinationId,
-          ...fromSummary
         },
         toDestination: {
+          ...toSummary,
           destinationId: toDestinationId,
-          ...toSummary
         },
         switchedAt: new Date().toISOString(),
         progressPreserved: true
@@ -1111,7 +1119,8 @@ return false;
       const emptyDestinations = [];
       
       for (const destinationId of allDestinations) {
-        const destinationData = multiDestinationProgress.destinations[destinationId];
+        const destinations = multiDestinationProgress.destinations as Record<string, Record<string, unknown> | undefined>;
+        const destinationData = destinations[destinationId];
         
         if (!destinationData || destinationData.totalPercent === 0) {
           emptyDestinations.push({

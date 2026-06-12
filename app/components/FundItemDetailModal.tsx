@@ -34,6 +34,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { colors, typography, spacing, borderRadius, shadows } from '../theme';
 import { useTranslation } from '../i18n/LocaleContext';
+import { compressDocumentPhoto } from '../utils/imageCompression';
 import Button from './Button';
 import Input from './Input';
 
@@ -139,7 +140,7 @@ const FundItemDetailModal: React.FC<FundItemDetailModalProps> = ({
     amount: '',
     currency: '',
   });
-  const [pendingPhotoUri, setPendingPhotoUri] = useState(null);
+  const [pendingPhotoUri, setPendingPhotoUri] = useState<string | null>(null);
 
   // Common currencies
   const currencies = [
@@ -175,7 +176,7 @@ const FundItemDetailModal: React.FC<FundItemDetailModalProps> = ({
         setEditedAmount(fundItem.amount ? fundItem.amount.toString() : '');
         setEditedCurrency(fundItem.currency || 'THB');
         // Handle both 'description' and 'details' fields
-        setEditedDescription(fundItem.description || fundItem.details || '');
+        setEditedDescription(fundItem?.description || fundItem?.details || '');
         // Reset photo view transforms
         photoScale.setValue(1);
         photoTranslateX.setValue(0);
@@ -396,7 +397,7 @@ return false;
       setEditedAmount(fundItem?.amount ? String(fundItem.amount) : '');
       setEditedCurrency(fundItem?.currency || 'THB');
       // Handle both 'description' and 'details' fields
-      setEditedDescription(fundItem.description || fundItem.details || '');
+      setEditedDescription(fundItem?.description || fundItem?.details || '');
       
       console.log('[FundItemDetailModal] Edit cancelled, returned to view mode');
     } catch (err) {
@@ -419,7 +420,7 @@ return false;
     });
     
     // Get the item type - handle both 'type' and 'itemType' fields
-    const itemType = isCreateMode ? createItemType : (fundItem.itemType || fundItem.type);
+    const itemType = isCreateMode ? createItemType : (fundItem!.itemType || fundItem!.type);
     
     // Validate for amount-based types
     if (isAmountBasedType(itemType)) {
@@ -494,12 +495,12 @@ return false;
         const shouldUpdateAmount = isAmountBasedType(itemType);
         
         const fundData = {
-          id: fundItem.id,
-          type: fundItem.type || fundItem.itemType, // Use the original type field
-          amount: shouldUpdateAmount ? parseFloat(editedAmount) : fundItem.amount,
-          currency: shouldUpdateAmount ? editedCurrency.toUpperCase() : fundItem.currency,
+          id: fundItem!.id,
+          type: fundItem!.type || fundItem!.itemType, // Use the original type field
+          amount: shouldUpdateAmount ? parseFloat(editedAmount) : fundItem!.amount,
+          currency: shouldUpdateAmount ? editedCurrency.toUpperCase() : fundItem!.currency,
           details: editedDescription, // Map description to details
-          photoUri: fundItem.photoUri || fundItem.photo,
+          photoUri: fundItem!.photoUri || fundItem!.photo,
         };
 
         console.log('[FundItemDetailModal] Prepared fund data for save:', {
@@ -511,7 +512,7 @@ return false;
         });
 
         // Get userId from fundItem or use default
-        const userId = fundItem.userId || 'user_001';
+        const userId = fundItem!.userId || 'user_001';
         
         // Save the updated fund item using UserDataService
         console.log('[FundItemDetailModal] Calling UserDataService.saveFundItem...');
@@ -590,26 +591,29 @@ return false;
               // Import UserDataService
               const UserDataService = require('../services/data/UserDataService').default;
               
+              // Ensure fundItem exists (should always be true in non-create mode)
+              if (!fundItem) return;
+              
               // Get userId from fundItem or use default
-              const userId = fundItem.userId || 'user_001';
+              const userId = fundItem!.userId || 'user_001';
               
               console.log('[FundItemDetailModal] Calling UserDataService.deleteFundItem...', {
-                fundItemId: fundItem.id,
+                fundItemId: fundItem!.id,
                 userId,
               });
               
               // Delete the fund item using UserDataService
-              await UserDataService.deleteFundItem(fundItem.id, userId);
+              await UserDataService.deleteFundItem(fundItem!.id, userId);
               
               console.log('[FundItemDetailModal] Fund item deleted successfully:', {
-                fundItemId: fundItem.id,
+                fundItemId: fundItem!.id,
                 timestamp: new Date().toISOString(),
               });
               
               // Call onDelete callback if provided
               if (onDelete) {
                 console.log('[FundItemDetailModal] Calling onDelete callback...');
-                await onDelete(fundItem.id);
+                await onDelete(fundItem!.id);
               }
               
               // Close the modal
@@ -635,7 +639,7 @@ return false;
   };
 
   // Handle currency selection
-  const handleCurrencySelect = (currencyCode) => {
+  const handleCurrencySelect = (currencyCode: string) => {
     try {
       console.log('[FundItemDetailModal] Currency selected:', {
         currencyCode,
@@ -663,7 +667,7 @@ return false;
   // Handle photo press to open full-screen view
   const handlePhotoPress = () => {
     try {
-      const photoUri = fundItem.photoUri || fundItem.photo;
+      const photoUri = fundItem?.photoUri || fundItem?.photo;
       if (photoUri) {
         console.log('[FundItemDetailModal] Opening full-screen photo view...', {
           fundItemId: fundItem?.id,
@@ -847,7 +851,7 @@ return false;
   };
 
   // Handle photo selected (compression and base64 conversion)
-  const handlePhotoSelected = async (asset) => {
+  const handlePhotoSelected = async (asset: ImagePicker.ImagePickerAsset) => {
     try {
       console.log('[FundItemDetailModal] Processing selected photo...', {
         fundItemId: fundItem?.id,
@@ -859,12 +863,22 @@ return false;
       setLoading(true);
       setError(null);
 
-      // Convert to base64 data URI
+      // Compress photo before storing
       let photoUri;
       if (asset.uri) {
-        // Fallback to URI if base64 not available
-        photoUri = asset.uri;
-        console.log('[FundItemDetailModal] Using photo URI:', asset.uri);
+        // Compress the photo for storage efficiency
+        try {
+          const compressed = await compressDocumentPhoto(asset.uri);
+          photoUri = compressed.uri;
+          console.log('[FundItemDetailModal] Compressed photo:', {
+            original: asset.uri,
+            compressed: compressed.uri,
+            dimensions: `${compressed.width}x${compressed.height}`,
+          });
+        } catch (compressError) {
+          console.warn('[FundItemDetailModal] Compression failed, using original:', compressError);
+          photoUri = asset.uri;
+        }
       } else {
         throw new Error('No image data available');
       }
@@ -888,16 +902,16 @@ return false;
         
         // Update fund item with new photo
         const fundData = {
-          id: fundItem.id,
-          type: fundItem.type || fundItem.itemType,
-          amount: fundItem.amount,
-          currency: fundItem.currency,
-          details: fundItem.description || fundItem.details,
+          id: fundItem!.id,
+          type: fundItem!.type || fundItem!.itemType,
+          amount: fundItem!.amount,
+          currency: fundItem!.currency,
+          details: fundItem!.description || fundItem!.details,
           photoUri,
         };
 
         // Get userId from fundItem or use default
-        const userId = fundItem.userId || 'user_001';
+        const userId = fundItem!.userId || 'user_001';
         
         console.log('[FundItemDetailModal] Saving fund item with new photo...', {
           fundItemId: fundData.id,
@@ -987,7 +1001,7 @@ return false;
         label: t('fundItem.types.INVESTMENT', { defaultValue: 'Investment' }),
       },
     };
-    return typeMap[itemType] || { icon: '💰', label: itemType };
+    return typeMap[itemType as keyof typeof typeMap] || { icon: '💰', label: itemType };
   };
 
   const itemTypeDisplay = getItemTypeDisplay();
@@ -1208,7 +1222,7 @@ return null;
                 })}
               >
                 <Image
-                  source={{ uri: isCreateMode ? pendingPhotoUri : (fundItem.photoUri || fundItem.photo) }}
+                  source={{ uri: isCreateMode ? pendingPhotoUri : (fundItem?.photoUri || fundItem?.photo) }}
                   style={styles.photoThumbnail}
                   resizeMode="cover"
                   accessible={false}
@@ -1297,10 +1311,10 @@ return null;
 
   // Render full-screen photo view
   const renderPhotoView = () => {
-    const photoUri = fundItem.photoUri || fundItem.photo;
+    const photoUri = fundItem?.photoUri || fundItem?.photo;
     if (!photoUri) {
-return null;
-}
+      return null;
+    }
 
     return (
       <View style={styles.photoViewContainer}>
@@ -1925,6 +1939,11 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: borderRadius.sm,
     marginBottom: spacing.md,
+  },
+  errorText: {
+    ...typography.caption,
+    color: colors.error || '#f44336',
+    marginTop: spacing.xs,
   },
   // Photo View Styles
   photoViewContainer: {

@@ -4,7 +4,7 @@ import { SUPPORTED_LANGUAGES, translations } from './locales';
 
 type LanguageCode = 'en' | 'zh-CN' | 'zh-TW' | 'fr' | 'de' | 'es' | 'th' | 'my' | 'sg' | 'vn' | 'hk' | 'us' | 'tw' | 'jp' | 'kr';
 
-interface TranslationOptions {
+export interface TranslationOptions {
   defaultValue?: string;
   [key: string]: string | number | undefined;
 }

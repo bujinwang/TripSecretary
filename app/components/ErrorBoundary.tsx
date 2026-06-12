@@ -19,13 +19,15 @@ interface ErrorBoundaryProps {
   children?: React.ReactNode;
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
   onRetry?: (retryCount: number) => void;
-  fallback?: React.ReactNode;
+  fallback?: (props: { error: Error | null; errorInfo: React.ErrorInfo | null; retry: () => void; reset: () => void; retryCount: number }) => React.ReactNode;
   retryCount?: number;
   hasError?: boolean;
   showErrorDetails?: boolean;
   showRetryButton?: boolean;
   containerStyle?: Record<string, unknown>;
-  [extra: string]: unknown;
+  showDetails?: boolean;
+  maxRetries?: number;
+  customMessage?: string;
 }
 
 interface ErrorBoundaryState {
@@ -46,12 +48,12 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     };
   }
 
-  static getDerivedStateFromError(_error) {
+  static getDerivedStateFromError(_error: Error) {
     // Update state so the next render will show the fallback UI
     return { hasError: true };
   }
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error details
     console.error('ErrorBoundary caught an error:', error, errorInfo);
 

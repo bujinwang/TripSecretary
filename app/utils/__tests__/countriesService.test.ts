@@ -91,8 +91,8 @@ jest.mock('../../config/destinations', () => ({
       },
     },
   ]),
-  getDestination: jest.fn((id) => {
-    const destinations = {
+   getDestination: jest.fn((id: string) => {
+    const destinations: Record<string, Record<string, unknown>> = {
       th: {
         id: 'th',
         flag: '🇹🇭',
@@ -133,8 +133,8 @@ jest.mock('../../config/destinations', () => ({
     }
     return destinations[id];
   }),
-  getScreenMappings: jest.fn((id) => {
-    const screens = {
+   getScreenMappings: jest.fn((id: string) => {
+    const screens: Record<string, Record<string, string>> = {
       th: {
         info: 'ThailandInfo',
         entryFlow: 'ThailandEntryFlow',
@@ -146,18 +146,18 @@ jest.mock('../../config/destinations', () => ({
     };
     return screens[id] || null;
   }),
-  isDestinationAvailable: jest.fn((id) => {
+   isDestinationAvailable: jest.fn((id: string) => {
     return id === 'th' || id === 'jp';
   }),
 }));
 
 describe('countriesService', () => {
-  const mockT = jest.fn((key, options = {}) => {
-    const translations = {
+  const mockT = jest.fn((key: string, options: Record<string, unknown> = {}) => {
+    const translations: Record<string, string> = {
       'home.destinations.thailand.flightTime': '3 hours',
       'home.destinations.japan.flightTime': '3 hours',
     };
-    return translations[key] || options.defaultValue || key;
+    return translations[key] || (options.defaultValue as string) || key;
   });
 
   beforeEach(() => {
@@ -250,21 +250,21 @@ describe('countriesService', () => {
     it('should return country data with localized name for English', () => {
       const country = getCountryForDisplay('th', mockT, 'en');
       expect(country).toBeTruthy();
-      expect(country.id).toBe('th');
-      expect(country.displayName).toBe('Thailand');
-      expect(country.flag).toBe('🇹🇭');
+      expect(country!.id).toBe('th');
+      expect(country!.displayName).toBe('Thailand');
+      expect(country!.flag).toBe('🇹🇭');
     });
 
     it('should return country data with localized name for Chinese', () => {
       const country = getCountryForDisplay('th', mockT, 'zh-CN');
       expect(country).toBeTruthy();
-      expect(country.displayName).toBe('泰国');
+      expect(country!.displayName).toBe('泰国');
     });
 
     it('should include visa requirement and priority', () => {
       const country = getCountryForDisplay('th', mockT, 'en');
-      expect(country.visaRequirement).toBeDefined();
-      expect(country.visaPriority).toBeDefined();
+      expect(country!.visaRequirement).toBeDefined();
+      expect(country!.visaPriority).toBeDefined();
     });
 
     it('should return null for non-existent country', () => {
@@ -279,21 +279,21 @@ describe('countriesService', () => {
       expect(countries.length).toBeGreaterThan(0);
       // Countries should be sorted by visa priority (lower = higher priority)
       for (let i = 1; i < countries.length; i++) {
-        expect(countries[i].visaPriority).toBeGreaterThanOrEqual(countries[i - 1].visaPriority);
+        expect(countries[i]!.visaPriority).toBeGreaterThanOrEqual(countries[i - 1]!.visaPriority);
       }
     });
 
     it('should exclude specified country IDs', () => {
       const countries = getHotCountries(mockT, 'en', ['th']);
-      expect(countries.find(c => c.id === 'th')).toBeUndefined();
+      expect(countries.find(c => c!.id === 'th')).toBeUndefined();
     });
 
     it('should include display names and flight times', () => {
       const countries = getHotCountries(mockT, 'en', []);
       expect(countries.length).toBeGreaterThan(0);
       countries.forEach(country => {
-        expect(country.displayName).toBeDefined();
-        expect(country.flightTime).toBeDefined();
+        expect(country!.displayName).toBeDefined();
+        expect(country!.flightTime).toBeDefined();
       });
     });
   });

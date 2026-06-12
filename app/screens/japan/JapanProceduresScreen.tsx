@@ -13,9 +13,14 @@ import BackButton from '../../components/BackButton';
 import { useLocale } from '../../i18n/LocaleContext';
 import UserDataService from '../../services/data/UserDataService';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const JapanProceduresScreen = ({ navigation, route }: any) => {
-  const { passport: rawPassport, destination } = route.params || {};
+const JapanProceduresScreen: React.FC = (props: Record<string, never>) => {
+  const { navigation, route } = props as unknown as {
+    navigation: { navigate: (screen: string, params?: Record<string, unknown>) => void; goBack: () => void };
+    route: { params?: Record<string, unknown> };
+  };
+  const routeParams = (route.params || {}) as Record<string, unknown>;
+  const rawPassport = routeParams.passport as Parameters<typeof UserDataService.toSerializablePassport>[0];
+  const destination = routeParams.destination as string | undefined;
   const passport = UserDataService.toSerializablePassport(rawPassport);
   const { t } = useLocale();
 
@@ -24,15 +29,15 @@ const JapanProceduresScreen = ({ navigation, route }: any) => {
   };
 
   const entrySteps = useMemo(() => {
-    const steps = t('japan.procedures.entrySteps.steps', { defaultValue: [] }) as unknown[];
+    const steps = t('japan.procedures.entrySteps.steps', { defaultValue: '[]' }) as unknown as Record<string, unknown>[];
     return steps.map((step: Record<string, unknown>, index: number) => ({
       step: index + 1,
       ...step
     }));
   }, [t]);
 
-  const appFeatures = useMemo(() => 
-    (t('japan.procedures.features.items', { defaultValue: [] }) as unknown[])
+  const appFeatures = useMemo(() =>
+    (t('japan.procedures.features.items', { defaultValue: '[]' }) as unknown as Record<string, unknown>[])
   , [t]);
 
   return (
@@ -75,14 +80,14 @@ const JapanProceduresScreen = ({ navigation, route }: any) => {
             <View key={index} style={styles.stepCard}>
               <View style={styles.stepHeader}>
                 <View style={styles.stepNumber}>
-                  <Text style={styles.stepNumberText}>{step.step}</Text>
+                  <Text style={styles.stepNumberText}>{step.step as React.ReactNode}</Text>
                 </View>
                 <View style={styles.stepContent}>
-                  <Text style={styles.stepTitle}>{step.title}</Text>
-                  <Text style={styles.stepDescription}>{step.description}</Text>
+                  <Text style={styles.stepTitle}>{step.title as React.ReactNode}</Text>
+                  <Text style={styles.stepDescription}>{step.description as React.ReactNode}</Text>
                 </View>
               </View>
-              <Text style={styles.stepDetails}>{step.details}</Text>
+              <Text style={styles.stepDetails}>{step.details as React.ReactNode}</Text>
             </View>
           ))}
         </View>
@@ -93,9 +98,9 @@ const JapanProceduresScreen = ({ navigation, route }: any) => {
           <View style={styles.featuresGrid}>
             {appFeatures.map((feature: Record<string, unknown>, index: number) => (
               <View key={index} style={styles.featureCard}>
-                <Text style={styles.featureIcon}>{feature.icon}</Text>
-                <Text style={styles.featureTitle}>{feature.title}</Text>
-                <Text style={styles.featureDescription}>{feature.description}</Text>
+                <Text style={styles.featureIcon}>{feature.icon as React.ReactNode}</Text>
+                <Text style={styles.featureTitle}>{feature.title as React.ReactNode}</Text>
+                <Text style={styles.featureDescription}>{feature.description as React.ReactNode}</Text>
               </View>
             ))}
           </View>
@@ -105,7 +110,7 @@ const JapanProceduresScreen = ({ navigation, route }: any) => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('japan.procedures.importantNotes.title')}</Text>
           <View style={styles.notesCard}>
-            {t('japan.procedures.importantNotes.items', { defaultValue: [] }).map((note: string, index: number) => (
+            {(t('japan.procedures.importantNotes.items', { defaultValue: '[]' }) as unknown as string[]).map((note: string, index: number) => (
               <Text key={index} style={styles.noteText}>{note}</Text>
             ))}
           </View>

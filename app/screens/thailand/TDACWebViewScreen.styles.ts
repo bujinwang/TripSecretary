@@ -207,18 +207,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(245, 245, 245, 0.35)',
   },
-  loadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    zIndex: 30,
-    pointerEvents: 'none',
-  },
   loadingBox: {
     alignItems: 'center',
     padding: spacing.xl,
@@ -232,12 +220,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.primary,
     minWidth: 200,
-  },
-  loadingText: {
-    marginTop: spacing.md,
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
   },
   loadingSubText: {
     marginTop: spacing.xs,
@@ -554,6 +536,92 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  // Extended comparison styles for DataComparisonModal
+  comparisonContainer: {
+    flex: 1,
+    backgroundColor: colors.white,
+  },
+  comparisonHeaderLeft: {
+    flex: 1,
+  },
+  comparisonSubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
+  comparisonContent: {
+    flex: 1,
+  },
+  comparisonSummary: {
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  comparisonSummaryItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
+  },
+  comparisonSummaryLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    flex: 1,
+  },
+  comparisonSummaryValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  comparisonFieldItem: {
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    padding: spacing.sm,
+    marginBottom: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  comparisonFieldItemError: {
+    borderColor: '#F44336',
+    backgroundColor: '#FFF5F5',
+  },
+  comparisonFieldItemWarning: {
+    borderColor: '#FF9800',
+    backgroundColor: '#FFF8E1',
+  },
+  comparisonFieldHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  comparisonFieldStatus: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  comparisonFieldSource: {
+    fontSize: 13,
+    color: colors.primary,
+    flex: 1,
+  },
+  comparisonFieldTransform: {
+    fontSize: 13,
+    color: '#FF9800',
+    flex: 1,
+    fontStyle: 'italic',
+  },
+  comparisonFieldNotes: {
+    marginTop: spacing.xs,
+    padding: spacing.xs,
+    backgroundColor: '#FFF8E1',
+    borderRadius: 4,
+  },
+  comparisonFieldNotesText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+  },
   qrModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -658,6 +726,13 @@ const styles = StyleSheet.create({
   languageNotificationContent: {
     flex: 1,
   },
+  languageNotificationIcon: {
+    fontSize: 24,
+    marginRight: spacing.sm,
+  },
+  languageNotificationTextContainer: {
+    flex: 1,
+  },
   languageNotificationTitle: {
     fontSize: 14,
     fontWeight: '600',
@@ -732,6 +807,17 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   // Cloudflare notification styles
+  cloudflareReminder: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 5,
+  },
   cloudflareContent: {
     alignItems: 'center',
     paddingVertical: spacing.md,

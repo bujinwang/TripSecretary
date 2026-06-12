@@ -60,7 +60,7 @@ const COUNTRY_CODES = {
  * extractCountryCode("+86 138 1234 5678")
  * // → "86"
  */
-export const extractCountryCode = (phoneNumber: string, options: Record<string, unknown> = {}) => {
+export const extractCountryCode = (phoneNumber: string, options: Record<string, unknown> = {}): string => {
   const { strict = true } = options;
 
   if (!phoneNumber) {
@@ -125,7 +125,7 @@ return '';
  * extractNationalNumber("+86 138 1234 5678")
  * // → "13812345678"
  */
-export const extractNationalNumber = (phoneNumber: string, countryCode: string | null = null) => {
+export const extractNationalNumber = (phoneNumber: string, countryCode: string | null = null): string => {
   if (!phoneNumber) {
 return '';
 }
@@ -182,7 +182,14 @@ return '';
  * //   countryName: 'China'
  * // }
  */
-export const parsePhoneNumber = (phoneNumber: string, options: Record<string, unknown> = {}) => {
+export const parsePhoneNumber = (phoneNumber: string, options: Record<string, unknown> = {}): {
+  countryCode: string;
+  nationalNumber: string;
+  fullNumber: string;
+  formatted: string;
+  isValid: boolean;
+  countryName?: string;
+} => {
   const { defaultCountryCode = null, strict = true } = options;
 
   if (!phoneNumber) {
@@ -195,9 +202,9 @@ export const parsePhoneNumber = (phoneNumber: string, options: Record<string, un
     };
   }
 
-  const countryCode = extractCountryCode(phoneNumber, { strict }) || defaultCountryCode || '';
+  const countryCode = extractCountryCode(phoneNumber, { strict: strict as boolean }) || (defaultCountryCode as string | null) || '';
   const nationalNumber = extractNationalNumber(phoneNumber, countryCode);
-  const countryInfo = COUNTRY_CODES[countryCode];
+  const countryInfo = COUNTRY_CODES[countryCode as keyof typeof COUNTRY_CODES];
 
   // Validate number length
   let isValid = false;
@@ -239,23 +246,23 @@ export const parsePhoneNumber = (phoneNumber: string, options: Record<string, un
  * formatPhoneNumber("13812345678", { countryCode: '86', format: 'national' })
  * // → "138 1234 5678"
  */
-export const formatPhoneNumber = (phoneNumber: string, options: Record<string, unknown> = {}) => {
+export const formatPhoneNumber = (phoneNumber: string, options: Record<string, unknown> = {}): string => {
   const { countryCode, format = 'international' } = options;
+  const countryCodeStr = countryCode as string | undefined;
+  const formatStr = format as string;
 
   if (!phoneNumber) {
 return '';
 }
 
-  const parsed = typeof phoneNumber === 'string'
-    ? parsePhoneNumber(phoneNumber, { defaultCountryCode: countryCode })
-    : phoneNumber;
+  const parsed = parsePhoneNumber(phoneNumber, { defaultCountryCode: countryCodeStr });
 
-  if (format === 'e164') {
+  if (formatStr === 'e164') {
     // E.164 format: +8613812345678
     return parsed.fullNumber;
   }
 
-  if (format === 'national') {
+  if (formatStr === 'national') {
     // National format: 138 1234 5678
     return formatNationalNumber(parsed.nationalNumber, parsed.countryCode);
   }
@@ -341,6 +348,9 @@ export const validatePhoneNumber = (phoneNumber: string, options: Record<string,
     minLength = 7,
     maxLength = 15
   } = options;
+  const countryCodeStr = countryCode as string | null;
+  const minLengthNum = minLength as number;
+  const maxLengthNum = maxLength as number;
 
   const errors = [];
 
@@ -349,7 +359,7 @@ export const validatePhoneNumber = (phoneNumber: string, options: Record<string,
     return { isValid: false, errors };
   }
 
-  const parsed = parsePhoneNumber(phoneNumber, { defaultCountryCode: countryCode });
+  const parsed = parsePhoneNumber(phoneNumber, { defaultCountryCode: countryCodeStr });
 
   if (!parsed.nationalNumber) {
     errors.push('Invalid phone number format');
@@ -358,16 +368,16 @@ export const validatePhoneNumber = (phoneNumber: string, options: Record<string,
 
   const numLength = parsed.nationalNumber.length;
 
-  if (numLength < minLength) {
-    errors.push(`Phone number must be at least ${minLength} digits`);
+  if (numLength < minLengthNum) {
+    errors.push(`Phone number must be at least ${minLengthNum} digits`);
   }
 
-  if (numLength > maxLength) {
-    errors.push(`Phone number must be no more than ${maxLength} digits`);
+  if (numLength > maxLengthNum) {
+    errors.push(`Phone number must be no more than ${maxLengthNum} digits`);
   }
 
-  if (countryCode && parsed.countryCode && parsed.countryCode !== countryCode) {
-    errors.push(`Country code mismatch (expected: ${countryCode}, got: ${parsed.countryCode})`);
+  if (countryCodeStr && parsed.countryCode && parsed.countryCode !== countryCodeStr) {
+    errors.push(`Country code mismatch (expected: ${countryCodeStr}, got: ${parsed.countryCode})`);
   }
 
   return {

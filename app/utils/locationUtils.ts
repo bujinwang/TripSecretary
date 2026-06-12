@@ -162,17 +162,17 @@ export const getDisplayValue = (location: string | Record<string, unknown>, opti
 
     // Select name based on locale
     if (locale === 'zh' && location.nameZh) {
-      displayName = location.nameZh;
+      displayName = location.nameZh as string;
     } else if (locale === 'local' && location.nameLocal) {
-      displayName = location.nameLocal;
+      displayName = location.nameLocal as string;
     } else if (location.name) {
-      displayName = location.name;
+      displayName = location.name as string;
     } else if (location.code) {
-      displayName = formatLocationCode(location.code);
+      displayName = formatLocationCode(location.code as string);
     }
 
     if (includeCode && location.code) {
-      return `${displayName} (${location.code})`;
+      return `${displayName} (${location.code as string})`;
     }
 
     return displayName;
@@ -235,7 +235,7 @@ parts.push(address.line2);
   if (address.district) {
     const districtDisplay = typeof address.district === 'string'
       ? formatLocationCode(address.district)
-      : getDisplayValue(address.district);
+      : getDisplayValue(address.district as Record<string, unknown>);
     parts.push(districtDisplay);
   }
 
@@ -304,7 +304,7 @@ parts.push(address.postalCode);
  * parseLocationCode("New York")
  * // → "NEW_YORK"
  */
-export const parseLocationCode = (displayName) => {
+export const parseLocationCode = (displayName: string) => {
   if (!displayName) {
 return '';
 }
@@ -348,11 +348,11 @@ export const validateLocationCode = (code: string, rules: Record<string, unknown
     return { isValid: false, errors };
   }
 
-  if (code.length < minLength) {
+  if (code.length < (minLength as number)) {
     errors.push(`Location code must be at least ${minLength} characters`);
   }
 
-  if (code.length > maxLength) {
+  if (code.length > (maxLength as number)) {
     errors.push(`Location code must be no more than ${maxLength} characters`);
   }
 

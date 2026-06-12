@@ -68,7 +68,7 @@ interface ProgressInfo {
   currentEntryInfo?: string;
 }
 
-interface ExportResult {
+export interface ExportResult {
   success: boolean;
   format: ExportFormat | 'zip';
   filename: string;
@@ -123,7 +123,7 @@ interface ZipPackageResult {
   format: string;
 }
 
-interface SharingOptions {
+export interface SharingOptions {
   available: boolean;
   filePath?: string;
   mimeType?: string;

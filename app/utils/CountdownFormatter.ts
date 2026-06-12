@@ -28,7 +28,7 @@ interface FormatDisplayOptions {
   maxUnit?: CountdownUnit;
 }
 
-interface CountdownResult {
+export interface CountdownResult {
   display: string;
   components: CountdownComponents;
   color: string | null;

@@ -9,6 +9,9 @@ import tamaguiConfig from './tamagui.config';
 import { NotificationService } from './app/services/notification';
 import BackgroundJobService from './app/services/background/BackgroundJobService';
 import DataSyncService from './app/services/DataSyncService';
+import BiometricAuthService from './app/services/security/BiometricAuthService';
+import OfflineQueueService from './app/services/offline/OfflineQueueService';
+import OfflineIndicator from './app/components/offline/OfflineIndicator';
 
 export default function App(): React.JSX.Element {
   const navigationRef = useRef<any>(null);
@@ -37,6 +40,10 @@ export default function App(): React.JSX.Element {
 
         // Check for data updates
         await DataSyncService.checkForUpdates();
+
+        // Initialize offline queue service
+        await OfflineQueueService.initialize();
+        console.log('Offline queue service initialized');
       } catch (error) {
         console.error('Failed to initialize services:', error);
       }
@@ -44,7 +51,7 @@ export default function App(): React.JSX.Element {
 
     initializeServices();
 
-    // Handle app state changes for pending deep links
+    // Handle app state changes for pending deep links and biometric lock
     const handleAppStateChange = (nextAppState: string): void => {
       if (
         appState.current.match(/inactive|background/) &&
@@ -53,8 +60,28 @@ export default function App(): React.JSX.Element {
         // App has come to the foreground, check for pending deep links
         console.log('App became active, checking for pending notification deep links');
         NotificationService.handlePendingDeepLink();
+
+        // Check biometric app-lock
+        checkBiometricLock();
       }
       appState.current = nextAppState;
+    };
+
+    // Biometric app-lock: require authentication when app returns to foreground
+    const checkBiometricLock = async (): Promise<void> => {
+      try {
+        const settings = await BiometricAuthService.getBiometricSettings();
+        if (settings.enabled) {
+          console.log('Biometric lock enabled, requesting authentication');
+          await BiometricAuthService.authenticate({
+            promptMessage: 'Verify your identity to access 入境通',
+            cancelLabel: 'Cancel',
+            fallbackLabel: 'Use Passcode',
+          });
+        }
+      } catch (error) {
+        console.error('Biometric lock check failed:', error);
+      }
     };
 
     const subscription = AppState.addEventListener('change', handleAppStateChange);
@@ -63,6 +90,7 @@ export default function App(): React.JSX.Element {
     return () => {
       NotificationService.cleanup();
       BackgroundJobService.stop();
+      OfflineQueueService.cleanup();
       subscription?.remove();
     };
   }, []);
@@ -78,6 +106,7 @@ export default function App(): React.JSX.Element {
       <Theme name="light">
         <LocaleProvider>
           <StatusBar style="dark" />
+          <OfflineIndicator />
           <AppNavigator ref={navigationRef} />
         </LocaleProvider>
       </Theme>

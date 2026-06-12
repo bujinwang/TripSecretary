@@ -7,6 +7,7 @@
 interface ArrivalWindow {
   isWithin72Hours: boolean;
   hoursRemaining: number | null;
+  timeRemaining?: number | null;
   canSubmit: boolean;
   arrivalDate: Date | null;
   submissionWindowStart: Date | null;

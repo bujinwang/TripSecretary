@@ -8,6 +8,7 @@ import { DateTimeInput } from '../../index';
 import InputWithUserTracking from '../../InputWithUserTracking';
 import OptionSelector from '../../thailand/OptionSelector';
 import { colors, typography, spacing } from '../../../theme';
+import { compressDocumentPhoto } from '../../../utils/imageCompression';
 
 const createStyles = () =>
   StyleSheet.create({
@@ -218,7 +219,13 @@ const TravelDetailsSection: React.FC<MalaysiaTravelDetailsSectionProps> = ({
         return;
       }
 
-      const { success } = await savePhoto(photoType, asset.uri);
+      let photoUri = asset.uri;
+      try {
+        const compressed = await compressDocumentPhoto(photoUri);
+        photoUri = compressed.uri;
+      } catch (e) { /* use original if compression fails */ }
+
+      const { success } = await savePhoto(photoType, photoUri);
 
       if (success) {
         Alert.alert('Upload Success', photoType === 'flightTicket' ? 'Flight ticket photo uploaded successfully' : 'Hotel reservation photo uploaded successfully');

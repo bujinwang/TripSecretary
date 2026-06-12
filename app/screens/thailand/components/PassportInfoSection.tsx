@@ -38,7 +38,7 @@ return 'N/A';
 
     // If fullName is already provided, use it
     if (passportData.fullName) {
-      return passportData.fullName;
+      return passportData.fullName as string;
     }
 
     // Otherwise construct from individual parts using helper
@@ -53,7 +53,7 @@ return 'N/A';
     return getFullNameHelper(nameData, 'N/A');
   };
 
-  const getLabel = (englishKey, thaiText) => {
+  const getLabel = (englishKey: string, thaiText: string) => {
     if (language === 'english') {
       return t(`progressiveEntryFlow.immigrationOfficer.presentation.${englishKey}`);
     } else if (language === 'thai') {
@@ -70,10 +70,10 @@ return 'N/A';
       <Text style={styles.sectionTitle}>{getSectionTitle()}</Text>
 
       {/* Passport photo if available */}
-      {passportData?.photoUri && (
+      {(passportData?.photoUri as string) && (
         <View style={styles.passportPhotoContainer}>
           <OptimizedImage
-            uri={passportData.photoUri}
+            uri={passportData!.photoUri as string}
             style={styles.passportPhoto}
             resizeMode="cover"
             lazy={false}
@@ -93,13 +93,13 @@ return 'N/A';
           {getLabel('passportNumber', 'หมายเลขหนังสือเดินทาง')}:
         </Text>
         <Text style={[styles.infoValue, styles.passportNumber]}>
-          {passportData?.passportNumber || 'N/A'}
+          {(passportData?.passportNumber as string) || 'N/A'}
         </Text>
       </View>
 
       <View style={styles.infoRow}>
         <Text style={styles.infoLabel}>{getLabel('nationality', 'สัญชาติ')}:</Text>
-        <Text style={styles.infoValue}>{passportData?.nationality || 'N/A'}</Text>
+        <Text style={styles.infoValue}>{(passportData?.nationality as string) || 'N/A'}</Text>
       </View>
 
       <View style={styles.infoRow}>
@@ -111,7 +111,7 @@ return 'N/A';
 
       <View style={styles.infoRow}>
         <Text style={styles.infoLabel}>{getLabel('gender', 'เพศ')}:</Text>
-        <Text style={styles.infoValue}>{passportData?.gender || 'N/A'}</Text>
+        <Text style={styles.infoValue}>{(passportData?.gender as string) || 'N/A'}</Text>
       </View>
 
       <View style={styles.infoRow}>

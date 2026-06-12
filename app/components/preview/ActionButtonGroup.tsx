@@ -201,7 +201,7 @@ return;
               {primaryLabel || t(config.primaryKey, { defaultValue: config.primaryDefault })}
             </Text>
             <Feather
-              name={config.primaryIcon}
+              name={config.primaryIcon as keyof typeof Feather.glyphMap}
               size={previewTheme.iconSizes.medium}
               color={previewTheme.colors.white}
               style={styles.buttonIcon}
@@ -211,7 +211,9 @@ return;
       </AnimatedTouchable>
 
       {/* Secondary Button (conditional) */}
-      {config.showSecondary && onSecondaryPress && (
+      {config.showSecondary && onSecondaryPress && (() => {
+          const secConfig = config as { secondaryKey: string; secondaryDefault: string; secondaryIcon: string };
+          return (
         <AnimatedTouchable
           style={[
             styles.secondaryButton,
@@ -222,12 +224,12 @@ return;
           accessible={true}
           accessibilityRole="button"
           accessibilityLabel={
-            secondaryLabel || t(config.secondaryKey, { defaultValue: config.secondaryDefault })
+            secondaryLabel || t(secConfig.secondaryKey, { defaultValue: secConfig.secondaryDefault })
           }
           accessibilityState={{ disabled: secondaryDisabled }}
         >
           <Feather
-            name={config.secondaryIcon}
+            name={secConfig.secondaryIcon as keyof typeof Feather.glyphMap}
             size={previewTheme.iconSizes.medium}
             color={
               secondaryDisabled
@@ -242,10 +244,11 @@ return;
               secondaryDisabled && styles.secondaryButtonTextDisabled,
             ]}
           >
-            {secondaryLabel || t(config.secondaryKey, { defaultValue: config.secondaryDefault })}
+            {secondaryLabel || t(secConfig.secondaryKey, { defaultValue: secConfig.secondaryDefault })}
           </Text>
         </AnimatedTouchable>
-      )}
+          );
+      })()}
     </View>
   );
 };
@@ -302,6 +305,7 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     ...previewTheme.typography.button,
     color: previewTheme.colors.white,
+    fontWeight: '600' as const,
   },
   // Secondary button styles
   secondaryButton: {
@@ -323,6 +327,7 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     ...previewTheme.typography.button,
     color: previewTheme.colors.actionPrimary,
+    fontWeight: '600' as const,
   },
   secondaryButtonTextDisabled: {
     color: previewTheme.colors.neutral400,

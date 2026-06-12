@@ -8,8 +8,10 @@
 import { useCallback, useEffect } from 'react';
 import { validateField } from '../../utils/thailand/ThailandValidationRules';
 import { findChinaProvince } from '../../utils/validation/chinaProvinceValidator';
-import FieldStateManager from '../../utils/FieldStateManager';
+import FieldStateManager, { InteractionState } from '../../utils/FieldStateManager';
 import performanceMonitor from '../../utils/PerformanceMonitor';
+
+declare const window: Record<string, unknown>;
 
 /**
  * Custom hook to manage Thailand travel form validation
@@ -100,7 +102,7 @@ export const useThailandValidation = ({
       // Brief highlight animation for last edited field
       if (fieldName) {
         if (window.highlightTimeout) {
-          clearTimeout(window.highlightTimeout);
+          clearTimeout(window.highlightTimeout as number);
         }
         window.highlightTimeout = setTimeout(() => {
           formState.setLastEditedField(null);
@@ -194,7 +196,7 @@ export const useThailandValidation = ({
   // Count filled fields for each section
   const getFieldCount = useCallback((section: string) => {
     // Build interaction state for FieldStateManager
-    const interactionState = {};
+    const interactionState: InteractionState = {} as InteractionState;
     const allFieldNames = [
       'passportNo', 'fullName', 'nationality', 'dob', 'expiryDate', 'sex',
       'phoneCode', 'phoneNumber', 'email', 'occupation', 'cityOfResidence', 'residentCountry',
@@ -207,7 +209,7 @@ export const useThailandValidation = ({
     allFieldNames.forEach(fieldName => {
       interactionState[fieldName] = {
         isUserModified: userInteractionTracker.isFieldUserModified(fieldName),
-        lastModified: userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified || null,
+        lastModified: (userInteractionTracker.getFieldInteractionDetails(fieldName)?.lastModified as string) || undefined,
         initialValue: userInteractionTracker.getFieldInteractionDetails(fieldName)?.initialValue || null
       };
     });
@@ -338,12 +340,14 @@ export const useThailandValidation = ({
       isReady: percent >= 100
     };
 
-    performanceMonitor.endTiming(operationId, {
-      totalFilled,
-      totalFields,
-      percent,
-      sections: 4
-    });
+    if (operationId) {
+      performanceMonitor.endTiming(operationId, {
+        totalFilled,
+        totalFields,
+        percent,
+        sections: 4
+      });
+    }
 
     return result;
   }, [getFieldCount]);
@@ -449,19 +453,23 @@ return;
       formState.setCompletionMetrics(metrics);
       formState.setTotalCompletionPercent(metrics?.percent || 0);
 
-      performanceMonitor.endTiming(effectOperationId, {
-        triggered: true,
-        debounced: true
-      });
+      if (effectOperationId) {
+        performanceMonitor.endTiming(effectOperationId, {
+          triggered: true,
+          debounced: true
+        });
+      }
     }, 300); // 300ms debounce delay
 
     return () => {
       clearTimeout(debounceTimer);
-      performanceMonitor.endTiming(effectOperationId, {
-        triggered: true,
-        debounced: false,
-        cancelled: true
-      });
+      if (effectOperationId) {
+        performanceMonitor.endTiming(effectOperationId, {
+          triggered: true,
+          debounced: false,
+          cancelled: true
+        });
+      }
     };
     // Only depend on the memoized formValues object, not individual fields
     // eslint-disable-next-line react-hooks/exhaustive-deps

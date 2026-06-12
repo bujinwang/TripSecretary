@@ -31,6 +31,7 @@ import TDACSubmissionLogger from '../../services/tdac/TDACSubmissionLogger';
 import { parsePassportName } from '../../utils/NameParser';
 import { getPreferredLanguage } from '../../utils/tdac/languageDetection';
 import { TDACTravelerInfo } from '../../types/thailand';
+import type { SerializablePassport, TravelInfoData } from '../../types/data';
 import useQRCodeHandler from '../../hooks/tdac/useQRCodeHandler';
 import HelperModal from '../../components/tdac/HelperModal';
 import QRCodeModal from '../../components/tdac/QRCodeModal';
@@ -169,7 +170,7 @@ const TDACWebViewScreen: React.FC<TDACWebViewScreenProps> = ({ navigation, route
 
   // Declared early to satisfy TS block-scoping rules; assigned below
   // eslint-disable-next-line prefer-const
-  let formFields: Array<{ section: string; label: string; labelCn: string; value: string; field: string; searchTerms: string[] }>;
+  let formFields: Array<{ section: string; label: string; labelCn: string; value: string; field: string; searchTerms: string[] }> = [];
 
   const copyToClipboard = (text: string, fieldName: string) => {
     Clipboard.setString(text);
@@ -989,27 +990,29 @@ return;
 
   // Validate data transformation
   const validateDataTransformation = React.useCallback((originalData: ComparisonData, tdacData: ComparisonData) => {
-    const validations: Record<string, Record<string, unknown>> = {
-      personalInfo: {},
-      tripInfo: {},
-      overall: true as unknown
+    const validations: Record<string, unknown> = {
+      personalInfo: {} as Record<string, unknown>,
+      tripInfo: {} as Record<string, unknown>,
+      overall: true
     };
 
     // Validate personal info
+    const pi = validations.personalInfo as Record<string, unknown>;
+    const ti = validations.tripInfo as Record<string, unknown>;
     if (originalData.passport) {
-      validations.personalInfo.firstName = {
+      pi.firstName = {
         valid: tdacData.personalInfo?.firstName === (originalData.passport.nameEn?.split(' ')[0] || '').toUpperCase(),
         original: originalData.passport.nameEn?.split(' ')[0] || '',
         tdac: tdacData.personalInfo?.firstName || ''
       };
 
-      validations.personalInfo.lastName = {
+      pi.lastName = {
         valid: tdacData.personalInfo?.familyName === (originalData.passport.nameEn?.split(' ').slice(1).join(' ') || '').toUpperCase(),
         original: originalData.passport.nameEn?.split(' ').slice(1).join(' ') || '',
         tdac: tdacData.personalInfo?.familyName || ''
       };
 
-      validations.personalInfo.passportNo = {
+      pi.passportNo = {
         valid: tdacData.personalInfo?.passportNo === (originalData.passport.passportNo || '').toUpperCase(),
         original: originalData.passport.passportNo || '',
         tdac: tdacData.personalInfo?.passportNo || ''
@@ -1017,8 +1020,8 @@ return;
     }
 
     // Check overall validity
-    validations.overall = Object.values(validations.personalInfo).every((v: { valid: boolean }) => v.valid) &&
-                         Object.values(validations.tripInfo).every((v: { valid: boolean }) => v.valid);
+    validations.overall = (Object.values(pi) as Array<{ valid: boolean }>).every(v => v.valid) &&
+                         (Object.values(ti) as Array<{ valid: boolean }>).every(v => v.valid);
 
     return validations;
   }, []);
@@ -1027,8 +1030,10 @@ return;
   const generateComparisonSummary = React.useCallback((originalData: ComparisonData, tdacData: ComparisonData) => {
     const totalFields = Object.keys(createFieldMappingReport(originalData, tdacData)).length;
     const validationResults = validateDataTransformation(originalData, tdacData);
-    const validFields = Object.values(validationResults.personalInfo).filter((v: { valid: boolean }) => v.valid).length +
-                       Object.values(validationResults.tripInfo).filter((v: { valid: boolean }) => v.valid).length;
+    const vrPi = validationResults.personalInfo as Record<string, unknown>;
+    const vrTi = validationResults.tripInfo as Record<string, unknown>;
+    const validFields = (Object.values(vrPi) as Array<{ valid: boolean }>).filter(v => v.valid).length +
+                       (Object.values(vrTi) as Array<{ valid: boolean }>).filter(v => v.valid).length;
 
     return {
       totalFields,
@@ -1123,7 +1128,7 @@ return;
   };
 
   // 智能查找并填充字段 - 针对Angular动态表单优化
-  const autoFillField = (value, searchTerms) => {
+  const autoFillField = (value: string, searchTerms: string[]) => {
     const safeValue = value.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, '\\n');
     
     const jsCode = `
@@ -1327,7 +1332,7 @@ ${accommodationFields.map(f => `• ${f.labelCn}: ${f.value}`).join('\n')}
     });
 
   // 显示WebView字段详情
-  const showWebViewFieldDetails = (resolve) => {
+  const showWebViewFieldDetails = (resolve: (value: boolean) => void) => {
     const fieldDetails = `
 🔍 TDAC 网站字段映射详情：
 
@@ -1786,7 +1791,9 @@ ${index + 1}. ${field.labelCn} (${field.label})
     },
   ];
 
-  const renderCopyField = (item: { field: string; label: string; labelCn: string; value: string; searchTerms: string[] }) => (
+  const renderCopyField = (rawItem: Record<string, unknown>) => {
+    const item = rawItem as unknown as { field: string; label: string; labelCn: string; value: string; searchTerms: string[] };
+    return (
     <View key={item.field} style={styles.fieldRow}>
       <View style={styles.fieldLeft}>
         <Text style={styles.fieldLabel}>{item.label}</Text>
@@ -1823,7 +1830,8 @@ ${index + 1}. ${field.labelCn} (${field.label})
         </TouchableOpacity>
       </View>
     </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -2019,9 +2027,9 @@ ${index + 1}. ${field.labelCn} (${field.label})
             <Text style={styles.cloudflareTitle}>安全验证</Text>
             <Text style={styles.cloudflareTextCn}>请在下方网页中点击</Text>
             <Text style={styles.cloudflareTextEn}>"我不是机器人" ✓</Text>
-            <Text style={styles.cloudflareSubtext}>验证完成后将自动提交</Text>
+            <Text style={styles.cloudflareTextCn}>验证完成后将自动提交</Text>
             <View style={styles.cloudflareArrow}>
-              <Text style={styles.cloudflareArrowIcon}>👇</Text>
+              <Text style={styles.cloudflareArrow}>👇</Text>
             </View>
           </View>
         </View>

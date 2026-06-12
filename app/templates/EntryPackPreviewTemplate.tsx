@@ -29,8 +29,53 @@ import EntryPackDisplay from '../components/EntryPackDisplay';
 import LoggingService from '../services/LoggingService';
 import { useLocale } from '../i18n/LocaleContext';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PreviewContextValue = any;
+interface UserDataShape {
+  travel?: Record<string, unknown>;
+  funds?: unknown[];
+  passport?: Record<string, unknown>;
+  personalInfo?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+interface EntryPackDataShape {
+  id?: string;
+  status?: string;
+  tdacSubmission?: Record<string, unknown> | null;
+  personalInfo?: Record<string, unknown>;
+  passport?: Record<string, unknown>;
+  travel?: Record<string, unknown>;
+  funds?: unknown[];
+  [key: string]: unknown;
+}
+
+interface PreviewContextValue {
+  config: TemplateConfig;
+  navigation: Record<string, unknown>;
+  route: Record<string, unknown>;
+  passport: Record<string, unknown> | null;
+  destination: Record<string, unknown> | null;
+  userData: UserDataShape | null;
+  entryPackData: EntryPackDataShape | null;
+  entryPack: Record<string, unknown>;
+  isOfficialPack: boolean;
+  isLoading: boolean;
+  loadError: unknown;
+  handleActionPress: (action: Record<string, unknown>) => void;
+  resolveText: (value: unknown, opts?: { preserveArray?: boolean }) => string | string[] | null;
+  language: string;
+  namespace: string | null;
+  helpers: {
+    scrollViewRef: React.RefObject<ScrollView | null>;
+    scrollTo: (opts?: { y?: number; animated?: boolean }) => void;
+    scrollToTop: (animated?: boolean) => void;
+  };
+  scrollViewRef: React.RefObject<ScrollView | null>;
+  renderComponent: (slot: string, defaultRenderer: () => React.ReactNode) => React.ReactNode;
+  renderSlot: (slot: string) => React.ReactNode;
+  runHook: (hookName: string, extraPayload?: Record<string, unknown>) => void;
+  t: (key: string, options?: Record<string, unknown>) => string;
+  [key: string]: unknown;
+}
 
 const EntryPackPreviewTemplateContext = createContext<PreviewContextValue | null>(null);
 
@@ -44,14 +89,26 @@ const useEntryPackPreviewTemplate = (): PreviewContextValue => {
   return context;
 };
 
+interface TemplateConfig {
+  i18n?: { fallbackLanguage?: string; namespace?: string; labelSource?: Record<string, unknown>; [key: string]: unknown };
+  hooks?: Record<string, (payload: Record<string, unknown>) => void>;
+  header?: { title?: unknown; subtitle?: unknown; closeIcon?: unknown; [key: string]: unknown };
+  components?: Record<string, React.ComponentType<Record<string, unknown>> | null>;
+  slots?: Record<string, (props: Record<string, unknown>) => React.ReactNode>;
+  countryCode?: string;
+  destinationId?: string;
+  actions?: { primary?: Record<string, unknown>; secondary?: Record<string, unknown>; [key: string]: unknown };
+  previewBanner?: Record<string, unknown>;
+  infoSection?: Record<string, unknown>;
+  errorState?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 interface PreviewTemplateProps {
   children?: React.ReactNode;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  config: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  navigation: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  route: any;
+  config: TemplateConfig;
+  navigation: Record<string, unknown>;
+  route: { params?: Record<string, unknown>; [key: string]: unknown };
 }
 
 const EntryPackPreviewTemplate = ({
@@ -60,10 +117,13 @@ const EntryPackPreviewTemplate = ({
   navigation,
   route,
 }: PreviewTemplateProps) => {
-  const { userData, passport: rawPassport, destination, entryPackData } =
-    route?.params || {};
+  const params = (route?.params || {}) as Record<string, unknown>;
+  const userData = params.userData as UserDataShape | undefined;
+  const rawPassport = params.passport as Record<string, unknown> | undefined;
+  const destination = params.destination as Record<string, unknown> | undefined;
+  const entryPackData = params.entryPackData as EntryPackDataShape | undefined;
   const passport = useMemo(
-    () => UserDataService.toSerializablePassport(rawPassport),
+    () => UserDataService.toSerializablePassport(rawPassport as Parameters<typeof UserDataService.toSerializablePassport>[0]),
     [rawPassport]
   );
 
@@ -225,7 +285,7 @@ const EntryPackPreviewTemplate = ({
         }
 
         if (Array.isArray(input)) {
-          const aggregated = [];
+          const aggregated: string[] = [];
           input.forEach((item) => {
             const resolved = resolveSingle(item);
             if (Array.isArray(resolved)) {
@@ -234,7 +294,7 @@ const EntryPackPreviewTemplate = ({
                   aggregated.push(nested);
                 }
               });
-            } else if (resolved !== null && resolved !== undefined && resolved !== '') {
+            } else if (typeof resolved === 'string' && resolved !== '') {
               aggregated.push(resolved);
             }
           });
@@ -242,11 +302,23 @@ const EntryPackPreviewTemplate = ({
         }
 
         if (typeof input === 'object') {
-          const { key: providedKey, defaultValue, params, values, ...languageMap } = input as Record<string, unknown>;
+          const obj = input as Record<string, unknown>;
+          const providedKey = obj.key as string | undefined;
+          const defaultValue = obj.defaultValue;
+          const params = obj.params as Record<string, unknown> | undefined;
+          const values = obj.values as Record<string, unknown> | undefined;
+          // Build language map from remaining keys
+          const languageMap: Record<string, unknown> = {};
+          const knownKeys = new Set(['key', 'defaultValue', 'params', 'values']);
+          for (const k of Object.keys(obj)) {
+            if (!knownKeys.has(k)) {
+              languageMap[k] = obj[k];
+            }
+          }
 
           if (providedKey) {
             const translationKey = resolveTranslationKey(providedKey);
-            return t(translationKey, { defaultValue, ...(params || {}) });
+            return t(translationKey, { defaultValue: defaultValue as string | undefined, ...(params as Record<string, string | number | undefined> || {}) });
           }
 
           if (values && typeof values === 'object') {
@@ -257,16 +329,16 @@ const EntryPackPreviewTemplate = ({
               'en',
               'zh-CN',
               'zh-TW',
-            ].filter(Boolean);
+            ].filter(Boolean) as string[];
 
             for (const langKey of languageCandidates) {
               if (typeof values[langKey] === 'string') {
-                return values[langKey];
+                return values[langKey] as string;
               }
             }
 
             if (defaultValue !== undefined) {
-              return defaultValue;
+              return defaultValue as string;
             }
           }
 
@@ -277,16 +349,16 @@ const EntryPackPreviewTemplate = ({
             'en',
             'zh-CN',
             'zh-TW',
-          ].filter(Boolean);
+          ].filter(Boolean) as string[];
 
           for (const langKey of languageCandidates) {
-            if (typeof (languageMap as Record<string, unknown>)[langKey as string] === 'string') {
-              return (languageMap as Record<string, unknown>)[langKey as string];
+            if (typeof languageMap[langKey] === 'string') {
+              return languageMap[langKey] as string;
             }
           }
 
           if (defaultValue !== undefined) {
-            return defaultValue;
+            return defaultValue as string;
           }
         }
 
@@ -386,7 +458,7 @@ const EntryPackPreviewTemplate = ({
     ]
   );
 
-  const contextRef = useRef(null);
+  const contextRef = useRef<PreviewContextValue | null>(null);
 
   const baseContext = useMemo(
     () => ({
@@ -405,6 +477,7 @@ const EntryPackPreviewTemplate = ({
       resolveText,
       language,
       namespace,
+      t,
     }),
     [
       config,
@@ -422,6 +495,7 @@ const EntryPackPreviewTemplate = ({
       resolveText,
       language,
       namespace,
+      t,
     ]
   );
 
@@ -453,7 +527,7 @@ const EntryPackPreviewTemplate = ({
         }
       }
       return typeof defaultRenderer === 'function'
-        ? defaultRenderer(templateProps)
+        ? defaultRenderer()
         : null;
     },
     [buildTemplateProps, config]
@@ -480,10 +554,11 @@ const EntryPackPreviewTemplate = ({
     if (!ctx) {
       return;
     }
-    const hook = (ctx as any).config?.hooks?.[hookName];
+    const hooks = (ctx.config as Record<string, unknown> | undefined)?.hooks as Record<string, unknown> | undefined;
+    const hook = hooks?.[hookName];
     if (typeof hook === 'function') {
       try {
-        hook({ ...ctx, ...extraPayload });
+        hook({ ...ctx, ...extraPayload } as Record<string, unknown>);
       } catch (error) {
         LoggingService.error('EntryPackPreviewTemplate', `${hookName} hook failed`, { error });
       }
@@ -523,7 +598,14 @@ const EntryPackPreviewTemplate = ({
 
 EntryPackPreviewTemplate.useTemplate = useEntryPackPreviewTemplate;
 
-const EntryPackPreviewTemplateHeader = ({
+interface HeaderProps {
+  title?: string | Record<string, unknown>;
+  subtitle?: string | Record<string, unknown>;
+  onClose?: () => void;
+  rightComponent?: React.ReactNode;
+}
+
+const EntryPackPreviewTemplateHeader: React.FC<HeaderProps> = ({
   title,
   subtitle,
   onClose,
@@ -883,6 +965,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: spacing.md,
     alignItems: 'center',
+  },
+  actionButtonText: {
+    ...typography.body2,
+    color: colors.white,
+    fontWeight: '700',
   },
   primaryButton: {
     backgroundColor: '#0BD67B',

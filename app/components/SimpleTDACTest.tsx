@@ -5,7 +5,12 @@ const SimpleTDACTest = () => {
   const [results, setResults] = useState<Record<string, unknown>[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
-  const addResult = (test, success, duration, error = null) => {
+  const addResult = (
+    test: string,
+    success: boolean,
+    duration: number,
+    error: string | null = null,
+  ) => {
     const result = {
       test,
       success,
@@ -47,10 +52,10 @@ const SimpleTDACTest = () => {
       console.log(`✅ Fetch completed in ${duration}ms`);
       
       addResult('Fetch TDAC', true, duration);
-    } catch (_error) {
+    } catch (error: unknown) {
       const duration = Date.now() - start;
-      console.log(`❌ Fetch failed after ${duration}ms:`, error.message);
-      addResult('Fetch TDAC', false, duration, error.message);
+      console.log(`❌ Fetch failed after ${duration}ms:`, (error as Error).message);
+      addResult('Fetch TDAC', false, duration, (error as Error).message);
     }
   };
 
@@ -58,12 +63,12 @@ const SimpleTDACTest = () => {
     console.log('🔍 Testing axios with TDAC...');
     
     // Check if axios is available
-    let axios;
+    let axios: { post: (...args: unknown[]) => Promise<unknown> } | undefined;
     try {
       axios = require('axios');
-    } catch (_error) {
+    } catch {
       console.log('⚠️ Axios not available');
-      addResult('Axios TDAC', false, 0, 'Axios not available');
+      addResult('Axios TDAC', false, 0, 'Axios not available' as string);
       return;
     }
 
@@ -71,7 +76,7 @@ const SimpleTDACTest = () => {
     
     try {
       console.log('📡 Starting axios request...');
-      const response = await axios.post(
+      const response = await axios!.post(
         'https://tdac.immigration.go.th/arrival-card-api/api/v1/security/initActionToken?submitId=test123',
         {
           token: 'test_token',
@@ -90,10 +95,10 @@ const SimpleTDACTest = () => {
       console.log(`✅ Axios completed in ${duration}ms`);
       
       addResult('Axios TDAC', true, duration);
-    } catch (_error) {
+    } catch (error: unknown) {
       const duration = Date.now() - start;
-      console.log(`❌ Axios failed after ${duration}ms:`, error.message);
-      addResult('Axios TDAC', false, duration, error.message);
+      console.log(`❌ Axios failed after ${duration}ms:`, (error as Error).message);
+      addResult('Axios TDAC', false, duration, (error as Error).message);
     }
   };
 
@@ -111,10 +116,10 @@ const SimpleTDACTest = () => {
       console.log(`✅ Google completed in ${duration}ms`);
       
       addResult('Google Control', true, duration);
-    } catch (_error) {
+    } catch (error: unknown) {
       const duration = Date.now() - start;
-      console.log(`❌ Google failed after ${duration}ms:`, error.message);
-      addResult('Google Control', false, duration, error.message);
+      console.log(`❌ Google failed after ${duration}ms:`, (error as Error).message);
+      addResult('Google Control', false, duration, (error as Error).message);
     }
   };
 
@@ -131,9 +136,9 @@ const SimpleTDACTest = () => {
       
       console.log('✅ All tests completed');
       Alert.alert('Tests Complete', 'Check console and results below');
-    } catch (_error) {
+    } catch (error: unknown) {
       console.error('❌ Test suite error:', error);
-      Alert.alert('Test Error', error.message);
+      Alert.alert('Test Error', (error as Error).message);
     } finally {
       setIsRunning(false);
     }
@@ -164,19 +169,21 @@ const SimpleTDACTest = () => {
       </TouchableOpacity>
 
       <ScrollView style={styles.results}>
-        {results.map((result, index) => (
-          <View key={index} style={styles.resultItem}>
-            <Text style={styles.resultTest}>{result.test}</Text>
-            <Text style={[styles.resultStatus, { color: result.success ? '#4CAF50' : '#F44336' }]}>
-              {result.success ? '✅ Success' : '❌ Failed'}
-            </Text>
-            <Text style={styles.resultDuration}>Duration: {result.duration}ms</Text>
-            {result.error && (
-              <Text style={styles.resultError}>Error: {result.error}</Text>
-            )}
-            <Text style={styles.resultTime}>{result.timestamp}</Text>
-          </View>
-        ))}
+        {results.map((result: Record<string, unknown>, index: number) => {
+          return (
+            <View key={index} style={styles.resultItem}>
+              <Text style={styles.resultTest}>{String(result.test)}</Text>
+              <Text style={[styles.resultStatus, { color: result.success ? '#4CAF50' : '#F44336' }]}>
+                {result.success ? '✅ Success' : '❌ Failed'}
+              </Text>
+              <Text style={styles.resultDuration}>Duration: {String(result.duration)}ms</Text>
+              {result.error ? (
+                <Text style={styles.resultError}>Error: {String(result.error)}</Text>
+              ) : null}
+              <Text style={styles.resultTime}>{String(result.timestamp)}</Text>
+            </View>
+          );
+        })}
         
         {results.length === 0 && !isRunning && (
           <Text style={styles.noResults}>No results yet. Tap "Run Simple Tests" to start.</Text>

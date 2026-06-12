@@ -20,7 +20,7 @@ import { initializeAnimations } from '../../../utils/animations/previewAnimation
 import { PreviewHaptics } from '../../../utils/haptics';
 import { useTranslation } from '../../../i18n/LocaleContext';
 
-const getTemplateContext = (props: any = {}): any => props.templateContext || props || {};
+const getTemplateContext = (props: Record<string, unknown> = {}): Record<string, unknown> => (props.templateContext as Record<string, unknown>) || props || {};
 
 const formatDate = (dateString: string | null | undefined, locale: string = 'en'): string | null => {
   if (!dateString) {
@@ -40,16 +40,18 @@ const formatDate = (dateString: string | null | undefined, locale: string = 'en'
   }
 };
 
-const ThailandHeader = (props: any) => {
-  const { config } = getTemplateContext(props);
-  return <HeaderBase title={config?.header?.title} subtitle={config?.header?.subtitle} />;
+const ThailandHeader = (props: Record<string, unknown>) => {
+  const ctx = getTemplateContext(props);
+  const config = ctx.config as Record<string, unknown> | undefined;
+  return <HeaderBase title={(config as Record<string, unknown>)?.header?.title} subtitle={(config as Record<string, unknown>)?.header?.subtitle} onClose={undefined} />;
 };
 
-const ThailandDeadlineAlert = (props = {}) => {
-  const { entryPack } = getTemplateContext(props);
+const ThailandDeadlineAlert = (props: Record<string, unknown> = {}) => {
+  const ctx = getTemplateContext(props);
+  const entryPack = ctx.entryPack as Record<string, unknown> | undefined;
   const { t, language } = useTranslation();
 
-  const arrivalDate = entryPack?.travel?.arrivalDate;
+  const arrivalDate = (entryPack as Record<string, unknown> | undefined)?.travel?.arrivalDate as string | undefined;
   if (!arrivalDate) {
     return null;
   }
@@ -57,7 +59,7 @@ const ThailandDeadlineAlert = (props = {}) => {
   const arrival = new Date(arrivalDate);
   const now = new Date();
   const deadline = new Date(arrival.getTime() - 72 * 60 * 60 * 1000); // 72h before arrival
-  const daysRemaining = Math.ceil((deadline - now) / (24 * 60 * 60 * 1000));
+  const daysRemaining = Math.ceil((deadline.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
 
   if (Number.isNaN(daysRemaining) || daysRemaining > 3) {
     return null;
@@ -79,7 +81,7 @@ const ThailandDeadlineAlert = (props = {}) => {
       title={t('thailand.preview.deadline.warningTitle')}
       message={t('thailand.preview.deadline.warningMessage', {
         days: daysRemaining,
-        date: formatDate(deadline, language),
+        date: formatDate(deadline.toISOString(), language) || undefined,
       })}
       dismissible={false}
     />
@@ -87,7 +89,7 @@ const ThailandDeadlineAlert = (props = {}) => {
 };
 
 
-const ThailandFooterActions = (props = {}) => {
+const ThailandFooterActions = (props: Record<string, unknown> = {}) => {
   const { navigation, passport, destination, entryPack } = getTemplateContext(props);
   const { t } = useTranslation();
   const isSubmitted = Boolean(entryPack?.tdacSubmission?.arrCardNo);
@@ -131,7 +133,7 @@ const ThailandFooterActions = (props = {}) => {
   );
 };
 
-const ThailandEntryPackDetails = (props = {}) => {
+const ThailandEntryPackDetails = (props: Record<string, unknown> = {}) => {
   const { entryPack } = getTemplateContext(props);
 
   return (
@@ -194,12 +196,12 @@ export const thailandEntryPackPreviewConfig = {
     Actions: () => null, // Use custom footer instead of default actions
   },
   slots: {
-    beforeContent: (context) => (
+    beforeContent: (context: Record<string, unknown>) => (
       <React.Fragment>
         <ThailandDeadlineAlert {...(context || {})} />
       </React.Fragment>
     ),
-    footer: (context) => (
+    footer: (context: Record<string, unknown>) => (
       <React.Fragment>
         <ThailandFooterActions {...(context || {})} />
       </React.Fragment>

@@ -16,7 +16,29 @@ import { findDistrictOption, findSubDistrictOption } from '../../utils/thailand/
  * @param {Function} params.saveDataToSecureStorage - Immediate save function from persistence hook
  * @returns {Object} Location handlers
  */
-export const useThailandLocationCascade = ({ formState, handleFieldBlur, saveDataToSecureStorage }) => {
+export interface ThailandLocationFormState {
+  province: string;
+  district: string;
+  districtId: string | null;
+  subDistrict: string;
+  subDistrictId: string | null;
+  postalCode: string;
+  setProvince: (value: string) => void;
+  setDistrict: (value: string) => void;
+  setDistrictId: (value: string | null) => void;
+  setSubDistrict: (value: string) => void;
+  setSubDistrictId: (value: string | null) => void;
+  setPostalCode: (value: string) => void;
+}
+
+interface ThailandLocationCascadeParams {
+  formState: ThailandLocationFormState;
+  handleFieldBlur: (field: string, value: string) => Promise<void>;
+  saveDataToSecureStorage: (overrides: Record<string, unknown>) => Promise<void>;
+}
+
+export const useThailandLocationCascade = (
+  { formState, handleFieldBlur, saveDataToSecureStorage }: ThailandLocationCascadeParams) => {
   // Handle district/subdistrict ID updates (cascade logic)
   useEffect(() => {
     if (!formState.province || !formState.district) {
@@ -59,7 +81,7 @@ export const useThailandLocationCascade = ({ formState, handleFieldBlur, saveDat
   }, [formState]);
 
   // Handle province selection
-  const handleProvinceSelect = useCallback(async (code) => {
+  const handleProvinceSelect = useCallback(async (code: string) => {
     console.log('🌏 handleProvinceSelect called with code:', code);
     formState.setProvince(code);
     resetDistrictSelection();
@@ -100,14 +122,14 @@ export const useThailandLocationCascade = ({ formState, handleFieldBlur, saveDat
   }, [handleFieldBlur, resetDistrictSelection, formState, saveDataToSecureStorage]);
 
   // Handle district selection
-  const handleDistrictSelect = useCallback(async (selection) => {
+  const handleDistrictSelect = useCallback(async (selection: Record<string, unknown>) => {
     if (!selection) {
 return;
 }
 
-    const newDistrict = selection.nameEn;
+    const newDistrict = selection.nameEn as string;
     formState.setDistrict(newDistrict);
-    formState.setDistrictId(selection.id);
+    formState.setDistrictId(selection.id as string | null);
     handleFieldBlur('district', newDistrict);
 
     // Clear sub-district and postal code when district changes
@@ -127,7 +149,7 @@ return;
 
     // Save immediately with explicit values (React state updates are async!)
     if (saveDataToSecureStorage) {
-      const overrides = { district: newDistrict };
+      const overrides: Record<string, unknown> = { district: newDistrict };
       if (shouldClearSubDistrict) {
 overrides.subDistrict = '';
 }
@@ -139,16 +161,16 @@ overrides.postalCode = '';
   }, [handleFieldBlur, formState, saveDataToSecureStorage]);
 
   // Handle subdistrict selection
-  const handleSubDistrictSelect = useCallback(async (selection) => {
+  const handleSubDistrictSelect = useCallback(async (selection: Record<string, unknown>) => {
     if (!selection) {
 return;
 }
 
-    const newSubDistrict = selection.nameEn;
+    const newSubDistrict = selection.nameEn as string;
     const newPostalCode = selection.postalCode ? String(selection.postalCode) : '';
 
     formState.setSubDistrict(newSubDistrict);
-    formState.setSubDistrictId(selection.id);
+    formState.setSubDistrictId(selection.id as string | null);
     handleFieldBlur('subDistrict', newSubDistrict);
 
     if (newPostalCode || formState.postalCode) {

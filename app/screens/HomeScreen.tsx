@@ -20,10 +20,12 @@ import api from '../services/api';
 import { useLocale } from '../i18n/LocaleContext';
 import UserDataService from '../services/data/UserDataService';
 import EntryInfoService from '../services/EntryInfoService';
+import Passport from '../models/Passport';
 import CountdownFormatter from '../utils/CountdownFormatter';
 import DateFormatter from '../utils/DateFormatter';
 import PerformanceMonitor from '../utils/PerformanceMonitor';
 import { getHotCountries, navigateToCountry, getCountryFlag, getCountryName } from '../utils/countriesService';
+import type { TranslateFunction, CountryDisplay } from '../utils/countriesService';
 
 type InProgressDestinationItem = {
   destinationId: string;
@@ -34,6 +36,39 @@ type InProgressDestinationItem = {
   arrivalDate?: string | null;
   flightNumber?: string | null;
 };
+
+interface HistoryItem {
+  id?: string;
+  destination?: {
+    id?: string;
+    name?: string;
+    flag?: string;
+    [key: string]: unknown;
+  };
+  passport?: Record<string, unknown>;
+  travelInfo?: Record<string, unknown>;
+  createdAt?: string;
+  type?: string;
+  status?: string;
+  entryInfoId?: string;
+  formData?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+interface ActiveEntryPackItem {
+  id: string;
+  destinationId: string;
+  destinationName: string;
+  status: string;
+  arrivalDate?: string;
+  submittedAt?: string;
+  cardType?: string;
+  flightNumber?: string;
+  departureDate?: string;
+  visaNumber?: string;
+  hotelName?: string;
+  [key: string]: unknown;
+}
 
 const UPCOMING_TRIPS_CONFIG = [
   {
@@ -65,13 +100,12 @@ const UPCOMING_TRIPS_CONFIG = [
   // },
 ];
 
-const HomeScreen = ({ navigation }) => {
-  const [historyList, setHistoryList] = useState<any[]>([]);
+const HomeScreen = ({ navigation }: { navigation: { navigate: (screen: string, params?: Record<string, unknown>) => void; goBack: () => void } }) => {
+  const [historyList, setHistoryList] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [passportData, setPassportData] = useState<any>(null);
-  const [activeEntryPacks, setActiveEntryPacks] = useState<any[]>([]);
-  const [multiDestinationData, setMultiDestinationData] = useState<any>(null);
+  const [passportData, setPassportData] = useState<Passport | null>(null);
+  const [activeEntryPacks, setActiveEntryPacks] = useState<ActiveEntryPackItem[]>([]);
+  const [multiDestinationData, setMultiDestinationData] = useState<Record<string, unknown> | null>(null);
   const [inProgressDestinations, setInProgressDestinations] = useState<InProgressDestinationItem[]>([]);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -109,7 +143,7 @@ const HomeScreen = ({ navigation }) => {
 
     // Filter out destinations that already have active entry packs
     return hotCountries.filter(
-      country => !activeDestinationIds.has(country.id)
+      (country): country is CountryDisplay => country !== null && !activeDestinationIds.has(country.id)
     );
   }, [language, t, activeEntryPacks, inProgressDestinations]);
 
@@ -154,7 +188,7 @@ return '';
 }
     
     // Add honorific based on language
-    if (language === 'zh') {
+    if ((language as string) === 'zh') {
       return `${surname}先生`;
     } else if (language === 'en') {
       return `Mr. ${surname}`;
@@ -231,8 +265,8 @@ return '';
         // No passport data found - user needs to input it
         setPassportData(null);
       }
-    } catch (error: any) {
-      console.log('Failed to load passport data:', error.message);
+    } catch (error: unknown) {
+      console.log('Failed to load passport data:', (error as Error).message);
       // No mock data - data must come from user input or SQLite
       setPassportData(null);
     }
@@ -243,8 +277,8 @@ return '';
       // 尝试从API加载历史记录
       const result = await api.getHistory(20, 0);
       setHistoryList(result.items || []);
-    } catch (error: any) {
-      console.log('无法连接后端API，使用本地模拟数据:', error.message);
+    } catch (error: unknown) {
+      console.log('无法连接后端API，使用本地模拟数据:', (error as Error).message);
       // 使用mock数据作为后备（后端未运行时）
       setHistoryList(getMockHistory());
     }
@@ -322,7 +356,7 @@ return '';
       }
       
       // Set active entry packs (submitted ones, excluding archived)
-      setActiveEntryPacks(activeSubmittedPacks);
+      setActiveEntryPacks(activeSubmittedPacks as ActiveEntryPackItem[]);
       
       // Set in-progress destinations
       console.log('[HomeScreen] About to set inProgressDestinations state:', homeScreenData.inProgressDestinations);
@@ -341,14 +375,14 @@ return '';
         overallCompletion: homeScreenData.summary.overallCompletionPercent
       });
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[HomeScreen] Failed to load multi-destination data:', error);
-      console.error('[HomeScreen] Error message:', error.message);
-      console.error('[HomeScreen] Error stack:', error.stack);
-      if (error.cause) {
-        console.error('[HomeScreen] Error cause:', error.cause);
+      console.error('[HomeScreen] Error message:', (error as Error).message);
+      console.error('[HomeScreen] Error stack:', (error as Error).stack);
+      if ((error as Error).cause) {
+        console.error('[HomeScreen] Error cause:', (error as Error).cause);
       }
-      PerformanceMonitor.endTiming(operationId as string, { error: error.message });
+      PerformanceMonitor.endTiming(operationId as string, { error: (error as Error).message });
       setActiveEntryPacks([]);
       setInProgressDestinations([]);
       setMultiDestinationData(null);
@@ -370,12 +404,12 @@ return '';
         if (config.successMessage) {
           Alert.alert('', config.successMessage);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('[HomeScreen] Failed to update entry info status:', error);
         Alert.alert(
           t('home.actions.errorTitle', { defaultValue: '操作失败' }),
           t('home.actions.errorMessage', {
-            defaultValue: error?.message || '请稍后再试。',
+            defaultValue: (error as Error)?.message || '请稍后再试。',
           })
         );
       } finally {
@@ -452,12 +486,13 @@ return '';
 
 
   const getHistoryDisplayTime = (item: Record<string, unknown>) => {
-    if (item?.travelInfo?.generatedAtLabel) {
-      return item.travelInfo.generatedAtLabel;
+    const travelInfo = item.travelInfo as Record<string, unknown> | undefined;
+    if (travelInfo?.generatedAtLabel) {
+      return travelInfo.generatedAtLabel as string;
     }
 
-    if (item?.travelInfo?.arrivalDate) {
-      return formatDate(item.travelInfo.arrivalDate);
+    if (travelInfo?.arrivalDate) {
+      return formatDate(travelInfo.arrivalDate as string);
     }
 
     if (item?.createdAt) {
@@ -580,11 +615,11 @@ return '';
   const getFlightDuration = (destinationId: string) => {
     // Try to get from country data
     try {
-      const country = getHotCountries(t as TranslateFunction, language, []).find(c => c.id === destinationId);
+      const country = getHotCountries(t as TranslateFunction, language, []).find((c): c is CountryDisplay => c !== null && c.id === destinationId);
       if (country?.flightTime) {
         return country.flightTime;
       }
-    } catch (error: any) {
+    } catch (_error: unknown) {
       // Fallback to translation key
     }
     return t(`home.destinations.${destinationId}.flightTime`, { defaultValue: '' });
@@ -616,7 +651,7 @@ return '';
       } else {
         return DateFormatter.formatDate(arrival, language);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log('Error formatting arrival countdown:', error);
       return '';
     }
@@ -669,7 +704,7 @@ return null;
           urgent: false
         };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log('Error calculating submission countdown:', error);
       return null;
     }
@@ -685,7 +720,7 @@ return null;
       const destinationName = getDestinationName(pack.destinationId, pack.destinationName);
 
       // Get arrival date from entry info
-      const arrivalCountdown = getArrivalCountdown(pack.arrivalDate);
+      const arrivalCountdown = getArrivalCountdown(pack.arrivalDate ?? null);
 
       // Get flight duration
       const flightDuration = getFlightDuration(pack.destinationId);
@@ -896,7 +931,7 @@ return null;
             </View>
           </Card>
         );
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('[HomeScreen] Error rendering card for destination:', destination.destinationId, error);
         return null;
       }
