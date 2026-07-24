@@ -153,7 +153,9 @@ export const GlassCard: React.FC<GlassCardProps> = React.memo(({
   // Compute default values based on color scheme
   // Memoized to avoid recalculation on every render
   const defaultTintColor = useMemo(() => {
-    if (tintColor) return tintColor;
+    if (tintColor) {
+return tintColor;
+}
     // Light mode: semi-transparent white
     // Dark mode: semi-transparent dark gray with slight warmth
     return isDarkMode
@@ -162,7 +164,9 @@ export const GlassCard: React.FC<GlassCardProps> = React.memo(({
   }, [tintColor, isDarkMode]);
 
   const defaultBlurType = useMemo(() => {
-    if (blurType) return blurType;
+    if (blurType) {
+return blurType;
+}
     // Use native iOS blur types that match the glass aesthetic
     // 'light' for light mode creates a subtle blur
     // 'dark' for dark mode creates appropriate contrast
@@ -170,7 +174,9 @@ export const GlassCard: React.FC<GlassCardProps> = React.memo(({
   }, [blurType, isDarkMode]);
 
   const defaultBorderColor = useMemo(() => {
-    if (borderColor) return borderColor;
+    if (borderColor) {
+return borderColor;
+}
     // Subtle border that mimics glass edge
     return isDarkMode
       ? 'rgba(255, 255, 255, 0.15)' // Subtle white rim in dark mode
@@ -178,17 +184,17 @@ export const GlassCard: React.FC<GlassCardProps> = React.memo(({
   }, [borderColor, isDarkMode]);
 
   // Fallback background for when transparency is reduced (accessibility)
-  const solidFallbackColor = useMemo(() => {
-    return isDarkMode
+  const solidFallbackColor = useMemo(() => 
+     isDarkMode
       ? 'rgba(28, 28, 30, 0.95)' // Nearly opaque dark
-      : 'rgba(255, 255, 255, 0.95)'; // Nearly opaque light
-  }, [isDarkMode]);
+      : 'rgba(255, 255, 255, 0.95)' // Nearly opaque light
+  , [isDarkMode]);
 
   // Container styles with shadow
   const containerStyle = useMemo<ViewStyle>(() => ({
     borderRadius: cornerRadius,
     overflow: 'hidden', // Ensure children respect border radius
-    borderWidth: borderWidth,
+    borderWidth,
     borderColor: defaultBorderColor,
     // Shadow for depth (iOS only, Android uses elevation)
     ...(showShadow && Platform.OS === 'ios' && {

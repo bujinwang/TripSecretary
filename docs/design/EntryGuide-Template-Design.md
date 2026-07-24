@@ -7,6 +7,7 @@
 ## 设计目标
 
 ### 用户体验目标
+
 - **渐进式指引**: 一步步引导用户完成入境流程
 - **情境感知**: 根据当前位置和进度显示相关信息
 - **防错设计**: 防止用户遗漏重要步骤
@@ -14,6 +15,7 @@
 - **离线可用**: 核心指引信息应在离线状态下可用
 
 ### 技术目标
+
 - **模块化设计**: 每个国家有独立的配置，易于维护和扩展
 - **数据驱动**: 通过配置文件定义步骤和内容
 - **状态管理**: 跟踪用户进度和偏好设置
@@ -26,38 +28,160 @@
 入境指引分为以下主要阶段：
 
 #### 飞机内阶段 (In-Flight)
+
 - 填写海关申报表
 - 准备证件和文件
 - 了解机场布局
 
 #### 落地后阶段 (Post-Landing)
+
 - 关闭蜂窝网络
 - 设置eSIM卡
 - 排队等候
 
 #### 海关阶段 (Customs)
+
 - 海关申报
 - 物品检查
 - 禁止物品提醒
 
 #### 移民局阶段 (Immigration)
+
 - 移民官检查
 - 指纹采集
 - 签证盖章
 
 #### 行李领取阶段 (Baggage Claim)
+
 - 行李转盘指引
 - 行李认领
 - 海关二次检查
 
 #### 出机场阶段 (Exit)
+
 - 货币兑换
 - 交通指引
 - 紧急联系方式
 
 ### 2. 数据结构设计
 
+### 2. 数据结构设计
+
 #### 步骤定义
+
+```typescript
+interface EntryGuideStep {
+  id: string;
+  title: string;
+  titleZh: string;
+  description: string;
+  descriptionZh: string;
+  category:
+    | "in-flight"
+    | "post-landing"
+    | "customs"
+    | "immigration"
+    | "baggage"
+    | "exit";
+  priority: number;
+  estimatedTime: string;
+  warnings: string[];
+  tips: string[];
+  icon: string;
+  required: boolean;
+  skippable: boolean;
+  dependencies?: string[]; // Other step IDs this depends on
+  location?: string; // Airport location identifier
+  duration?: number; // Estimated duration in minutes
+}
+
+const stepExample: EntryGuideStep = {
+  id: "step_1",
+  title: "关闭蜂窝网络",
+  titleZh: "关闭蜂窝网络",
+  description: "飞机落地滑行时，请关闭手机的蜂窝网络数据",
+  descriptionZh: "飞机落地滑行时，请关闭手机的蜂窝网络数据",
+  category: "post-landing",
+  priority: 1,
+  estimatedTime: "1分钟",
+  warnings: ["请勿在飞机滑行时使用手机", "确保WiFi也已关闭"],
+  tips: ["可以在设置中快速关闭蜂窝数据", "落地后立即关闭可节省国际漫游费用"],
+  icon: "📱",
+  required: true,
+  skippable: false,
+};
+```
+
+#### 国家配置
+
+```typescript
+interface CountryCustoms {
+  declarationRequired: boolean;
+  prohibitedItems: string[];
+  dutyFree: {
+    alcohol: string;
+    tobacco: string;
+    [key: string]: string;
+  };
+}
+
+interface EmergencyInfo {
+  police: string;
+  ambulance: string;
+  embassy: string;
+  [key: string]: string; // Additional emergency contacts
+}
+
+interface CountryEntryGuide {
+  country: string;
+  countryName: string;
+  countryNameZh: string;
+  airport: string; // Primary airport code
+  currency: string;
+  language: string[];
+  steps: EntryGuideStep[];
+  customs: CountryCustoms;
+  emergency: EmergencyInfo;
+  features?: {
+    digitalArrivalCard?: boolean;
+    visaOnArrival?: boolean;
+    fastTrack?: boolean;
+  };
+  metadata?: {
+    lastUpdated: string;
+    version: string;
+    author: string;
+  };
+}
+
+const thailandConfig: CountryEntryGuide = {
+  country: "thailand",
+  countryName: "Thailand",
+  countryNameZh: "泰国",
+  airport: "BKK", // 主要机场代码
+  currency: "THB",
+  language: ["th", "en"],
+  steps: [
+    // 泰国特定的步骤配置
+  ],
+  customs: {
+    declarationRequired: true,
+    prohibitedItems: ["新鲜水果", "肉类制品", "香烟超过规定数量"],
+    dutyFree: {
+      alcohol: "1升",
+      tobacco: "200支",
+    },
+  },
+  emergency: {
+    police: "191",
+    ambulance: "1669",
+    embassy: "+66-2-245-7033",
+  },
+};
+```
+
+#### 步骤定义
+
 ```javascript
 {
   id: 'step_1',
@@ -83,6 +207,7 @@
 ```
 
 #### 国家配置
+
 ```javascript
 {
   country: 'thailand',
@@ -123,6 +248,115 @@
    - 生成入境通通关包
    - 准备TDAC QR码和证明材料
    - 检查必备物品：护照、手机、入境通APP、银行卡
+
+### 语言文件结构
+
+```typescript
+// i18n/locales.ts
+interface EntryGuideStepTranslations {
+  title: string;
+  titleZh: string;
+  description: string;
+  descriptionZh: string;
+  warnings: string[];
+  warningsZh: string[];
+  tips: string[];
+  tipsZh: string[];
+}
+
+interface CustomTranslations {
+  prohibitedItems: string[];
+  prohibitedItemsZh: string[];
+  dutyFree: {
+    alcohol: string;
+    alcoholZh: string;
+    tobacco: string;
+    tobaccoZh: string;
+  };
+}
+
+interface CountryEntryGuideTranslations {
+  steps: Record<string, EntryGuideStepTranslations>;
+  customs: CustomTranslations;
+  emergency: {
+    [key: string]: string; // Emergency contact names
+  };
+  cultural: {
+    [key: string]: string; // Cultural notes
+  };
+}
+
+interface EntryGuideTranslations {
+  thailand: CountryEntryGuideTranslations;
+  japan: CountryEntryGuideTranslations;
+  singapore: CountryEntryGuideTranslations;
+  // Other countries...
+}
+
+export const entryGuideTranslations: EntryGuideTranslations = {
+  thailand: {
+    steps: {
+      step_1: {
+        title: "关闭蜂窝网络",
+        titleZh: "关闭蜂窝网络",
+        description: "飞机落地滑行时，请关闭手机的蜂窝网络数据",
+        descriptionZh: "飞机落地滑行时，请关闭手机的蜂窝网络数据",
+        warnings: ["请勿在飞机滑行时使用手机"],
+        warningsZh: ["请勿在飞机滑行时使用手机"],
+        tips: ["可以在设置中快速关闭蜂窝数据"],
+        tipsZh: ["可以在设置中快速关闭蜂窝数据"],
+      },
+      // ... 更多步骤
+    },
+    customs: {
+      prohibitedItems: ["新鲜水果", "肉类制品"],
+      prohibitedItemsZh: ["新鲜水果", "肉类制品"],
+      dutyFree: {
+        alcohol: "1升",
+        alcoholZh: "1升",
+        tobacco: "200支",
+        tobaccoZh: "200支",
+      },
+    },
+  },
+};
+
+// Type-safe language service
+export class EntryGuideI18nService {
+  private translations: EntryGuideTranslations;
+
+  constructor(translations: EntryGuideTranslations) {
+    this.translations = translations;
+  }
+
+  getStepTranslation(
+    country: string,
+    stepId: string,
+    language: "en" | "zh",
+  ): EntryGuideStepTranslations {
+    const countryTranslations = this.translations[country];
+    if (!countryTranslations) {
+      throw new Error(`No translations found for country: ${country}`);
+    }
+
+    const step = countryTranslations.steps[stepId];
+    if (!step) {
+      throw new Error(`No translation found for step: ${stepId}`);
+    }
+
+    return step;
+  }
+
+  getLocalizedString(
+    country: string,
+    key: string,
+    language: "en" | "zh",
+  ): string {
+    // Implementation for localized string lookup
+    return "";
+  }
+}
+```
 
 2. **飞机内准备** (In-Flight Preparation)
    - 准备通关包出示材料
@@ -223,6 +457,7 @@
 ### 2. 步骤详情设计
 
 每个步骤提供：
+
 - **清晰的标题和图标**
 - **步骤描述和操作指引**
 - **重要提醒和警告**
@@ -241,30 +476,31 @@
 ## 多语言支持框架
 
 ### 语言文件结构
+
 ```javascript
 // i18n/locales.js
 export const entryGuide = {
   thailand: {
     steps: {
       step_1: {
-        title: '关闭蜂窝网络',
-        titleZh: '关闭蜂窝网络',
-        description: '飞机落地滑行时，请关闭手机的蜂窝网络数据',
-        descriptionZh: '飞机落地滑行时，请关闭手机的蜂窝网络数据',
-        warnings: ['请勿在飞机滑行时使用手机'],
-        tips: ['可以在设置中快速关闭蜂窝数据']
-      }
+        title: "关闭蜂窝网络",
+        titleZh: "关闭蜂窝网络",
+        description: "飞机落地滑行时，请关闭手机的蜂窝网络数据",
+        descriptionZh: "飞机落地滑行时，请关闭手机的蜂窝网络数据",
+        warnings: ["请勿在飞机滑行时使用手机"],
+        tips: ["可以在设置中快速关闭蜂窝数据"],
+      },
       // ... 更多步骤
     },
     customs: {
-      prohibitedItems: ['新鲜水果', '肉类制品'],
+      prohibitedItems: ["新鲜水果", "肉类制品"],
       dutyFree: {
-        alcohol: '1升',
-        tobacco: '200支'
-      }
-    }
-  }
-}
+        alcohol: "1升",
+        tobacco: "200支",
+      },
+    },
+  },
+};
 ```
 
 ## 国家扩展框架
@@ -272,25 +508,37 @@ export const entryGuide = {
 ### 新增国家配置步骤
 
 1. **创建国家配置文件**
+
    ```javascript
    // app/config/entryGuide/japan.js
    export const japanEntryGuide = {
-     country: 'japan',
-     steps: [/* 日本特定步骤 */],
-     customs: {/* 日本海关规则 */},
-     emergency: {/* 日本紧急联系方式 */}
-   }
+     country: "japan",
+     steps: [
+       /* 日本特定步骤 */
+     ],
+     customs: {
+       /* 日本海关规则 */
+     },
+     emergency: {
+       /* 日本紧急联系方式 */
+     },
+   };
    ```
 
 2. **添加语言文件**
+
    ```javascript
    // i18n/locales.js
    export const entryGuide = {
      japan: {
-       steps: {/* 日本步骤翻译 */},
-       customs: {/* 日本海关翻译 */}
-     }
-   }
+       steps: {
+         /* 日本步骤翻译 */
+       },
+       customs: {
+         /* 日本海关翻译 */
+       },
+     },
+   };
    ```
 
 3. **创建国家特定组件**
@@ -309,13 +557,13 @@ class EntryGuideService {
       thailand: thailandEntryGuide,
       japan: japanEntryGuide,
       // 其他国家...
-    }
-    return guides[country] || thailandEntryGuide
+    };
+    return guides[country] || thailandEntryGuide;
   }
 
   static getStep(country, stepId) {
-    const guide = this.getGuide(country)
-    return guide.steps.find(step => step.id === stepId)
+    const guide = this.getGuide(country);
+    return guide.steps.find((step) => step.id === stepId);
   }
 }
 ```
@@ -323,24 +571,28 @@ class EntryGuideService {
 ## 泰国特色功能
 
 ### 1. TDAC数字入境卡填写指引
+
 - 72小时提交窗口说明
 - QR码生成和保存方法
 - 通关包出示要求
 - 常见填写错误避免
 
 ### 2. 通关包使用说明
+
 - 通关包包含内容说明
 - 出示时机和方法
 - 移民官检查要点
 - 备用方案准备
 
 ### 3. 落地签办理
+
 - 资格检查和确认
 - 所需文件清单
 - 办理流程和等候时间
 - 费用支付方式
 
 ### 4. ATM取泰铢现金指引
+
 - ATM机位置和推荐银行（Bangkok Bank、Krungsri、Kasikorn Bank）
 - 取款步骤和手续费说明（约220泰铢/次）
 - 建议取款金额：3,000-5,000泰铢
@@ -348,6 +600,7 @@ class EntryGuideService {
 - 钞票面额说明和小额找零准备
 
 ### 5. 机场交通指引（官方出租车）
+
 - 官方"Public Taxi"柜台位置和使用方法
 - 入境通APP"给出租车司机看的页面"功能
 - 酒店地址双语显示（泰文+英文）
@@ -357,6 +610,7 @@ class EntryGuideService {
 - 安全提示：避免黑车，确认打表
 
 ### 5. ATM取款详细指引
+
 - ATM机位置：到达大厅1楼，多台ATM机清晰可见
 - 推荐银行和操作步骤
 - 手续费说明：泰国ATM费220泰铢 + 银行境外取款费
@@ -366,6 +620,7 @@ class EntryGuideService {
 - 小额找零准备：为打车和小型消费准备零钱
 
 ### 6. 官方出租车完整指南
+
 - 官方"Public Taxi"柜台位置：1楼6号门或8号门附近
 - 入境通APP"给出租车司机看的页面"功能详解
 - 酒店地址双语显示优势：泰文+英文，司机易懂
@@ -376,6 +631,7 @@ class EntryGuideService {
 - 司机沟通技巧：直接出示APP页面，无需自己翻译
 
 ### 7. 泰国文化提示
+
 - 微笑文化和礼仪提醒
 - 寺庙着装和行为建议
 - 沟通技巧和基本泰语
@@ -385,6 +641,7 @@ class EntryGuideService {
 ## 技术实现计划
 
 ### 第一阶段：泰国模板 (融入TDAC完整流程)
+
 1. 创建通用数据模型和配置结构（支持8步骤流程）
 2. 实现TDAC数字入境卡集成（72小时窗口提醒）
 3. 设计通关包出示流程（移民局检查要点）
@@ -395,12 +652,14 @@ class EntryGuideService {
 8. 集成多语言支持（泰文+英文双语显示）
 
 ### 第二阶段：扩展框架
+
 1. 创建国家配置管理系统
 2. 实现动态国家切换
 3. 添加新国家模板
 4. 优化性能和缓存
 
 ### 第三阶段：高级功能
+
 1. 离线模式支持
 2. 进度同步和备份
 3. 个性化推荐
@@ -409,12 +668,14 @@ class EntryGuideService {
 ## 质量保证
 
 ### 测试策略
+
 - **功能测试**: 确保所有步骤按正确顺序显示
 - **语言测试**: 验证中英文切换和显示
 - **兼容性测试**: 不同设备和屏幕尺寸
 - **离线测试**: 确保核心功能离线可用
 
 ### 用户反馈收集
+
 - 使用情况统计
 - 步骤完成率分析
 - 用户行为模式研究

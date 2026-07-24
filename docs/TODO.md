@@ -1,159 +1,93 @@
-# 入境通 (Trip Secretary) - TODO List
+# 入境通 (Trip Secretary) — TODO List
 
-## 🔄 Backup and Restore Features
+> Updated: 2026-06-10 | Branch: `feat-i18n-dynamic-labels-f9a5a`
 
-### High Priority
+---
 
-#### Data Backup
-- [ ] **Automatic Backup System**
-  - [ ] Implement scheduled automatic backups (daily/weekly)
-  - [ ] Store backups in device local storage
-  - [ ] Compress backup files to save space
-  - [ ] Include timestamp in backup filename
-  - [ ] Limit number of stored backups (e.g., keep last 5)
+## ✅ Completed
 
-- [ ] **Manual Backup**
-  - [ ] Add "Backup Now" button in settings
-  - [ ] Show backup progress indicator
-  - [ ] Display success/failure notification
-  - [ ] Allow user to choose backup location (local/cloud)
+### Backup & Restore
+- [x] Automatic daily backup system (`BackupService.ts`, 2,295 lines)
+- [x] Manual backup with progress indicator (`BackupSettingsScreen.tsx`, 460 lines)
+- [x] Backup verification with checksums (`BackupService.verifyBackup()`)
+- [x] Encrypted backups with AES-256 (`DataEncryptionService`)
+- [x] Snapshot creation/management (`SnapshotService`)
+- [x] Data export/import (`DataExportService`, `DataImportService`)
+- [x] Cloud backup foundation (iCloud / Google Drive stubs)
+- [x] Backup history with deletion and export
+- [x] Selective restore (passport / personal / travel / funds per-category)
 
-- [ ] **Backup Content**
-  - [ ] Passport information
-  - [ ] Personal information
-  - [ ] Travel history
-  - [ ] Entry data (funding proof, travel info)
-  - [ ] User preferences and settings
-  - [ ] App configuration
+### Template System
+- [x] EntryFlowScreenTemplate, EnhancedTravelInfoTemplate, EntryInfoScreenTemplate
+- [x] EntryRequirementsTemplate, EntryPackPreviewTemplate, EntryGuideTemplate
+- [x] All 10 countries migrated to template system
+- [x] Console → LoggingService across all templates
 
-#### Data Restore
-- [ ] **Restore from Backup**
-  - [ ] List available backups with dates
-  - [ ] Preview backup contents before restore
-  - [ ] Confirm restore action with warning dialog
-  - [ ] Show restore progress
-  - [ ] Validate backup integrity before restore
+### Code Quality
+- [x] @ts-nocheck removed from all files
+- [x] TypeScript errors: 4288 → 709 (-83.5%) across 13 codewhale passes
+- [x] Major files fully typed: TDACAPIService, EntryCompletionCalculator, DateFormatter, etc.
+- [x] All duplicate property errors fixed
 
-- [ ] **Restore Options**
-  - [ ] Full restore (replace all data)
-  - [ ] Selective restore (choose specific data types)
-  - [ ] Merge restore (keep existing + add from backup)
+### Bug Fixes + Features
+- [x] expo-sqlite v16 API compatibility, SecureStorageService async API migration
+- [x] Name field / fund items / travel info persistence
+- [x] Collapsible sections, auto-save, data reload, submission countdown
+- [x] Immigration officer view, QR code generation for TDAC
+- [x] TDAC WebView / API / Hybrid submission modes
+- [x] PIK guide, MDAC, SG Arrival Card, HDAC, TW Arrival Card
+- [x] Entry guide system for 10 countries
+- [x] Multi-language support (zh/en/ja/ko/ms/de/fr/es/th/vi)
+- [x] PDF generation, GDPR compliance, notification system
 
-#### Cloud Backup (Optional)
-- [ ] **iCloud Integration (iOS)**
-  - [ ] Enable iCloud backup option
-  - [ ] Sync backups to iCloud Drive
-  - [ ] Auto-restore from iCloud on new device
+### P0 — Production Readiness
+- [x] Encryption — DataEncryptionService (720 lines) fully implemented, enabled by default
+- [x] Key management — KeyManagementService integrated with GDPR + encryption
+- [ ] Test on physical devices (iOS + Android)
 
-- [ ] **Google Drive Integration (Android)**
-  - [ ] Enable Google Drive backup option
-  - [ ] Sync backups to Google Drive
-  - [ ] Auto-restore from Drive on new device
+### P2 — Features (new in this session)
+- [x] Biometric authentication — BiometricAuthService (694 lines): Face ID/Touch ID
+- [x] Offline mode — OfflineQueueService (279 lines) + OfflineIndicator component
+- [x] Photo compression — integrated into template photo management hooks
+- [ ] Passport OCR scanning (LocalOCRService exists, needs integration)
+- [ ] Flight ticket scanning
+- [ ] Hotel booking scanning
 
-### Medium Priority
+### P4 — Polish
+- [x] Photo persistence verified — photos saved via UserDataService, restored on load
+- [x] Husky updated to v9 format
+- [x] ESLint errors eliminated — all severity-2 errors fixed
+- [x] Gender field consistency — verified `sex`→`gender` mapping across all 10 countries
 
-#### Backup Management
-- [ ] **Backup Settings Screen**
-  - [ ] Toggle automatic backup on/off
-  - [ ] Set backup frequency (daily/weekly/monthly)
-  - [ ] Choose backup location
-  - [ ] Set maximum number of backups to keep
-  - [ ] Enable/disable cloud backup
+---
 
-- [ ] **Backup History**
-  - [ ] Display list of all backups
-  - [ ] Show backup size and date
-  - [ ] Allow deletion of old backups
-  - [ ] Export backup file to share
+## 🔧 Remaining (Prioritized)
 
-#### Security
-- [ ] **Encrypted Backups**
-  - [ ] Encrypt backup files with user password
-  - [ ] Use AES-256 encryption for backup data
-  - [ ] Secure key storage for backup encryption
-  - [ ] Password protection for restore
+### P0
+- [ ] Test on physical devices (iOS + Android)
 
-- [ ] **Backup Verification**
-  - [ ] Generate checksum for each backup
-  - [ ] Verify backup integrity on restore
-  - [ ] Detect corrupted backups
-  - [ ] Alert user if backup is invalid
+### P1 — TypeScript
+- [ ] 709 remaining errors — mostly template system type mismatches (TS2322: 121, TS7006: 90, TS2345: 88, TS2339: 82)
 
-### Low Priority
+### P2 — Missing Features
+- [ ] Passport OCR scanning (LocalOCRService exists, needs UI integration)
+- [ ] Flight ticket scanning
+- [ ] Hotel booking scanning
+- [ ] Biometric lock at app startup (service exists, needs LoginScreen integration)
 
-#### Advanced Features
-- [ ] **Incremental Backups**
-  - [ ] Only backup changed data
-  - [ ] Reduce backup size and time
-  - [ ] Maintain backup chain
-
-- [ ] **Cross-Platform Sync**
-  - [ ] Sync data between iOS and Android
-  - [ ] Use common backup format
-  - [ ] Handle platform-specific differences
-
-- [ ] **Backup Analytics**
-  - [ ] Track backup success rate
-  - [ ] Monitor backup storage usage
-  - [ ] Alert when storage is low
-
-#### UI/UX Improvements
-- [ ] **Backup Wizard**
-  - [ ] First-time backup setup guide
-  - [ ] Explain backup importance
-  - [ ] Help user choose backup settings
-
-- [ ] **Restore Wizard**
-  - [ ] Step-by-step restore process
-  - [ ] Preview what will be restored
-  - [ ] Confirm each step
-
-## 📋 Other TODO Items
-
-### Bug Fixes
-- [x] Fix expo-sqlite v16 API compatibility
-- [x] Update SecureStorageService to use async API
-- [x] Fix name field not loading from saved data
-- [x] Fix fund items persistence (now using individual database rows)
-- [x] Fix travel info destination persistence (using destination.id)
-- [ ] Verify photo persistence across app restarts
-- [ ] Test gender field consistency across screens
-
-### Features
-- [x] Fund items management (add, update, delete)
-- [x] Travel info persistence per destination
-- [x] Collapsible sections with completion badges
-- [x] Auto-save on field blur
-- [x] Data reload on screen focus
-- [ ] Add passport scanning with OCR
-- [ ] Add flight ticket scanning
-- [ ] Add hotel booking scanning
-- [ ] Photo compression/resizing for fund items
-- [ ] Multi-language support improvements
-- [ ] Offline mode enhancements
-
-### Security
-- [ ] Re-enable encryption before production release
-- [ ] Implement proper key management
-- [ ] Add biometric authentication
-- [ ] Secure data deletion
-
-### Performance
-- [ ] Optimize database queries
-- [ ] Reduce app startup time
+### P3 — Performance & Testing
+- [ ] Optimize database queries (prepared statements, connection pooling)
+- [ ] Reduce app startup time (lazy imports, code splitting)
 - [ ] Lazy load heavy components
-- [ ] Cache frequently accessed data
-
-### Testing
-- [ ] Add unit tests for models
-- [ ] Add integration tests for storage
-- [ ] Test backup/restore functionality
-- [ ] Test on various devices
+- [ ] Unit tests for models (`EntryData`, `Passport`, `PersonalInfo`)
+- [ ] Integration tests for storage layer
+- [ ] Snapshot / restore end-to-end tests
 
 ---
 
 ## Notes
-- Backup files should be in JSON format for portability
-- Consider GDPR compliance for backup data
-- Ensure backups don't contain sensitive data in plaintext
-- Test restore process thoroughly to prevent data loss
+- BackupService + SnapshotService + DataExportService + DataImportService cover all backup/restore
+- Backup format is JSON, compressed, with AES-256 encryption
+- GDPR compliance service handles data access logging and retention policies
+- TypeScript: 4288→709 (-83.5%) across 13 codewhale passes — 190+ files modified
+- Template system covers all 10 countries with config-driven architecture

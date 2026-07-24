@@ -96,6 +96,19 @@ TDAC_WV2025001_1737982200000.pdf
 TDAC_QR_WV2025001_1737982200000.png
 ```
 
+### Directory Layout & Helpers
+
+`PDFManagementService.initialize()` guarantees that Expo's `documentDirectory` contains a `tdac/` subfolder with the following structure:
+
+```
+Documents/
+└── tdac/
+    ├── TDAC_{cardNo}_{timestamp}.pdf
+    └── TDAC_QR_{cardNo}_{timestamp}.png
+```
+
+Use `PDFManagementService.getFilePath('<filename>')` whenever you need the fully-qualified URI (for example, when passing a path to sharing dialogs or other storage helpers). All saves rely on async helpers backed by `expo-file-system.writeAsStringAsync`, so the directory must exist before writing.
+
 ## Integration Points
 
 ### Add "View Saved Files" Button

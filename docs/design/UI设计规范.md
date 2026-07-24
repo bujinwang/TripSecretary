@@ -83,6 +83,51 @@
 
 ### 2.2 字体规范
 
+字体家族:
+iOS: SF Pro Text, PingFang SC
+Android: Roboto, Noto Sans SC
+
+字体大小:
+H1 - 28px Bold 页面标题
+H2 - 24px Bold 模块标题
+H3 - 20px SemiBold 小标题
+Body1 - 16px Regular 正文（最小）
+Body2 - 18px Regular 强调正文
+Caption - 14px Regular 辅助说明
+Button - 18px SemiBold 按钮文字
+
+行高:
+标题: 1.2
+正文: 1.5
+辅助: 1.4
+
+最小可点击区域: 44x44px（iOS规范）
+
+## 2.3 TypeScript类型系统
+
+```
+组件类型定义:
+- Props类型: TypeScript接口定义
+- 状态类型: 使用TypeScript泛型
+- 事件处理: 明确的事件类型
+- 数据模型: 强类型数据接口
+
+设计组件示例:
+interface ButtonProps {
+  title: string;
+  onPress: () => void;
+  variant?: 'primary' | 'secondary';
+  disabled?: boolean;
+}
+
+组件使用:
+<Button
+  title="扫描证件"
+  onPress={handleScan}
+  variant="primary"
+/>
+```
+
 ```
 字体家族:
 iOS: SF Pro Text, PingFang SC
@@ -1043,8 +1088,118 @@ TalkBack支持（Android）:
    │
    ├─ 📄 证件管理
    ├─ 📄 历史记录
-   ├─ 📄 个人中心
-   └─ 📄 原型（Prototype）
+---
+
+## 十二、TypeScript设计系统集成
+
+### 12.1 组件类型安全
+
+```
+
+设计系统TypeScript集成:
+
+1. 主题类型定义
+   interface Theme {
+   colors: {
+   primary: string;
+   secondary: string;
+   background: string;
+   };
+   typography: {
+   heading1: TextStyle;
+   body: TextStyle;
+   };
+   spacing: {
+   small: number;
+   medium: number;
+   large: number;
+   };
+   }
+
+2. 组件Props类型
+   interface DesignSystemProps {
+   theme: Theme;
+   children: React.ReactNode;
+   adaptive?: boolean;
+   }
+
+3. 响应式类型
+   interface ResponsiveValue<T> {
+   mobile: T;
+   tablet?: T;
+   desktop?: T;
+   }
+
+4. 动画类型
+   interface AnimationConfig {
+   duration: number;
+   easing: string;
+   delay?: number;
+   }
+
+````
+
+### 12.2 设计Token类型化
+
+```typescript
+// design-tokens.ts
+export const designTokens = {
+  colors: {
+    primary: '#07C160',
+    secondary: '#576B95',
+    success: '#07C160',
+    warning: '#FA9D3B',
+    error: '#F56C6C',
+  },
+  typography: {
+    fontSize: {
+      h1: 28,
+      h2: 24,
+      h3: 20,
+      body1: 16,
+      body2: 18,
+    },
+  },
+  spacing: {
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 24,
+    xl: 32,
+  },
+} as const;
+
+export type ColorToken = keyof typeof designTokens.colors;
+export type FontSizeToken = keyof typeof designTokens.typography.fontSize;
+````
+
+### 12.3 组件文档化
+
+```
+TypeScript带来的设计系统优势:
+
+1. 自动补全
+   - IDE自动提示设计token
+   - 属性名和值验证
+
+2. 类型安全
+   - 编译时检查设计规范
+   - 防止无效的颜色/字体使用
+
+3. 文档化
+   - 类型定义即文档
+   - 组件接口清晰可见
+
+4. 重构安全
+   - 类型变化自动传播
+   - 编译器提示相关修改
+```
+
+---
+
+├─ 📄 个人中心
+└─ 📄 原型（Prototype）
+
 ```
 
 ---
@@ -1054,7 +1209,9 @@ TalkBack支持（Android）:
 ### 11.1 设计标注
 
 ```
+
 Figma自动标注:
+
 - 使用Inspect面板
 - 开发者可查看：
   - 尺寸
@@ -1063,32 +1220,40 @@ Figma自动标注:
   - 间距
 
 导出资源:
+
 1. 图标（SVG或PNG @2x, @3x）
 2. 插画（PNG或Lottie JSON）
 3. 切图（需要的图片资源）
 
 设计规范文档:
+
 - 导出为PDF
 - 或使用Zeplin/蓝湖
+
 ```
 
 ### 11.2 Figma to Code
 
 ```
+
 插件推荐:
+
 1. Anima - 导出React Native代码
 2. Figma to Code - 生成样式代码
 
 注意:
+
 - 自动生成代码仅供参考
 - 需要开发者手动优化
 - 建议作为样式参考
 
 最佳实践:
+
 - 提供设计规范文档
 - 提供组件库（UI Kit）
 - 开发者根据规范手写代码
 - 确保性能和可维护性
+
 ```
 
 ---
@@ -1098,6 +1263,7 @@ Figma自动标注:
 ### 设计检查清单
 
 ```
+
 □ 颜色系统定义完整
 □ 字体层级清晰
 □ 间距使用8px网格
@@ -1110,25 +1276,29 @@ Figma自动标注:
 □ 原型流程完整
 □ 设计规范文档
 □ 开发标注清晰
+
 ```
 
 ### 下一步
 
 ```
+
 1. 在Figma创建项目
 2. 按本文档建立设计系统
 3. 设计关键页面
 4. 建立交互原型
 5. 团队Review
 6. 交付给开发
+
 ```
 
 ---
 
-**文档版本：** v1.0  
-**最后更新：** 2025-06-01  
+**文档版本：** v1.0
+**最后更新：** 2025-06-01
 **状态：** ✅ 设计规范完成，可以开始Figma设计
 
 ---
 
 END OF DOCUMENT
+```

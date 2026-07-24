@@ -299,54 +299,408 @@
       }
     }
   },
-  "thailand": {
-    "entryFlow": {
-      "title": "泰国入境准备状态",
-      "preparationTitle": "泰国入境准备状态",
-      "preparationSubtitle": "查看您的入境信息完成情况",
-      "loading": "正在加载准备状态...",
-      "completionStatus": "完成状态",
-      "categories": "信息类别",
-      "submissionWindow": "提交窗口",
-      "actions": "操作",
-      "continueImproving": "继续完善信息",
-      "completeAllFields": "还需完成信息",
-      "setArrivalDate": "请设置抵达日期",
-      "arrivalDateRequired": "需要设置抵达日期才能提交",
-      "waitForWindow": "等待提交窗口",
-      "windowNotOpen": "提交窗口尚未开启",
-      "submitTDAC": "提交泰国入境卡",
-      "readyToSubmit": "所有信息已完成，可以提交",
-      "editInfo": "编辑信息",
-      "preview": "预览入境卡",
-      "share": "找亲友帮忙填写",
-      "noData": {
-        "title": "开始填写泰国入境信息",
-        "description": "您还没有填写任何入境信息。点击下方按钮开始填写，我们将引导您完成整个过程。",
-        "hintsTitle": "您需要准备：",
-        "startButton": "开始填写"
+  "th": {
+    "preview": {
+      "deadline": {
+        "passedTitle": "已过TDAC提交截止",
+        "passedMessage": "请在机场填写纸质入境卡，并预留排队时间",
+        "warningTitle": "接近TDAC截止时间",
+        "warningMessage": "请在{{days}}天内（{{date}}前）提交TDAC"
       },
-      "categoriesTitle": "信息类别"
+      "actions": {
+        "openTdac": "打开 TDAC 二维码",
+        "submitTdac": "在线提交 TDAC",
+        "edit": "返回修改信息"
+      },
+      "header": {
+        "title": "通关包预览",
+        "subtitle": "提交前检查准备情况"
+      }
     },
-    "travelInfo": {
-      "scan": {
-        "ticketTitle": "扫描机票",
-        "ticketMessage": "请选择机票图片来源",
-        "hotelTitle": "扫描酒店预订",
-        "hotelMessage": "请选择酒店预订确认单图片来源",
-        "takePhoto": "拍照",
-        "fromLibrary": "从相册选择",
-        "permissionTitle": "需要权限",
-        "cameraPermissionMessage": "需要相机权限来拍照扫描文档",
-        "libraryPermissionMessage": "需要相册权限来选择照片",
-        "scanFailed": "扫描失败",
-        "scanFailedMessage": "文档扫描失败，请重试",
-        "processing": "正在处理...",
-        "processingMessage": "正在识别文档内容，请稍候"
+    "entryFlow": {
+      "title": "泰国入境准备",
+      "progress": {
+        "headline": {
+          "ready": "泰国行程准备就绪！🇹🇭",
+          "almost": "进度很棒，继续加油！",
+          "start": "开始整理泰国入境资料吧"
+        },
+        "subtitle": {
+          "ready": "所有必填信息已完成",
+          "almost": "还差 {{remaining}}%，完善后即可安心过关。",
+          "start": "填写护照、资金与行程信息，让入境问询更从容。"
+        },
+        "label": "准备进度"
+      },
+      "status": {
+        "ready": {
+          "title": "准备完成",
+          "subtitle": "资料齐全，可随时出示。"
+        },
+        "mostlyComplete": {
+          "title": "快完成了",
+          "subtitle": "补齐剩余资料即可。"
+        },
+        "needsImprovement": {
+          "title": "继续完善信息",
+          "subtitle": "完成关键资料以免入境受阻。"
+        }
+      },
+      "countdown": {
+        "title": "提交倒计时",
+        "subtitle": "请在抵达前完成剩余准备。",
+        "time": "剩余 {{days}}天 {{hours}}小时 {{minutes}}分钟 {{seconds}}秒",
+        "arrival": "抵达日期 {{date}}",
+        "days": "距离抵达还有 {{days}} 天"
+      },
+      "actions": {
+        "previewPack": "预览入境包",
+        "previewPackSubtitle": "查看已经准备好的资料",
+        "entryGuide": "入境手续指南",
+        "entryGuideSubtitle": "查看入境与海关申报步骤",
+        "startEntryGuide": "开始入境指引",
+        "submit": "提交入境卡",
+        "submitSubtitle": "准备好！现在提交资料。",
+        "edit": "编辑旅行信息",
+        "editSubtitle": "提交前请检查或更新任何信息",
+        "editThai": "编辑旅行信息",
+        "editThaiSubtitle": "如需修改，返回编辑",
+        "help": {
+          "title": "寻求帮助",
+          "message": "你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档",
+          "share": "截图分享",
+          "contact": "联系客服",
+          "callout": "寻求帮助",
+          "calloutSubtitle": "遇到问题？点我获取协助"
+        },
+        "incomplete": {
+          "title": "需要更多信息",
+          "message": "请至少完成 80% 的信息后再提交。"
+        },
+        "success": {
+          "title": "准备好了！",
+          "message": "你的泰国入境信息已完整。"
+        },
+        "continue": "继续编辑"
       }
     }
   },
-  "korea": {
+  "cn": {
+    "name": "中国",
+    "entryFlow": {
+      "title": "中国入境准备",
+      "progress": {
+        "headline": {
+          "ready": "中国行程准备就绪！🇨🇳",
+          "almost": "进度很棒，继续加油！",
+          "start": "让我们开始吧！"
+        },
+        "subtitle": {
+          "ready": "所有必填信息已完成",
+          "almost": "继续填写信息以使旅程更顺利",
+          "start": "填写护照、旅行与住宿详情"
+        },
+        "label": "准备进度"
+      },
+      "status": {
+        "ready": {
+          "title": "准备提交",
+          "subtitle": "信息已完整"
+        },
+        "mostlyComplete": {
+          "title": "快完成了",
+          "subtitle": "再补充一些字段即可"
+        },
+        "needsImprovement": {
+          "title": "继续加油",
+          "subtitle": "完成必填项目"
+        }
+      },
+      "actions": {
+        "edit": "编辑旅行信息",
+        "editSubtitle": "提交前请检查或更新任何信息",
+        "previewPack": "预览入境包",
+        "previewPackSubtitle": "查看已经准备好的资料",
+        "help": {
+          "callout": "寻求帮助",
+          "calloutSubtitle": "遇到问题？点我获取协助"
+        }
+      },
+      "completionCard": {
+        "title": "完成进度",
+        "summary": "{{completedCategories}}/{{totalCategories}} 个部分已完成"
+      }
+    },
+    "travelInfo": {
+      "sections": {
+        "travel": {
+          "provincePlaceholder": "请选择省份/直辖市",
+          "districtPlaceholder": "请选择城市/区县"
+        }
+      }
+    }
+  },
+  "hk": {
+    "name": "香港",
+    "info": {
+      "headerTitle": "香港入境信息",
+      "title": "香港入境指南",
+      "subtitle": "中国护照持有者免签7天",
+      "sections": {
+        "visa": {
+          "title": "✓ 好消息！免签政策",
+          "items": [
+            "中国护照免签7天 - 说走就走！",
+            "• 无需提前申请签证",
+            "• 适用于旅游、商务、探亲",
+            "• 如需延期可通过香港入境处申请"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ 入境须知",
+          "items": [
+            "• 停留时间短：仅7天，必须按时离境或申请延期",
+            "• 入境检查严格：可能被详细询问来港目的、住宿、资金情况",
+            "• 证件需准备齐全：往返机票、酒店预订、资金证明均需准备",
+            "• 可能需健康申报：视当前健康政策而定",
+            "• e道限制：首次访港需走人工柜台，排队时间较长"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ 入境通帮您轻松搞定",
+          "items": [
+            "• 零焦虑：自动提醒7天期限，不用担心逾期",
+            "• 零失误：预填旅行信息，入境问询有准备",
+            "• 零操心：一次输入，所有证件整理妥当",
+            "• 证件清单：全面准备清单，不会遗漏任何项目"
+          ]
+        }
+      },
+      "continueButton": "我已了解，继续确认材料"
+    },
+    "requirements": {
+      "headerTitle": "香港入境准备清单",
+      "introTitle": "以下是入境所需准备事项",
+      "introSubtitle": "这些信息可以先填着，慢慢补全",
+      "items": {
+        "validPassport": {
+          "title": "护照有效期",
+          "description": "护照有效期至少超过停留期1个月",
+          "details": "香港要求护照在预定停留期后仍有效。请检查护照有效期，必要时提前更换。"
+        },
+        "returnTicket": {
+          "title": "返程或续程机票",
+          "description": "已确认的离港机票预订",
+          "details": "入境处可能要求查看返程或续程机票证明。请准备好电子机票或预订确认单。"
+        },
+        "accommodation": {
+          "title": "住宿证明",
+          "description": "酒店预订或联系人信息",
+          "details": "携带酒店预订确认单，或香港联系人的详细信息，包括地址和电话号码。"
+        },
+        "sufficientFunds": {
+          "title": "充足资金",
+          "description": "现金、信用卡或银行流水",
+          "details": "可能需要证明有足够资金支付停留期间的费用。准备现金、信用卡或近期银行对账单。"
+        },
+        "healthDeclaration": {
+          "title": "健康申报",
+          "description": "根据现行健康规定填写（如有要求）",
+          "details": "检查是否需要健康申报或新冠相关文件。在抵达前完成所有必需的表格。"
+        }
+      },
+      "status": {
+        "info": {
+          "title": "随时开始填写",
+          "subtitle": "我们支持递进式的完成清单"
+        }
+      },
+      "startButton": "开始填写"
+    },
+    "travelInfo": {
+      "sections": {
+        "passport": {
+          "title": "护照信息"
+        },
+        "personal": {
+          "title": "个人信息"
+        },
+        "funds": {
+          "title": "资金证明",
+          "subtitle": "停留期间的资金证明",
+          "introText": "移民局想确保您不会成为负担。只需证明您有足够钱支付旅行费用。",
+          "addCash": "添加现金",
+          "addCreditCard": "添加信用卡照片",
+          "addBankBalance": "添加银行余额",
+          "addBankCard": "添加银行卡",
+          "addDocument": "添加文件",
+          "empty": "尚未添加资金证明，请至少添加一项。",
+          "notProvided": "未提供",
+          "photoAttached": "已附加照片",
+          "fundTypes": {
+            "cash": "现金",
+            "credit_card": "信用卡",
+            "bank_card": "银行卡",
+            "bank_balance": "银行余额",
+            "document": "文件",
+            "other": "其他"
+          }
+        },
+        "travel": {
+          "title": "旅行详情",
+          "subtitle": "航班和住宿信息",
+          "introText": "海关需要了解您的旅行计划",
+          "introIcon": "✈️",
+          "isTransitPassenger": "您是否为过境乘客？",
+          "transitYes": "是",
+          "transitNo": "否",
+          "hotelAddressPlaceholder": "请输入地址",
+          "provincePlaceholder": "请选择省份",
+          "districtPlaceholder": "请选择区/县",
+          "subDistrictPlaceholder": "请选择街道/镇"
+        }
+      },
+      "fields": {
+        "surname": "姓",
+        "middleName": "中间名（可选）",
+        "givenName": "名",
+        "passportNo": "护照号码",
+        "nationality": "国籍",
+        "dob": "出生日期",
+        "expiryDate": "护照有效期",
+        "sex": "性别",
+        "visaNumber": "签证号码（如有）",
+        "occupation": "职业",
+        "cityOfResidence": "居住城市",
+        "countryOfResidence": "居住国家/地区",
+        "phoneCode": "电话区号",
+        "phoneNumber": "电话号码",
+        "email": "电子邮箱（可选）",
+        "travelPurpose": "访问目的",
+        "recentStayCountry": "最近30天访问的国家",
+        "boardingCountry": "登机国家/地区",
+        "arrivalFlightNumber": "入境航班号",
+        "arrivalDate": "入境日期",
+        "departureFlightNumber": "返程航班号（可选）",
+        "departureDate": "返程日期（可选）",
+        "isTransitPassenger": "是否为过境乘客",
+        "accommodationType": "住宿类型",
+        "region": "地区",
+        "district": "区",
+        "hotelAddress": "住宿地址",
+        "hotelReservationPhoto": "酒店预订截图",
+        "flightTicketPhoto": "机票截图",
+        "departureFlightTicketPhoto": "返程机票截图"
+      },
+      "fieldHelp": {
+        "surname": "请输入护照上的姓氏",
+        "middleName": "如有中间名，请输入",
+        "givenName": "请输入护照上的名字",
+        "passportNo": "请输入您的护照号码",
+        "nationality": "请选择您的国籍",
+        "dob": "请选择您的出生日期",
+        "expiryDate": "请选择您的护照有效期",
+        "sex": "请选择您的性别",
+        "visaNumber": "如有签证号码，请输入",
+        "occupation": "请输入您的职业",
+        "cityOfResidence": "请输入您的居住城市",
+        "countryOfResidence": "请选择您的居住国家",
+        "phoneCode": "请选择您的电话区号",
+        "phoneNumber": "请输入您的电话号码",
+        "email": "请输入您的电子邮箱",
+        "travelPurpose": "请选择您的访问目的",
+        "recentStayCountry": "请选择您最近访问过的国家",
+        "boardingCountry": "请选择您登机的国家",
+        "arrivalFlightNumber": "请输入您的入境航班号",
+        "arrivalDate": "请选择您的入境日期",
+        "departureFlightNumber": "请输入您的返程航班号（可选）",
+        "departureDate": "请选择您的返程日期（可选）",
+        "accommodationType": "请选择您的住宿类型",
+        "region": "请选择地区",
+        "district": "请选择区",
+        "hotelAddress": "请输入完整地址"
+      }
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "完成必填项",
+        "almostDone": "即将完成",
+        "ready": "继续到入境指南",
+        "default": "继续"
+      }
+    },
+    "entryFlow": {
+      "title": "香港入境准备",
+      "progress": {
+        "headline": {
+          "ready": "香港行程准备就绪！🇭🇰",
+          "almost": "进度很棒，继续加油！",
+          "start": "让我们开始吧！"
+        },
+        "subtitle": {
+          "ready": "所有必填信息已完成",
+          "almost": "继续填写信息以使旅程更顺利",
+          "start": "填写护照、旅行与住宿详情"
+        },
+        "label": "准备进度"
+      },
+      "status": {
+        "ready": {
+          "title": "准备提交",
+          "subtitle": "信息已完整"
+        },
+        "mostlyComplete": {
+          "title": "快完成了",
+          "subtitle": "再补充一些字段即可"
+        },
+        "needsImprovement": {
+          "title": "继续加油",
+          "subtitle": "完成必填项目"
+        }
+      },
+      "submissionWindow": "提交窗口",
+      "actions": {
+        "startEntryGuide": "开始入境指引",
+        "submit": "提交入境卡",
+        "submitSubtitle": "准备完成！现在可以提交入境卡了",
+        "edit": "编辑旅行信息",
+        "editSubtitle": "提交前请检查或更新任何信息",
+        "entryGuide": "入境指引",
+        "entryGuideSubtitle": "查看纸质入境卡与海关申报步骤",
+        "previewPack": "预览入境包",
+        "previewPackSubtitle": "查看已经准备好的资料",
+        "help": {
+          "callout": "寻求帮助",
+          "calloutSubtitle": "遇到问题？点我获取协助"
+        }
+      },
+      "completionCard": {
+        "title": "完成进度",
+        "summary": "{{completedCategories}}/{{totalCategories}} 个部分已完成"
+      }
+    },
+    "occupations": {
+      "SOFTWARE_ENGINEER": "软件工程师",
+      "STUDENT": "学生",
+      "TEACHER": "教师",
+      "DOCTOR": "医生",
+      "ACCOUNTANT": "会计师",
+      "SALES_MANAGER": "销售经理",
+      "RETIRED": "退休",
+      "ENGINEER": "工程师",
+      "CIVIL_SERVANT": "公务员",
+      "LAWYER": "律师",
+      "NURSE": "护士",
+      "FREELANCER": "自由职业者",
+      "BUSINESS_OWNER": "企业主",
+      "HOMEMAKER": "家庭主妇",
+      "DESIGNER": "设计师",
+      "FINANCE_PROFESSIONAL": "金融从业者",
+      "OTHER": "其他"
+    }
+  },
+  "kr": {
+    "name": "韩国",
     "info": {
       "headerTitle": "韩国入境信息",
       "title": "韩国入境指南",
@@ -359,6 +713,16 @@
             "• 无需提前申请签证或K-ETA",
             "• 最多停留90天，适用于旅游观光",
             "• 新要求：入境需提交电子入境卡（有提交时间限制）"
+          ]
+        },
+        "onsite": {
+          "title": "⚠️ 入境须知",
+          "items": [
+            "• 电子入境卡强制要求：有严格的提交时间限制，过早过晚都不行",
+            "• 时间管理是最大挑战：错过提交时间将无法入境，没有补救措施",
+            "• 信息准确性要求极高：护照、航班、住宿任何错误都可能导致入境被拒",
+            "• 多个步骤容易遗漏：从准备材料到最终提交，流程繁琐需要细心",
+            "• 2025年12月起完全数字化：纸质入境卡将彻底取消"
           ]
         },
         "important": {
@@ -425,19 +789,119 @@
         "travel": "旅行信息"
       }
     },
+    "entryFlow": {
+      "title": "韩国入境准备",
+      "submissionWindow": "中国护照持有者免签90天，请确保在停留期内离境。",
+      "progress": {
+        "headline": {
+          "ready": "韩国行程准备就绪！🇰🇷",
+          "almost": "进度很棒，再补充一点点！",
+          "start": "开始整理韩国入境资料吧"
+        },
+        "subtitle": {
+          "ready": "护照、资金与住宿资料已齐全，可随时向入境官出示。",
+          "almost": "还差 {{remaining}}%，完善后即可安心过关。",
+          "start": "填写护照、资金与行程信息，让入境问询更从容。"
+        },
+        "label": "准备进度"
+      },
+      "status": {
+        "ready": {
+          "title": "准备完成",
+          "subtitle": "资料齐全，可随时出示。"
+        },
+        "mostlyComplete": {
+          "title": "快完成了",
+          "subtitle": "补齐剩余资料即可。"
+        },
+        "needsImprovement": {
+          "title": "继续完善信息",
+          "subtitle": "完成关键资料以免入境受阻。"
+        }
+      },
+      "countdown": {
+        "title": "提交倒计时",
+        "subtitle": "请在抵达前完成剩余准备。",
+        "time": "剩余 {{days}}天 {{hours}}小时 {{minutes}}分钟 {{seconds}}秒",
+        "arrival": "抵达日期 {{date}}",
+        "days": "距离抵达还有 {{days}} 天"
+      },
+      "actions": {
+        "previewPack": "预览入境包",
+        "previewPackSubtitle": "查看已经准备好的资料",
+        "entryGuide": "入境手续指南",
+        "entryGuideSubtitle": "查看纸质入境卡与海关申报步骤",
+        "editThai": "编辑旅行信息",
+        "editThaiSubtitle": "如需修改，返回编辑",
+        "edit": "编辑旅行信息",
+        "editSubtitle": "提交前请检查或更新任何信息",
+        "help": {
+          "title": "寻求帮助",
+          "message": "你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档",
+          "share": "截图分享",
+          "contact": "联系客服",
+          "callout": "寻求帮助",
+          "calloutSubtitle": "遇到问题？点我获取协助"
+        },
+        "continue": "继续编辑",
+        "submit": "提交入境卡"
+      }
+    },
     "travelInfo": {
+      "hero": {
+        "title": "韩国入境准备指南",
+        "subtitle": "别担心，我们来帮你！",
+        "valuePropositions": {
+          "0": "3分钟完成",
+          "1": "100%隐私保护",
+          "2": "避免通关延误"
+        },
+        "beginnerTip": "第一次过韩国海关？我们会一步步教你准备所有必需文件，确保顺利通关！"
+      },
       "sections": {
         "passport": {
-          "title": "护照信息"
+          "title": "护照信息",
+          "subtitle": "请填写护照相关信息"
         },
         "personal": {
-          "title": "个人信息"
+          "title": "个人信息",
+          "subtitle": "联系方式和职业信息"
         },
         "funds": {
-          "title": "资金证明"
+          "title": "资金证明",
+          "subtitle": "韩国入境建议准备资金证明，如银行卡、现金等",
+          "introText": "资金证明有助于顺利通关",
+          "addCash": "添加现金",
+          "addCreditCard": "添加信用卡照片",
+          "addBankBalance": "添加银行余额",
+          "addBankCard": "添加银行卡",
+          "addDocument": "添加文件",
+          "empty": "尚未添加资金证明，请至少添加一项。",
+          "notProvided": "未提供",
+          "photoAttached": "已附加照片",
+          "fundTypes": {
+            "cash": "现金",
+            "credit_card": "信用卡",
+            "bank_card": "银行卡",
+            "bank_balance": "银行余额",
+            "document": "文件",
+            "other": "其他"
+          }
         },
         "travel": {
-          "title": "旅行信息"
+          "title": "旅行信息",
+          "subtitle": "航班和住宿详情",
+          "introText": "海关需要了解您的旅行计划",
+          "introIcon": "✈️",
+          "isTransitPassenger": "您是否为过境乘客？",
+          "transitYes": "是",
+          "transitNo": "否",
+          "hotelAddressPlaceholder": "请输入地址",
+          "provincePlaceholder": "请选择省份",
+          "districtPlaceholder": "请选择区/县",
+          "subDistrictPlaceholder": "请选择街道/镇",
+          "accommodationTypePlaceholder": "请选择您的住宿类型",
+          "accommodationTypeModalTitle": "选择住宿类型"
         }
       },
       "fields": {
@@ -449,28 +913,62 @@
         "dob": "出生日期",
         "expiryDate": "护照有效期",
         "sex": "性别",
-        "visaNumber": "签证号码（如有）",
         "occupation": "职业",
         "cityOfResidence": "居住城市",
-        "countryOfResidence": "居住国家/地区",
-        "phoneCode": "国际区号",
+        "countryOfResidence": "居住国家",
+        "phoneCode": "电话区号",
         "phoneNumber": "电话号码",
-        "email": "电子邮箱（可选）",
-        "travelPurpose": "访问目的",
-        "recentStayCountry": "近30天访问国家",
-        "boardingCountry": "登机国家/地区",
+        "email": "电子邮箱",
+        "travelPurpose": "旅行目的",
+        "boardingCountry": "登机国家",
         "arrivalFlightNumber": "入境航班号",
         "arrivalDate": "入境日期",
-        "departureFlightNumber": "返程航班号（可选）",
-        "departureDate": "返程日期（可选）",
-        "isTransitPassenger": "是否为过境旅客",
-        "accommodationType": "住宿类型",
-        "region": "住宿地区",
-        "district": "住宿区",
-        "hotelAddress": "住宿地址",
-        "hotelReservationPhoto": "酒店预订单照片",
-        "flightTicketPhoto": "机票截屏/照片",
-        "departureFlightTicketPhoto": "返程机票截屏/照片"
+        "departureFlightNumber": "离境航班号",
+        "departureDate": "离境日期",
+        "accommodationAddress": "住宿地址",
+        "accommodationPhone": "住宿电话",
+        "ketaNumber": "K-ETA号码",
+        "hasKeta": "我已获得K-ETA"
+      },
+      "fieldHelp": {
+        "surname": "请输入护照上的姓氏",
+        "middleName": "如有中间名，请输入",
+        "givenName": "请输入护照上的名字",
+        "passportNo": "请输入您的护照号码",
+        "nationality": "请选择您的国籍",
+        "dob": "请选择您的出生日期",
+        "expiryDate": "请选择您的护照有效期",
+        "sex": "请选择您的性别",
+        "visaNumber": "如有签证号码，请输入",
+        "occupation": "请输入您的职业",
+        "cityOfResidence": "请输入您的居住城市",
+        "countryOfResidence": "请选择您的居住国家",
+        "phoneCode": "请选择您的电话区号",
+        "phoneNumber": "请输入您的电话号码",
+        "email": "请输入您的电子邮箱",
+        "travelPurpose": "请选择您的访问目的",
+        "recentStayCountry": "请选择您最近访问过的国家",
+        "boardingCountry": "请选择您登机的国家",
+        "arrivalFlightNumber": "请输入您的入境航班号",
+        "arrivalDate": "请选择您的入境日期",
+        "departureFlightNumber": "请输入您的离境航班号",
+        "departureDate": "请选择您的离境日期",
+        "accommodationType": "请选择您的住宿类型",
+        "province": "请选择省份",
+        "district": "请选择区/县",
+        "subDistrict": "请选择街道/镇",
+        "hotelAddress": "请输入完整地址",
+        "accommodationAddress": "请输入完整住宿地址",
+        "accommodationPhone": "请输入住宿电话",
+        "ketaNumber": "如您已有K-ETA号码，请输入",
+        "hasKeta": "请勾选如果您已获得K-ETA"
+      },
+      "accommodationTypes": {
+        "HOTEL": "酒店",
+        "HOSTEL": "青年旅舍",
+        "AIRBNB": "爱彼迎",
+        "FRIEND_FAMILY": "朋友/家人",
+        "OTHER": "其他"
       },
       "personal": {
         "occupationOptions": {
@@ -495,36 +993,15 @@
         "region": "地区",
         "district": "区"
       },
-      "continue": "继续"
+      "continue": "继续",
+      "submitButton": "保存并继续"
     },
-    "entryFlow": {
-      "title": "香港入境准备",
-      "submissionWindow": "香港免签停留通常为7天，请留意离境时间并准备返程行程。",
-      "progress": {
-        "headline": {
-          "ready": "香港行程准备就绪！🇭🇰",
-          "almost": "进度很棒，再补充一点点！",
-          "start": "开始整理香港入境资料吧"
-        },
-        "subtitle": {
-          "ready": "护照、资金与住宿资料已齐全，可随时向入境官出示。",
-          "almost": "还差 {{remaining}}%，完善后即可安心过关。",
-          "start": "填写护照、资金与行程信息，让入境问询更从容。"
-        }
-      },
-      "status": {
-        "ready": {
-          "title": "准备完成",
-          "subtitle": "资料齐全，可随时出示。"
-        },
-        "mostlyComplete": {
-          "title": "快完成了",
-          "subtitle": "补齐剩余资料即可。"
-        },
-        "needsImprovement": {
-          "title": "继续完善信息",
-          "subtitle": "完成关键资料以免入境受阻。"
-        }
+    "navigation": {
+      "submitButton": {
+        "incomplete": "完成必填项",
+        "almostDone": "快完成了",
+        "ready": "继续",
+        "default": "继续"
       }
     },
     "validation": {
@@ -539,7 +1016,7 @@
       }
     }
   },
-  "japan": {
+  "jp": {
     "name": "日本",
     "entryFlow": {
       "title": "日本入境准备",
@@ -560,7 +1037,8 @@
         },
         "subtitle.ready": "太棒了！您的日本之旅已经准备就绪！🌸",
         "subtitle.almost": "继续加油！还差{{remaining}}%就能完成日本之旅准备！",
-        "subtitle.start": "继续填写您的信息，让旅程更顺畅。"
+        "subtitle.start": "继续填写您的信息，让旅程更顺畅。",
+        "label": "准备进度"
       },
       "status": {
         "ready": {
@@ -575,52 +1053,33 @@
           "title": "请填写",
           "subtitle": "需要更多信息"
         }
-      }
-    },
-    "progressiveEntryFlow": {
-      "categories": {
-        "passport": "护照信息",
-        "personal": "个人信息",
-        "funds": "资金证明",
-        "travel": "旅行信息"
-      }
-    }
-  },
-  "jp": {
-    "entryFlow": {
-      "title": "日本入境准备",
-      "submissionWindow": "抵达前3天内提交",
-      "progress": {
-        "headline": {
-          "ready": "日本准备就绪！🌸",
-          "almost": "快完成了！💪",
-          "start": "让我们开始吧！🌺"
-        },
-        "headline.ready": "日本准备就绪！🌸",
-        "headline.almost": "快完成了！💪",
-        "headline.start": "让我们开始吧！🌺",
-        "subtitle": {
-          "ready": "太棒了！您的日本之旅已经准备就绪！🌸",
-          "almost": "继续加油！还差{{remaining}}%就能完成日本之旅准备！",
-          "start": "继续填写您的信息，让旅程更顺畅。"
-        },
-        "subtitle.ready": "太棒了！您的日本之旅已经准备就绪！🌸",
-        "subtitle.almost": "继续加油！还差{{remaining}}%就能完成日本之旅准备！",
-        "subtitle.start": "继续填写您的信息，让旅程更顺畅。"
       },
-      "status": {
-        "ready": {
-          "title": "准备好入境！",
-          "subtitle": "所有信息已完成"
+      "countdown": {
+        "title": "提交倒计时",
+        "subtitle": "入境前请完成所有准备工作。",
+        "time": "剩余 {{days}}天 {{hours}}小时 {{minutes}}分钟 {{seconds}}秒",
+        "arrival": "抵达日期 {{date}}",
+        "days": "距离抵达还有 {{days}} 天"
+      },
+      "actions": {
+        "previewPack": "预览入境包",
+        "previewPackSubtitle": "查看已经准备好的资料",
+        "entryGuide": "入境手续指南",
+        "entryGuideSubtitle": "纸质入境卡与海关申报填写步骤",
+        "editThai": "编辑旅行信息",
+        "editThaiSubtitle": "如需修改，返回编辑",
+        "edit": "编辑旅行信息",
+        "editSubtitle": "提交前请检查或更新任何信息",
+        "help": {
+          "title": "寻求帮助",
+          "message": "你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档",
+          "share": "截图分享",
+          "contact": "联系客服",
+          "callout": "寻求帮助",
+          "calloutSubtitle": "遇到问题？点我获取协助"
         },
-        "mostlyComplete": {
-          "title": "快完成了",
-          "subtitle": "还需要一些字段"
-        },
-        "needsImprovement": {
-          "title": "请填写",
-          "subtitle": "需要更多信息"
-        }
+        "continue": "继续编辑",
+        "submit": "提交入境卡"
       }
     },
     "progressiveEntryFlow": {
@@ -634,18 +1093,18 @@
     "info": {
       "headerTitle": "日本入境信息",
       "title": "日本入境指南",
-      "subtitle": "中国护照持有人需提前办理签证",
+      "subtitle": "中国护照持有人可免签停留90天",
       "sections": {
         "visa": {
-          "title": "⚠️ 签证要求",
+          "title": "✓ 免签政策",
           "items": [
-            "中国护照持有人需提前申请日本签证，目前暂无短期免签政策。",
-            "• 常见签证类型为短期停留（旅游/商务/探亲），最长可停留90天。",
-            "• 需通过日本驻华使领馆或指定的签证申请中心提交材料。",
-            "• 办理需准备护照、行程、财力证明等，建议至少预留1周时间。"
+            "中国护照旅客可免签入境日本，最长停留90天。",
+            "• 适用于旅游、探亲访友、商务洽谈等短期行程。",
+            "• 抵达时需出示返程或续程行程、住宿证明与资金证明。",
+            "• 仍需填写纸质入境卡与海关申报单，请提前准备。"
           ]
         },
-        "important": {
+        "onsite": {
           "title": "⚠️ 入境须知",
           "items": [
             "• 表格必须用黑色或蓝色笔填写。",
@@ -672,30 +1131,35 @@
       "introTitle": "入境准备清单",
       "introSubtitle": "填写您有的内容，逐步完善",
       "items": {
-        "validVisa": {
-          "title": "有效签证",
-          "description": "已批准的日本旅游签证",
-          "details": "中国公民需提前申请签证。确认您的签证有效且有足够入境次数。"
-        },
         "validPassport": {
           "title": "有效护照",
           "description": "护照有效期至少6个月",
           "details": "护照必须在计划离境日期后6个月以上有效"
         },
-        "returnTicket": {
-          "title": "返程机票",
-          "description": "已确认的返程或后续行程机票",
-          "details": "必须有明确的离境计划，显示您将在90天内离开日本"
+        "visaFreeEntry": {
+          "title": "免签资格确认",
+          "description": "中国护照可免签停留90天",
+          "details": "随身携带护照、行程单及资金证明，以备入境官员抽查。"
         },
-        "sufficientFunds": {
-          "title": "充足资金",
-          "description": "整个停留期间的资金证明",
-          "details": "建议携带至少10万日元或等值，或出示信用卡/银行对账单"
+        "onwardTicket": {
+          "title": "返程/续程机票",
+          "description": "明确的离境计划",
+          "details": "准备纸质或电子机票凭证，常被要求现场出示。"
+        },
+        "funds": {
+          "title": "资金证明",
+          "description": "展示可负担行程的资金",
+          "details": "建议携带至少10万日元现金或等值的信用卡、银行流水等证明。"
         },
         "accommodation": {
           "title": "住宿证明",
           "description": "日本的酒店预订或房东联系方式",
           "details": "提供酒店预订确认或日本朋友/亲戚的详细联系信息"
+        },
+        "paperArrivalCard": {
+          "title": "纸质入境卡与海关申报单",
+          "description": "飞机或机场现场填写",
+          "details": "使用黑/蓝色墨水手写，提交前检查姓名、航班等信息。"
         }
       },
       "status": {
@@ -716,21 +1180,39 @@
       "continueButton": "继续至入境流程"
     },
     "travelInfo": {
+      "buttonLabels": {
+        "incomplete": "完成必填项",
+        "almostDone": "快完成了",
+        "ready": "继续"
+      },
+      "continue": "继续",
       "hero": {
-        "title": "日本入境准备指南",
-        "subtitle": "3分钟完成免签入境，安心出行！",
-        "valuePropositions": [
-          "3分钟完成",
-          "90天免签",
-          "离线友好，安全存储"
-        ],
-        "beginnerTip": "日本为中国护照持有者提供90天免签入境。我们帮您准备所有入境材料。"
+        "title": "日本入境信息中心",
+        "subtitle": "填写一次，随时查看与更新",
+        "valuePropositions": {
+          "0": "护照信息一次备份",
+          "1": "航班住宿集中管理",
+          "2": "离线可用，自动保存"
+        },
+        "beginnerTip": "小贴士：提前准备好住宿和航班信息，入境时最快速。"
       },
       "sections": {
-        "passport": "护照信息",
-        "personal": "个人信息",
-        "funds": "资金证明",
-        "travel": "旅行信息"
+        "passport": {
+          "title": "护照信息",
+          "subtitle": "请准确填写护照信息"
+        },
+        "personal": {
+          "title": "个人信息",
+          "subtitle": "联系与个人详情"
+        },
+        "funds": {
+          "title": "资金证明",
+          "subtitle": "旅行资金证明"
+        },
+        "travel": {
+          "title": "旅行信息",
+          "subtitle": "航班与住宿信息"
+        }
       },
       "fields": {
         "surname": "姓",
@@ -760,6 +1242,34 @@
         "prefecture": "都道府县",
         "city": "城市",
         "hotelAddress": "酒店地址"
+      },
+      "fieldHelp": {
+        "surname": "请输入护照上的姓氏",
+        "middleName": "如有中间名，请输入",
+        "givenName": "请输入护照上的名字",
+        "passportNo": "请输入您的护照号码",
+        "nationality": "请选择您的国籍",
+        "dob": "请选择您的出生日期",
+        "expiryDate": "请选择您的护照有效期",
+        "sex": "请选择您的性别",
+        "visaNumber": "如有签证号码，请输入",
+        "occupation": "请输入您的职业",
+        "cityOfResidence": "请输入您的居住城市",
+        "countryOfResidence": "请选择您的居住国家",
+        "phoneCode": "请选择您的电话区号",
+        "phoneNumber": "请输入您的电话号码",
+        "email": "请输入您的电子邮箱",
+        "travelPurpose": "请选择您的访问目的",
+        "recentStayCountry": "请选择您最近访问过的国家",
+        "boardingCountry": "请选择您登机的国家",
+        "arrivalFlightNumber": "请输入您的入境航班号",
+        "arrivalDate": "请选择您的入境日期",
+        "departureFlightNumber": "请输入您的离境航班号",
+        "departureDate": "请选择您的离境日期",
+        "accommodationType": "请选择您的住宿类型",
+        "prefecture": "请选择都道府县",
+        "city": "请选择城市",
+        "hotelAddress": "请输入完整地址"
       },
       "personal": {
         "occupationOptions": {
@@ -866,9 +1376,132 @@
         ]
       },
       "startButton": "开始准备入境资料包"
+    },
+    "result": {
+      "manualEntry": {
+        "title": "日本入境卡填写指南",
+        "intro": "请按照下列信息填写纸质入境卡与海关申报表，可离线查看，建议截图保存。",
+        "badges": {
+          "handwritten": "✍️ 手写纸质入境卡",
+          "backedUp": "📦 信息已备份到入境包",
+          "offline": "📵 离线可用"
+        },
+        "sections": {
+          "passport": "护照信息 Passport",
+          "personal": "个人信息 Personal",
+          "travel": "旅行信息 Travel Details",
+          "accommodation": "住宿与联系 Accommodation"
+        },
+        "fields": {
+          "fullName": "姓名 Full Name",
+          "passportNo": "护照号 Passport No.",
+          "nationality": "国籍 Nationality",
+          "dateOfBirth": "出生日期 Date of Birth",
+          "gender": "性别 Gender",
+          "passportExpiry": "护照有效期 Passport Expiry",
+          "occupation": "职业 Occupation",
+          "cityOfResidence": "居住城市 City of Residence",
+          "countryOfResidence": "居住国家 Country of Residence",
+          "phone": "联系电话 Phone",
+          "email": "电子邮箱 Email",
+          "purposeOfVisit": "旅行目的 Purpose of Visit",
+          "flightNumber": "航班号 Flight Number",
+          "arrivalDate": "到达日期 Arrival Date",
+          "lengthOfStay": "停留天数 Length of Stay",
+          "days": "天",
+          "address": "住宿地址 Address",
+          "accommodationPhone": "住宿电话 Phone"
+        },
+        "funds": "资金证明 Funds & Assets",
+        "noFunds": "未提供资金信息",
+        "helpTip": "请在飞机上或到达机场后，参考以上信息填写纸质入境卡。建议截图保存以便随时查看。",
+        "loading": "正在加载日本入境资料…",
+        "heroTitle": "我的日本之旅准备好了吗？🌸",
+        "heroSubtitle": "看看你准备得怎么样，一起迎接日本冒险！",
+        "statusText": {
+          "complete": "日本入境准备就绪！🌸",
+          "almost": "再检查一下信息～",
+          "incomplete": "继续完善资料吧！",
+          "loading": "正在加载您的资料…"
+        },
+        "statusSubtitle": {
+          "complete": "所有资料整理完成，随时可以在机场出示。",
+          "almost": "还有少量信息待确认，完成后更安心出行。",
+          "incomplete": "完成所有资料即可生成完整的日本入境包。",
+          "loading": "请稍候，我们正在整理旅客信息。"
+        },
+        "itemsCompleted": "已完成 {{completed}}/{{total}} 项资料",
+        "editButton": "再改改",
+        "shareButton": "找亲友帮忙修改",
+        "progressLabel": "准备进度",
+        "interactiveGuideTitle": "查看互动入境指南",
+        "interactiveGuideSubtitle": "分步骤指导 · 大字体模式"
+      },
+      "title": "入境包生成成功！",
+      "subtitle": "您的入境信息已整理完成",
+      "entryPack": {
+        "title": "入境包",
+        "subtitleParts": {
+          "departure": "出发 {{date}}",
+          "arrival": "到达 {{date}}",
+          "flight": "航班 {{flight}}",
+          "missing": "请补齐行程信息"
+        },
+        "fields": {
+          "departureDate": "出发日期",
+          "flightNo": "航班号",
+          "arrivalDate": "到达日期",
+          "accommodation": "住宿信息"
+        },
+        "actions": {
+          "startGuide": "开始入境指南"
+        },
+        "lastUpdated": "最后更新：{{time}}"
+      },
+      "historyBanner": {
+        "primaryCta": {
+          "title": "开始入境指南",
+          "subtitle": "分步骤指导 · 大字体模式"
+        },
+        "secondaryCta": {
+          "editInfo": "更改资料"
+        }
+      },
+      "digitalInfo": {
+        "title": "申请{{systemName}}",
+        "button": "立即申请"
+      },
+      "infoBox": "所有信息仅保存在您的手机本地",
+      "share": {
+        "modalTitle": "请亲友协助核对资料",
+        "modalSubtitle": "分享下方链接与密码给信任的亲友，链接有效期24小时。亲友可补充或修改入境所需信息，更新后会同步到本入境包。",
+        "linkLabel": "分享链接",
+        "passwordLabel": "访问密码",
+        "copy": "复制",
+        "copied": "已复制",
+        "expiryText": "有效期至：{{time}}",
+        "primaryAction": "完成，去粘贴给亲友",
+        "cancelAction": "取消此次分享",
+        "securityNote": "安全提示：请仅分享给可信赖的家人或朋友，您可随时取消分享以立即终止访问。",
+        "cancelTitle": "取消分享",
+        "cancelMessage": "该操作会立即失效共享链接和密码，亲友将无法继续访问。确定要取消吗？",
+        "keep": "保留",
+        "confirmCancel": "取消分享",
+        "active": "已邀请",
+        "viewShare": "查看分享信息",
+        "invite": "亲友核实"
+      },
+      "notProvided": "未填写",
+      "pending": "待确认",
+      "changeInfo": "更改资料",
+      "kioskGuide": {
+        "title": "{{kioskName}}指南",
+        "kioskName": "自助通关机",
+        "subtitle": "手把手教您操作"
+      }
     }
   },
-  "usa": {
+  "us": {
     "info": {
       "headerTitle": "美国入境信息",
       "title": "美国入境指南",
@@ -945,18 +1578,60 @@
       "startButton": "开始填写"
     },
     "travelInfo": {
+      "hero": {
+        "title": "美国入境准备指南",
+        "subtitle": "别担心，我们来帮你！",
+        "valuePropositions": {
+          "0": "3分钟完成",
+          "1": "100%隐私保护",
+          "2": "避免通关延误"
+        },
+        "beginnerTip": "第一次过美国海关？我们会一步步教你准备所有必需文件，确保顺利通关！"
+      },
       "sections": {
         "passport": {
-          "title": "护照与EVUS信息"
+          "title": "护照与EVUS信息",
+          "subtitle": "请准确填写护照和EVUS信息"
         },
         "personal": {
-          "title": "个人与联系方式"
+          "title": "个人与联系方式",
+          "subtitle": "联系方式和职业信息"
         },
         "funds": {
-          "title": "资金证明"
+          "title": "资金证明",
+          "subtitle": "停留期间的资金证明",
+          "introText": "移民局想确保您不会成为负担。只需证明您有足够钱支付旅行费用。",
+          "addCash": "添加现金",
+          "addCreditCard": "添加信用卡照片",
+          "addBankBalance": "添加银行余额",
+          "addBankCard": "添加银行卡",
+          "addDocument": "添加文件",
+          "empty": "尚未添加资金证明，请至少添加一项。",
+          "notProvided": "未提供",
+          "photoAttached": "已附加照片",
+          "fundTypes": {
+            "cash": "现金",
+            "credit_card": "信用卡",
+            "bank_card": "银行卡",
+            "bank_balance": "银行余额",
+            "document": "文件",
+            "other": "其他"
+          }
         },
         "travel": {
-          "title": "行程与住宿信息"
+          "title": "行程与住宿信息",
+          "subtitle": "航班和住宿详情",
+          "introText": "海关需要了解您的旅行计划",
+          "introIcon": "✈️",
+          "isTransitPassenger": "您是否为过境乘客？",
+          "transitYes": "是",
+          "transitNo": "否",
+          "hotelAddressPlaceholder": "请输入地址",
+          "provincePlaceholder": "请选择省份",
+          "districtPlaceholder": "请选择区/县",
+          "subDistrictPlaceholder": "请选择街道/镇",
+          "accommodationTypePlaceholder": "请选择您的住宿类型",
+          "accommodationTypeModalTitle": "选择住宿类型"
         }
       },
       "fields": {
@@ -990,6 +1665,40 @@
         "hotelContactNumber": "住宿联系电话（可选）",
         "flightTicketPhoto": "机票截图",
         "hotelReservationPhoto": "酒店/住宿预订单"
+      },
+      "fieldHelp": {
+        "surname": "请输入护照上的姓氏",
+        "middleName": "如有中间名，请输入",
+        "givenName": "请输入护照上的名字",
+        "passportNo": "请输入您的护照号码",
+        "nationality": "请选择您的国籍",
+        "dob": "请选择您的出生日期",
+        "expiryDate": "请选择您的护照有效期",
+        "sex": "请选择您的性别",
+        "visaNumber": "如有签证号码，请输入",
+        "occupation": "请输入您的职业",
+        "cityOfResidence": "请输入您的居住城市",
+        "countryOfResidence": "请选择您的居住国家",
+        "phoneCode": "请选择您的电话区号",
+        "phoneNumber": "请输入您的电话号码",
+        "email": "请输入您的电子邮箱",
+        "travelPurpose": "请选择您的访问目的",
+        "arrivalCity": "请输入您的入境口岸或抵达城市（例如：LAX、JFK）",
+        "arrivalFlightNumber": "请输入您的入境航班号",
+        "arrivalDate": "请选择您的入境日期",
+        "departureFlightNumber": "请输入您的离境航班号（可选）",
+        "departureDate": "请选择您的离境日期（可选）",
+        "lengthOfStay": "CBP常会询问预计停留天数，可提前准备答案",
+        "accommodationType": "请选择您的住宿类型",
+        "state": "请选择住宿所在州",
+        "address": "CBP可能要求提供具体地址，建议提前准备",
+        "hotelContactNumber": "请输入住宿联系电话（可选）"
+      },
+      "accommodationTypes": {
+        "HOTEL": "酒店 / 公寓",
+        "FRIEND_FAMILY": "朋友或亲戚家",
+        "RENTAL": "短租 / Airbnb",
+        "OTHER": "其他"
       },
       "continue": "继续"
     },
@@ -1033,9 +1742,36 @@
       "lengthOfStay": {
         "range": "停留天数需在 1-180 天之间。"
       }
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "完成必填项",
+        "almostDone": "快完成了",
+        "ready": "继续",
+        "default": "继续"
+      }
+    },
+    "occupations": {
+      "SOFTWARE_ENGINEER": "软件工程师",
+      "STUDENT": "学生",
+      "TEACHER": "教师",
+      "DOCTOR": "医生",
+      "ACCOUNTANT": "会计师",
+      "SALES_MANAGER": "销售经理",
+      "RETIRED": "退休",
+      "ENGINEER": "工程师",
+      "CIVIL_SERVANT": "公务员",
+      "LAWYER": "律师",
+      "NURSE": "护士",
+      "FREELANCER": "自由职业者",
+      "BUSINESS_OWNER": "企业主",
+      "HOMEMAKER": "家庭主妇",
+      "DESIGNER": "设计师",
+      "OTHER": "其他"
     }
   },
-  "singapore": {
+  "sg": {
+    "name": "新加坡",
     "info": {
       "headerTitle": "新加坡入境信息",
       "title": "新加坡入境指南",
@@ -1143,30 +1879,84 @@
         },
         "subtitle": {
           "ready": "在入境前3天内提交 SG Arrival Card，确保顺利通关。",
-          "almost": "还差 {{remainingPercent}}%，完成后即可一键提交 SGAC。",
+          "almost": "还差 {{remaining}}%，完成后即可一键提交 SGAC。",
           "start": "填写护照、行程与住宿信息以解锁 SGAC 提交。"
-        }
+        },
+        "label": "准备进度"
       },
       "submissionWindow": "SG Arrival Card 需在抵达前3天内按新加坡时间提交。",
-      "title": "新加坡入境准备"
+      "title": "新加坡入境准备",
+      "countdown": {
+        "title": "提交倒计时",
+        "subtitle": "提交窗口已开启，请在结束前完成提交。",
+        "time": "剩余 {{days}}天 {{hours}}小时 {{minutes}}分钟 {{seconds}}秒",
+        "arrival": "抵达日期 {{date}}",
+        "days": "距离抵达还有 {{days}} 天"
+      },
+      "actions": {
+        "startEntryGuide": "开始入境指引",
+        "submit": "提交 SG Arrival Card",
+        "submitSubtitle": "准备完成！现在可以提交新加坡入境卡了",
+        "edit": "编辑旅行信息",
+        "editSubtitle": "提交前请检查或更新任何信息",
+        "entryGuide": "入境指引",
+        "entryGuideSubtitle": "查看纸质入境卡与海关申报步骤",
+        "previewPack": "预览入境包",
+        "previewPackSubtitle": "查看已经准备好的资料",
+        "editThai": "编辑旅行信息",
+        "editThaiSubtitle": "如需修改，返回编辑",
+        "help": {
+          "title": "寻求帮助",
+          "message": "你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档",
+          "share": "截图分享",
+          "contact": "联系客服",
+          "callout": "寻求帮助",
+          "calloutSubtitle": "遇到问题？点我获取协助"
+        },
+        "incomplete": {
+          "title": "需要更多信息",
+          "message": "提交前请至少完成 85% 的信息。"
+        },
+        "success": {
+          "title": "准备完成",
+          "message": "您的新加坡入境信息已完成。"
+        },
+        "continue": "继续编辑"
+      }
+    },
+    "navigation": {
+      "submitButton": {
+        "incomplete": "完成必填项",
+        "almostDone": "快完成了",
+        "ready": "继续",
+        "default": "继续"
+      }
     }
   },
-  "malaysia": {
+  "my": {
     "name": "马来西亚",
     "entryFlow": {
-      "title": "美国入境准备",
-      "submissionWindow": "美国入境没有固定提交窗口，但建议在出发前再次核对 EVUS、航班与住宿信息。",
+      "title": "马来西亚入境准备",
+      "submissionWindow": "MDAC必须在入境前3天内提交。请在倒计时结束前完成提交。",
       "progress": {
         "headline": {
-          "ready": "美国行程准备就绪！🇺🇸",
-          "almost": "进度很棒，再补充一点！",
-          "start": "开始整理美国入境资料吧"
+          "ready": "马来西亚准备就绪！🌴",
+          "almost": "几乎完成了！",
+          "start": "让我们开始吧！"
         },
         "subtitle": {
-          "ready": "护照、EVUS、资金与住宿资料齐全，可从容面对 CBP 问询。",
-          "almost": "还差 {{remaining}}%，补齐后就能安心入境。",
-          "start": "填写护照、行程与住宿信息，快速生成海关申报资料。"
-        }
+          "ready": "所有信息完整",
+          "almost": "继续填写您的信息以使旅程更顺利",
+          "start": "继续填写您的信息以使旅程更顺利"
+        },
+        "label": "准备进度"
+      },
+      "countdown": {
+        "title": "提交倒计时",
+        "subtitle": "提交窗口已开启，请在结束前完成提交。",
+        "time": "剩余 {{days}}天 {{hours}}小时 {{minutes}}分钟 {{seconds}}秒",
+        "arrival": "抵达日期 {{date}}",
+        "days": "距离抵达还有 {{days}} 天"
       },
       "status": {
         "ready": {
@@ -1181,6 +1971,36 @@
           "title": "继续完善信息",
           "subtitle": "完成关键资料避免入境受阻。"
         }
+      },
+      "actions": {
+        "startEntryGuide": "开始入境指引",
+        "submit": "提交 MDAC",
+        "submitSubtitle": "准备完成！现在可以提交马来西亚入境卡了",
+        "edit": "编辑旅行信息",
+        "editSubtitle": "提交前请检查或更新任何信息",
+        "entryGuide": "入境指引",
+        "entryGuideSubtitle": "查看纸质入境卡与海关申报步骤",
+        "previewPack": "预览入境包",
+        "previewPackSubtitle": "查看已经准备好的资料",
+        "editThai": "编辑旅行信息",
+        "editThaiSubtitle": "如需修改，返回编辑",
+        "help": {
+          "title": "寻求帮助",
+          "message": "你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档",
+          "share": "截图分享",
+          "contact": "联系客服",
+          "callout": "寻求帮助",
+          "calloutSubtitle": "遇到问题？点我获取协助"
+        },
+        "incomplete": {
+          "title": "需要更多信息",
+          "message": "提交前请至少完成 85% 的信息。"
+        },
+        "success": {
+          "title": "准备完成",
+          "message": "您的马来西亚入境信息已完成。"
+        },
+        "continue": "继续编辑"
       }
     },
     "progressiveEntryFlow": {
@@ -1192,19 +2012,69 @@
       }
     },
     "travelInfo": {
+      "hero": {
+        "title": "马来西亚入境准备指南",
+        "subtitle": "3分钟完成MDAC，轻松入境！",
+        "valuePropositions": [
+          "3分钟完成",
+          "智能MDAC提醒",
+          "离线友好，安全存储"
+        ],
+        "beginnerTip": "MDAC必须在入境前3天内提交。我们在最佳时间提醒您。"
+      },
       "sections": {
         "passport": {
-          "title": "护照与EVUS信息"
+          "title": "护照信息",
+          "subtitle": "请准确填写护照信息"
         },
         "personal": {
-          "title": "个人与联系方式"
+          "title": "个人与联系方式",
+          "subtitle": "联系方式和职业"
         },
         "funds": {
-          "title": "资金证明"
+          "title": "资金证明",
+          "subtitle": "旅游资金",
+          "introText": "移民局想确保您不会成为负担。只需证明您有足够钱支付旅行费用。",
+          "addCash": "添加现金",
+          "addCreditCard": "添加信用卡照片",
+          "addBankBalance": "添加银行余额",
+          "addBankCard": "添加银行卡",
+          "addDocument": "添加文件",
+          "empty": "尚未添加资金证明，请至少添加一项。",
+          "notProvided": "未提供",
+          "photoAttached": "已附加照片",
+          "fundTypes": {
+            "cash": "现金",
+            "credit_card": "信用卡",
+            "bank_card": "银行卡",
+            "bank_balance": "银行余额",
+            "document": "文件",
+            "other": "其他"
+          }
         },
         "travel": {
-          "title": "行程与住宿信息"
+          "title": "行程与住宿信息",
+          "subtitle": "航班和住宿信息",
+          "introText": "海关需要了解您的旅行计划",
+          "introIcon": "✈️",
+          "isTransitPassenger": "您是否为过境乘客？",
+          "transitYes": "是",
+          "transitNo": "否",
+          "hotelAddressPlaceholder": "请输入地址",
+          "provincePlaceholder": "请选择省份",
+          "districtPlaceholder": "请选择区/县",
+          "subDistrictPlaceholder": "请选择街道/镇",
+          "accommodationTypePlaceholder": "请选择您的住宿类型",
+          "accommodationTypeModalTitle": "选择住宿类型"
         }
+      },
+      "buttonLabels": {
+        "incomplete": "完成必填项",
+        "almostDone": "快完成了",
+        "ready": "继续"
+      },
+      "validation": {
+        "arrivalDateWithinWindow": "抵达日期必须在未来30天内才能符合MDAC提交时间窗口。"
       },
       "fields": {
         "surname": "姓（拼音大写）",
@@ -1237,6 +2107,34 @@
         "hotelContactNumber": "住宿联系电话（可选）",
         "flightTicketPhoto": "机票截图",
         "hotelReservationPhoto": "酒店/住宿预订单"
+      },
+      "fieldHelp": {
+        "surname": "请输入护照上的姓氏",
+        "middleName": "如有中间名，请输入",
+        "givenName": "请输入护照上的名字",
+        "passportNo": "请输入您的护照号码",
+        "nationality": "请选择您的国籍",
+        "dob": "请选择您的出生日期",
+        "expiryDate": "请选择您的护照有效期",
+        "sex": "请选择您的性别",
+        "visaNumber": "如有签证号码，请输入",
+        "occupation": "请输入您的职业",
+        "cityOfResidence": "请输入您的居住城市",
+        "countryOfResidence": "请选择您的居住国家",
+        "phoneCode": "请选择您的电话区号",
+        "phoneNumber": "请输入您的电话号码",
+        "email": "请输入您的电子邮箱",
+        "travelPurpose": "请选择您的访问目的",
+        "recentStayCountry": "请选择您最近访问过的国家",
+        "boardingCountry": "请选择您登机的国家",
+        "arrivalFlightNumber": "请输入您的入境航班号",
+        "arrivalDate": "请选择您的入境日期",
+        "departureFlightNumber": "请输入您的离境航班号",
+        "departureDate": "请选择您的离境日期",
+        "accommodationType": "请选择您的住宿类型",
+        "province": "请选择州",
+        "district": "请选择区",
+        "hotelAddress": "请输入完整地址"
       },
       "continue": "继续"
     },
@@ -1324,6 +2222,74 @@
       "lengthOfStay": {
         "range": "停留天数需在 1-180 天之间。"
       }
+    },
+    "entryPack": {
+      "preview": {
+        "actions": {
+          "editInfo": "编辑信息",
+          "viewGuide": "MDAC 指南",
+          "submitMdac": "提交 MDAC"
+        },
+        "completion": {
+          "title": "准备提交 MDAC！",
+          "subtitle": "马来西亚入境资料已完成，请在抵达前3天内提交 MDAC。"
+        },
+        "validation": {
+          "title": "请先完成必填信息",
+          "message": "提交 MDAC 前请补齐所有必填字段。"
+        },
+        "documents": {
+          "title": "马来西亚数字入境卡（MDAC）",
+          "subtitle": "这些信息会以数字方式提交给马来西亚移民局。"
+        }
+      }
+    },
+    "selection": {
+      "headerTitle": "选择你的MDAC提交方式",
+      "headerSubtitle": "推荐使用智能引导模式，双语提示并自动保存PIN。",
+      "recommendedBadge": "精选推荐",
+      "smartFlow": {
+        "title": "智能引导模式",
+        "subtitle": "全程一步步提示，信息可从入境包自动填写。",
+        "highlights": [
+          {
+            "title": "平均用时",
+            "value": "约3分钟"
+          },
+          {
+            "title": "提醒覆盖",
+            "value": "24小时"
+          },
+          {
+            "title": "PIN管理",
+            "value": "自动保存"
+          }
+        ],
+        "features": [
+          "入境包资料一键复用，减少重复输入",
+          "3天提交窗口倒计时提醒 + WhatsApp风格推送",
+          "离线也能查看PIN，提供中英双语操作提示"
+        ],
+        "cta": "使用智能模式"
+      },
+      "webFlow": {
+        "title": "官网MDAC表单",
+        "subtitle": "在移民局网站上手动填写。",
+        "features": [
+          "所有字段需要自己输入并逐一核对",
+          "需自行按马来西亚时间计算3天提交窗口",
+          "提交后邮件PIN需要自行保存，以便入境查验"
+        ],
+        "cta": "前往网页版"
+      },
+      "notes": {
+        "title": "选择前请注意",
+        "items": [
+          "MDAC仅在抵达前3天内开放提交（马来西亚时间）。",
+          "智能模式会备份提交凭证与PIN，入境查验时可快速调出。",
+          "家庭同行可在一个入境包中集中管理所有成员。"
+        ]
+      }
     }
   },
   "entryPackPreview": {
@@ -1348,7 +2314,8 @@
       ]
     }
   },
-  "taiwan": {
+  "tw": {
+    "name": "台湾",
     "info": {
       "headerTitle": "台湾入境信息",
       "title": "台湾入境指南",
@@ -1428,7 +2395,122 @@
       "startButton": "开始填写",
       "continueButton": "繼續前往行程資訊"
     },
+    "travelInfo": {
+      "hero": {
+        "title": "台湾入境信息中心",
+        "subtitle": "一次填妥护照、行程与住宿，安心踏上福尔摩沙",
+        "valuePropositions": {
+          "0": "入台证、入境卡一次搞定",
+          "1": "提醒入境卡3日内完成",
+          "2": "信息离线保存、安全无虞"
+        },
+        "beginnerTip": "温馨提醒：抵达前3天内完成线上入境卡，我们会在最佳时间提醒您。"
+      },
+      "sections": {
+        "passport": {
+          "title": "护照信息",
+          "subtitle": "请准确填写护照信息"
+        },
+        "personal": {
+          "title": "个人信息",
+          "subtitle": "联系方式和个人信息"
+        },
+        "funds": {
+          "title": "资金证明",
+          "subtitle": "停留期间的资金证明",
+          "introText": "移民局想确保您不会成为负担。只需证明您有足够钱支付旅行费用。",
+          "addCash": "添加现金",
+          "addCreditCard": "添加信用卡照片",
+          "addBankBalance": "添加银行余额",
+          "addBankCard": "添加银行卡",
+          "addDocument": "添加文件",
+          "empty": "尚未添加资金证明，请至少添加一项。",
+          "notProvided": "未提供",
+          "photoAttached": "已附加照片",
+          "fundTypes": {
+            "cash": "现金",
+            "credit_card": "信用卡",
+            "bank_card": "银行卡",
+            "bank_balance": "银行余额",
+            "document": "文件",
+            "other": "其他"
+          }
+        },
+        "travel": {
+          "title": "旅行信息",
+          "subtitle": "航班和住宿详情",
+          "introText": "海关需要了解您的旅行计划",
+          "introIcon": "✈️",
+          "isTransitPassenger": "您是否为过境乘客？",
+          "transitYes": "是",
+          "transitNo": "否",
+          "hotelAddressPlaceholder": "请输入地址",
+          "provincePlaceholder": "请选择省份",
+          "districtPlaceholder": "请选择区/县",
+          "subDistrictPlaceholder": "请选择街道/镇",
+          "accommodationTypePlaceholder": "请选择您的住宿类型",
+          "accommodationTypeModalTitle": "选择住宿类型"
+        }
+      },
+      "fields": {
+        "surname": "姓",
+        "middleName": "中间名",
+        "givenName": "名",
+        "passportNo": "护照号码",
+        "nationality": "国籍",
+        "dob": "出生日期",
+        "expiryDate": "护照有效期",
+        "sex": "性别",
+        "visaNumber": "签证号码",
+        "occupation": "职业",
+        "cityOfResidence": "居住城市",
+        "countryOfResidence": "居住国家",
+        "phoneCode": "电话区号",
+        "phoneNumber": "电话号码",
+        "email": "电子邮箱",
+        "travelPurpose": "访问目的",
+        "arrivalFlightNumber": "抵达航班号",
+        "arrivalDate": "抵达日期",
+        "stayDuration": "停留天数",
+        "accommodationType": "住宿类型",
+        "city": "城市",
+        "hotelAddress": "住宿地址",
+        "contactNumber": "联系电话"
+      },
+      "fieldHelp": {
+        "surname": "请输入护照上的姓氏",
+        "middleName": "如有中间名，请输入",
+        "givenName": "请输入护照上的名字",
+        "passportNo": "请输入您的护照号码",
+        "nationality": "请选择您的国籍",
+        "dob": "请选择您的出生日期",
+        "expiryDate": "请选择您的护照有效期",
+        "sex": "请选择您的性别",
+        "visaNumber": "如有签证号码，请输入",
+        "occupation": "请输入您的职业",
+        "cityOfResidence": "请输入您的居住城市",
+        "countryOfResidence": "请选择您的居住国家",
+        "phoneCode": "请选择您的电话区号",
+        "phoneNumber": "请输入您的电话号码",
+        "email": "请输入您的电子邮箱",
+        "travelPurpose": "请选择您的访问目的",
+        "arrivalFlightNumber": "请输入您的入境航班号",
+        "arrivalDate": "请选择您的入境日期",
+        "stayDuration": "请输入您计划停留的天数",
+        "accommodationType": "请选择您的住宿类型",
+        "city": "请选择城市",
+        "hotelAddress": "请输入完整地址",
+        "contactNumber": "请输入联系电话"
+      },
+      "buttonLabels": {
+        "incomplete": "继续补齐必填信息",
+        "almostDone": "快完成了，继续！",
+        "ready": "前往入境准备"
+      },
+      "continue": "继续"
+    },
     "entryFlow": {
+      "title": "台湾入境准备",
       "status": {
         "ready": {
           "title": "準備提交臺灣入境卡",
@@ -1453,12 +2535,55 @@
           "ready": "請於抵達前3天內提交線上入境卡，確保順利通關。",
           "almost": "還差 {{remainingPercent}}%，完成後即可快速提交入境卡。",
           "start": "填寫護照、聯絡方式與行程資訊以解鎖入境卡助手。"
-        }
+        },
+        "label": "準備進度"
+      },
+      "countdown": {
+        "title": "提交倒數",
+        "subtitle": "請在抵達前3天內完成臺灣線上入境卡。",
+        "time": "剩餘 {{days}} 天 {{hours}} 小時",
+        "arrival": "抵達日：{{date}}",
+        "days": "距離抵達還有 {{days}} 天"
+      },
+      "actions": {
+        "startEntryGuide": "啟動引導模式",
+        "entryGuideSubtitle": "一步步帶你完成臺灣線上入境卡",
+        "submit": "提交入境卡",
+        "submitSubtitle": "開啟臺灣線上入境卡官方網站",
+        "edit": "編輯旅行資訊",
+        "editSubtitle": "更新護照、聯絡方式或行程",
+        "previewPack": "預覽入境資料包",
+        "previewPackSubtitle": "一次檢視所有文件與重點答案",
+        "entryGuide": "入境指引",
+        "editThai": "編輯資料",
+        "editThaiSubtitle": "回到表單補充或修改內容",
+        "help": {
+          "title": "需要協助？",
+          "message": "若畫面異常，可截圖分享或直接聯絡客服。",
+          "share": "分享截圖",
+          "contact": "聯絡客服",
+          "callout": "尋求協助",
+          "calloutSubtitle": "入境卡看不懂？點我獲得幫助"
+        },
+        "incomplete": {
+          "title": "資訊尚未完整",
+          "message": "提交前請至少完成 80% 的必填資訊。"
+        },
+        "success": {
+          "title": "可以提交囉",
+          "message": "資訊已完整，記得在抵達前3天內提交。"
+        },
+        "continue": "繼續編輯"
+      },
+      "completionCard": {
+        "title": "完成進度",
+        "summary": "已完成 {{completedCategories}} / {{totalCategories}} 個區塊"
       },
       "submissionWindow": "臺灣線上入境卡需在抵達前3天內（臺北時間）提交。"
     }
   },
-  "vietnam": {
+  "vn": {
+    "name": "越南",
     "entryFlow": {
       "title": "越南入境准备",
       "status": {
@@ -1487,6 +2612,33 @@
           "start": "继续填写信息，让旅程更顺利。"
         },
         "label": "准备进度"
+      },
+      "countdown": {
+        "title": "提交倒计时",
+        "subtitle": "请在抵达前完成剩余准备。",
+        "time": "剩余 {{days}}天 {{hours}}小时 {{minutes}}分钟 {{seconds}}秒",
+        "arrival": "抵达日期 {{date}}",
+        "days": "距离抵达还有 {{days}} 天"
+      },
+      "actions": {
+        "previewPack": "预览入境包",
+        "previewPackSubtitle": "查看已经准备好的资料",
+        "entryGuide": "入境手续指南",
+        "entryGuideSubtitle": "查看纸质入境卡与海关申报步骤",
+        "editThai": "编辑旅行信息",
+        "editThaiSubtitle": "如需修改，返回编辑",
+        "edit": "编辑旅行信息",
+        "editSubtitle": "提交前请检查或更新任何信息",
+        "help": {
+          "title": "寻求帮助",
+          "message": "你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档",
+          "share": "截图分享",
+          "contact": "联系客服",
+          "callout": "寻求帮助",
+          "calloutSubtitle": "遇到问题？点我获取协助"
+        },
+        "continue": "继续编辑",
+        "submit": "提交入境卡"
       }
     },
     "info": {
@@ -1573,12 +2725,95 @@
         },
         "funds": {
           "title": "资金证明",
-          "subtitle": "旅游资金和支付方式"
+          "subtitle": "旅游资金和支付方式",
+          "introText": "移民局想确保您不会成为负担。只需证明您有足够钱支付旅行费用。",
+          "addCash": "添加现金",
+          "addCreditCard": "添加信用卡照片",
+          "addBankBalance": "添加银行余额",
+          "addBankCard": "添加银行卡",
+          "addDocument": "添加文件",
+          "empty": "尚未添加资金证明，请至少添加一项。",
+          "notProvided": "未提供",
+          "photoAttached": "已附加照片",
+          "fundTypes": {
+            "cash": "现金",
+            "credit_card": "信用卡",
+            "bank_card": "银行卡",
+            "bank_balance": "银行余额",
+            "document": "文件",
+            "other": "其他"
+          }
         },
         "travel": {
           "title": "旅行详情",
-          "subtitle": "航班和住宿信息"
+          "subtitle": "航班和住宿信息",
+          "introText": "海关需要了解您的旅行计划",
+          "introIcon": "✈️",
+          "isTransitPassenger": "您是否为过境乘客？",
+          "transitYes": "是",
+          "transitNo": "否",
+          "hotelAddressPlaceholder": "请输入地址",
+          "provincePlaceholder": "请选择省份",
+          "districtPlaceholder": "请选择区/县",
+          "subDistrictPlaceholder": "请选择街道/镇"
         }
+      },
+      "fields": {
+        "surname": "姓",
+        "middleName": "中间名",
+        "givenName": "名",
+        "passportNo": "护照号码",
+        "nationality": "国籍",
+        "dob": "出生日期",
+        "expiryDate": "护照有效期",
+        "sex": "性别",
+        "visaNumber": "签证号码",
+        "occupation": "职业",
+        "cityOfResidence": "居住城市",
+        "countryOfResidence": "居住国家",
+        "phoneCode": "电话区号",
+        "phoneNumber": "电话号码",
+        "email": "电子邮箱",
+        "travelPurpose": "旅行目的",
+        "recentStayCountry": "最近30天访问的国家",
+        "boardingCountry": "登机国家",
+        "arrivalFlightNumber": "入境航班号",
+        "arrivalDate": "入境日期",
+        "departureFlightNumber": "离境航班号",
+        "departureDate": "离境日期",
+        "isTransitPassenger": "是否为过境乘客",
+        "accommodationType": "住宿类型",
+        "province": "省份",
+        "district": "区/县",
+        "hotelAddress": "住宿地址"
+      },
+      "fieldHelp": {
+        "surname": "请输入护照上的姓氏",
+        "middleName": "如有中间名，请输入",
+        "givenName": "请输入护照上的名字",
+        "passportNo": "请输入您的护照号码",
+        "nationality": "请选择您的国籍",
+        "dob": "请选择您的出生日期",
+        "expiryDate": "请选择您的护照有效期",
+        "sex": "请选择您的性别",
+        "visaNumber": "如有签证号码，请输入",
+        "occupation": "请输入您的职业",
+        "cityOfResidence": "请输入您的居住城市",
+        "countryOfResidence": "请选择您的居住国家",
+        "phoneCode": "请选择您的电话区号",
+        "phoneNumber": "请输入您的电话号码",
+        "email": "请输入您的电子邮箱",
+        "travelPurpose": "请选择您的访问目的",
+        "recentStayCountry": "请选择您最近访问过的国家",
+        "boardingCountry": "请选择您登机的国家",
+        "arrivalFlightNumber": "请输入您的入境航班号",
+        "arrivalDate": "请选择您的入境日期",
+        "departureFlightNumber": "请输入您的离境航班号",
+        "departureDate": "请选择您的离境日期",
+        "accommodationType": "请选择您的住宿类型",
+        "province": "请选择省份",
+        "district": "请选择区/县",
+        "hotelAddress": "请输入完整地址"
       }
     },
     "navigation": {
@@ -1590,135 +2825,186 @@
       }
     }
   },
-  "hongkong": {
+  "usa": {
+    "name": "美国",
     "info": {
-      "headerTitle": "香港入境信息",
-      "title": "香港入境指南",
-      "subtitle": "中国护照持有者免签7天",
+      "headerTitle": "美国入境信息",
+      "title": "美国入境指南",
+      "subtitle": "签证/ESTA 与入境要求",
       "sections": {
         "visa": {
-          "title": "✓ 好消息！免签政策",
+          "title": "签证/ESTA 要求",
           "items": [
-            "中国护照免签7天 - 说走就走！",
-            "• 无需提前申请签证",
-            "• 适用于旅游、商务、探亲",
-            "• 如需延期可通过香港入境处申请"
+            "确认是否符合 ESTA（免签计划）资格",
+            "• 否则需申请 B1/B2 或相应签证",
+            "• 确保护照有效且个人信息准确"
           ]
         },
         "onsite": {
-          "title": "⚠️ 入境须知",
+          "title": "入境须知",
           "items": [
-            "• 停留时间短：仅7天，必须按时离境或申请延期",
-            "• 入境检查严格：可能被详细询问来港目的、住宿、资金情况",
-            "• 证件需准备齐全：往返机票、酒店预订、资金证明均需准备",
-            "• 可能需健康申报：视当前健康政策而定",
-            "• e道限制：首次访港需走人工柜台，排队时间较长"
+            "• 海关可能询问访问目的与住宿详情",
+            "• 准备返程/续程机票与资金证明",
+            "• 准备好酒店地址与联系方式"
           ]
         },
         "appFeatures": {
-          "title": "✨ 入境通帮您轻松搞定",
+          "title": "入境通帮您轻松搞定",
           "items": [
-            "• 零焦虑：自动提醒7天期限，不用担心逾期",
-            "• 零失误：预填旅行信息，入境问询有准备",
-            "• 零操心：一次输入，所有证件整理妥当",
-            "• 证件清单：全面准备清单，不会遗漏任何项目"
+            "• 提醒 ESTA/签证步骤",
+            "• 预填旅行信息",
+            "• 整理文件便于快速查验"
           ]
         }
       },
-      "continueButton": "我已了解，继续确认材料"
-    },
-    "requirements": {
-      "headerTitle": "香港入境准备清单",
-      "introTitle": "以下是入境所需准备事项",
-      "introSubtitle": "这些信息可以先填着，慢慢补全",
-      "items": {
-        "validPassport": {
-          "title": "护照有效期",
-          "description": "护照有效期至少超过停留期1个月",
-          "details": "香港要求护照在预定停留期后仍有效。请检查护照有效期，必要时提前更换。"
-        },
-        "returnTicket": {
-          "title": "返程或续程机票",
-          "description": "已确认的离港机票预订",
-          "details": "入境处可能要求查看返程或续程机票证明。请准备好电子机票或预订确认单。"
-        },
-        "accommodation": {
-          "title": "住宿证明",
-          "description": "酒店预订或联系人信息",
-          "details": "携带酒店预订确认单，或香港联系人的详细信息，包括地址和电话号码。"
-        },
-        "sufficientFunds": {
-          "title": "充足资金",
-          "description": "现金、信用卡或银行流水",
-          "details": "可能需要证明有足够资金支付停留期间的费用。准备现金、信用卡或近期银行对账单。"
-        },
-        "healthDeclaration": {
-          "title": "健康申报",
-          "description": "根据现行健康规定填写（如有要求）",
-          "details": "检查是否需要健康申报或新冠相关文件。在抵达前完成所有必需的表格。"
-        }
-      },
-      "status": {
-        "info": {
-          "title": "随时开始填写",
-          "subtitle": "我们支持递进式的完成清单"
-        }
-      },
-      "startButton": "开始填写"
-    },
-    "travelInfo": {
-      "sections": {
-        "passport": {
-          "title": "护照信息"
-        },
-        "personal": {
-          "title": "个人信息"
-        },
-        "funds": {
-          "title": "资金证明"
-        },
-        "travel": {
-          "title": "旅行详情"
-        }
-      }
-    },
-    "navigation": {
-      "submitButton": {
-        "incomplete": "完成必填项",
-        "almostDone": "即将完成",
-        "ready": "继续到入境指南",
-        "default": "继续"
-      }
+      "continueButton": "我已了解，继续"
     },
     "entryFlow": {
-      "title": "香港入境准备",
-      "submissionWindow": "免签停留通常为7天。请跟踪您的离境计划。",
+      "title": "美国入境准备",
       "progress": {
         "headline": {
-          "ready": "准备好前往香港！🇭🇰",
-          "almost": "快完成了，继续加油！",
-          "start": "开始准备您的香港入境包"
+          "ready": "美国行程准备就绪！🇺🇸",
+          "almost": "快完成了！",
+          "start": "让我们开始吧！"
         },
         "subtitle": {
-          "ready": "护照、资金和住宿详情已完整。准备好接受检查。",
-          "almost": "还剩{{remaining}}%。完成高亮任务即可准备接受检查。",
-          "start": "填写护照、资金和旅行信息，轻松应对入境问询。"
+          "ready": "所有必填信息已完成",
+          "almost": "继续完善剩余字段",
+          "start": "填写护照、旅行与住宿详情"
         },
         "label": "准备进度"
       },
       "status": {
         "ready": {
           "title": "准备就绪",
-          "subtitle": "所有详情已准备好接受检查。"
+          "subtitle": "信息看起来完整"
         },
         "mostlyComplete": {
           "title": "即将完成",
-          "subtitle": "再补充一些细节即可完成。"
+          "subtitle": "还需补充少量信息"
         },
         "needsImprovement": {
-          "title": "继续完善",
-          "subtitle": "完成关键详情以避免入境延误。"
+          "title": "请完善信息",
+          "subtitle": "需要更多信息"
         }
+      },
+      "countdown": {
+        "title": "提交倒计时",
+        "subtitle": "请在抵达前完成剩余准备。",
+        "time": "剩余 {{days}}天 {{hours}}小时 {{minutes}}分钟 {{seconds}}秒",
+        "arrival": "抵达日期 {{date}}",
+        "days": "距离抵达还有 {{days}} 天"
+      },
+      "actions": {
+        "previewPack": "预览入境包",
+        "previewPackSubtitle": "查看已经准备好的资料",
+        "entryGuide": "入境手续指南",
+        "entryGuideSubtitle": "查看纸质入境卡与海关申报步骤",
+        "editThai": "编辑旅行信息",
+        "editThaiSubtitle": "如需修改，返回编辑",
+        "edit": "编辑旅行信息",
+        "editSubtitle": "提交前请检查或更新任何信息",
+        "help": {
+          "title": "寻求帮助",
+          "message": "你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档",
+          "share": "截图分享",
+          "contact": "联系客服",
+          "callout": "寻求帮助",
+          "calloutSubtitle": "遇到问题？点我获取协助"
+        },
+        "continue": "继续编辑",
+        "submit": "提交入境卡"
+      }
+    }
+  },
+  "ca": {
+    "info": {
+      "headerTitle": "加拿大入境信息",
+      "title": "加拿大入境指南",
+      "subtitle": "签证/eTA 与入境要求",
+      "sections": {
+        "visa": {
+          "title": "签证/eTA 要求",
+          "items": [
+            "确认是否符合 eTA 资格",
+            "• 否则需申请访问签证",
+            "• 确保护照有效且个人信息准确"
+          ]
+        },
+        "onsite": {
+          "title": "入境须知",
+          "items": [
+            "• 海关可能询问访问目的与住宿详情",
+            "• 准备资金证明与返程机票",
+            "• 准备好酒店地址与联系方式"
+          ]
+        },
+        "appFeatures": {
+          "title": "入境通帮您轻松搞定",
+          "items": [
+            "• 提醒 eTA/签证步骤",
+            "• 预填旅行信息",
+            "• 整理文件"
+          ]
+        }
+      },
+      "continueButton": "我已了解，继续"
+    },
+    "entryFlow": {
+      "title": "加拿大入境准备",
+      "progress": {
+        "headline": {
+          "ready": "加拿大行程准备就绪！🇨🇦",
+          "almost": "快完成了！",
+          "start": "让我们开始吧！"
+        },
+        "subtitle": {
+          "ready": "所有必填信息已完成",
+          "almost": "继续完善剩余字段",
+          "start": "填写护照、旅行与住宿详情"
+        },
+        "label": "准备进度"
+      },
+      "status": {
+        "ready": {
+          "title": "准备就绪",
+          "subtitle": "信息看起来完整"
+        },
+        "mostlyComplete": {
+          "title": "即将完成",
+          "subtitle": "还需补充少量信息"
+        },
+        "needsImprovement": {
+          "title": "请完善信息",
+          "subtitle": "需要更多信息"
+        }
+      },
+      "countdown": {
+        "title": "提交倒计时",
+        "subtitle": "请在抵达前完成剩余准备。",
+        "time": "剩余 {{days}}天 {{hours}}小时 {{minutes}}分钟 {{seconds}}秒",
+        "arrival": "抵达日期 {{date}}",
+        "days": "距离抵达还有 {{days}} 天"
+      },
+      "actions": {
+        "previewPack": "预览入境包",
+        "previewPackSubtitle": "查看已经准备好的资料",
+        "entryGuide": "入境手续指南",
+        "entryGuideSubtitle": "查看纸质入境卡与海关申报步骤",
+        "editThai": "编辑旅行信息",
+        "editThaiSubtitle": "如需修改，返回编辑",
+        "edit": "编辑旅行信息",
+        "editSubtitle": "提交前请检查或更新任何信息",
+        "help": {
+          "title": "寻求帮助",
+          "message": "你可以：\n\n📸 截图分享给亲友检查\n💬 向客服咨询问题\n📖 查看帮助文档",
+          "share": "截图分享",
+          "contact": "联系客服",
+          "callout": "寻求帮助",
+          "calloutSubtitle": "遇到问题？点我获取协助"
+        },
+        "continue": "继续编辑",
+        "submit": "提交入境卡"
       }
     }
   },
@@ -1798,6 +3084,41 @@
       "photoUpdatedMessage": "照片已成功更新。"
     }
   },
+  "devMode": {
+    "submissionInfo": "🔍 即将提交的信息：",
+    "personalInfo": "👤 个人信息：",
+    "name": "姓名",
+    "passportNo": "护照号",
+    "nationality": "国籍",
+    "gender": "性别",
+    "birthDate": "出生日期",
+    "travelInfo": "✈️ 旅行信息：",
+    "arrivalDate": "到达日期",
+    "flightNo": "航班号",
+    "countryBoarded": "出发国家",
+    "recentStayCountry": "最近停留国家",
+    "purpose": "旅行目的",
+    "accommodationInfo": "🏨 住宿信息：",
+    "accommodationType": "住宿类型",
+    "province": "省份",
+    "district": "区域",
+    "subDistrict": "子区域",
+    "address": "地址",
+    "contactInfo": "📞 联系信息：",
+    "email": "邮箱",
+    "phone": "电话",
+    "importantReminder": "⚠️ 重要提醒：",
+    "reminder1": "信息将直接提交给泰国移民局",
+    "reminder2": "提交后无法修改",
+    "reminder3": "多次提交可能被封禁",
+    "reminder4": "请确保与护照信息一致",
+    "confirmTitle": "🛑 确认提交",
+    "viewLogs": "📝 查看详细日志",
+    "confirmSubmit": "✅ 确认提交",
+    "notProvided": "未填写",
+    "tokenObtained": "已获取 ({{length}} 字符)",
+    "tokenNotObtained": "未获取"
+  },
   "common": {
     "ok": "确定",
     "back": "返回",
@@ -1805,11 +3126,33 @@
     "cancel": "取消",
     "reset": "重置",
     "error": "错误",
+    "yes": "是",
+    "no": "否",
     "locale": "zh",
     "continue": "继续",
+    "qrCode": "二维码",
+    "generatedBy": "由 BorderBuddy 生成",
+    "selectNationality": "请选择国籍",
+    "searchNationality": "搜索国籍...",
+    "selectOccupation": "请选择职业",
+    "searchOccupation": "搜索职业...",
+    "enterOccupation": "请输入您的职业",
+    "occupationExample": "例如：ACCOUNTANT, ENGINEER 等",
+    "occupationHelp": "请用英文填写您的职业",
+    "selectTravelPurpose": "请选择旅行目的",
+    "searchTravelPurpose": "搜索旅行目的...",
+    "enterTravelPurposeDetails": "请输入旅行目的详情",
+    "travelPurposeModalTitle": "选择旅行目的",
+    "notAvailable": "不适用",
     "buttons": {
       "continue": "继续"
     }
+  },
+  "customs": {
+    "yes": "是 ✓",
+    "no": "否",
+    "usa": "美国",
+    "otherCountry": "其他国家"
   },
   "notificationSettings": {
     "loading": "加载设置中...",
@@ -1952,20 +3295,310 @@
   "screenTitles": {
     "notificationSettings": "通知设置"
   },
-  "vn": {
-    "travelInfo": {
+  "entryGuide": {
+    "stepProgress": {
+      "title": "入境步骤进度",
+      "noSteps": "暂无步骤",
+      "noStepsDescription": "请检查配置文件是否正确提供步骤数据。"
+    },
+    "step": {
+      "required": "必做步骤",
+      "optional": "可选步骤",
+      "requiredLabel": "必做步骤",
+      "optionalLabel": "可选步骤"
+    },
+    "category": {
+      "preArrival": "出发前",
+      "preFlight": "登机前",
+      "inFlight": "飞机上",
+      "postLanding": "落地后",
+      "immigration": "移民局",
+      "baggage": "行李",
+      "customs": "海关",
+      "default": "步骤"
+    },
+    "navigation": {
+      "previous": "← 上一步",
+      "next": "下一步 →",
+      "complete": "完成指引 ✅"
+    },
+    "sections": {
+      "formFields": "📝 表格填写要点",
+      "warnings": "⚠️ 重要提醒",
+      "tips": "💡 实用技巧"
+    },
+    "entryPack": {
+      "openButton": "打开通关包 📋"
+    }
+  },
+  "thailand": {
+    "info": {
+      "headerTitle": "泰国入境信息",
+      "title": "泰国入境指南",
+      "subtitle": "中国护照持有者免签60天",
       "sections": {
-        "passport": {
-          "title": "护照信息"
+        "visa": {
+          "title": "✓ 好消息！免签政策延长",
+          "items": [
+            "自2024年3月1日起中泰互免签证，7月15日起延长至60天 - 说走就走！",
+            "• 无需提前申请签证",
+            "• 单次停留最长60天，可在泰国境内申请一次30天延期",
+            "• 适用于旅游、探亲、短期商务等非工作目的",
+            "• 新要求：必须提交TDAC数字入境卡（可在抵达前72小时内提交）"
+          ]
         },
-        "personal": {
-          "title": "个人信息"
+        "onsite": {
+          "title": "⚠️ 入境须知",
+          "items": [
+            "• TDAC提交时间：可在抵达前72小时内提交，但必须在抵达前完成",
+            "• 需要QR码：入境时必须出示TDAC QR码，找不到PDF会很麻烦",
+            "• 准确性要求高：护照、航班、住宿信息任何错误都可能影响入境",
+            "• 移民检查严格：文件不完整或回答不清楚可能触发二次检查",
+            "• Cloudflare验证：提交过程中可能遇到验证码挑战"
+          ]
+        },
+        "appFeatures": {
+          "title": "✨ 入境通帮您轻松搞定",
+          "items": [
+            "• 零焦虑：自动跟踪行程，在最佳时机提醒您",
+            "• 零失误：智能填写TDAC，信息准确无误",
+            "• 零操心：一次输入，我们管理整个流程",
+            "• QR码管理：自动保存TDAC QR码PDF，入境时快速显示"
+          ]
+        }
+      },
+      "continueButton": "我了解，继续确认要求"
+    },
+    "requirements": {
+      "headerTitle": "泰国入境检查清单",
+      "introTitle": "以下是入境所需准备事项",
+      "introSubtitle": "这些信息可以先填着，慢慢补全",
+      "items": {
+        "validPassport": {
+          "title": "有效护照",
+          "description": "护照有效期至少6个月",
+          "details": "您的护照必须在入境日期后至少还有6个月的有效期。"
+        },
+        "onwardTicket": {
+          "title": "返程或续程机票",
+          "description": "已确认的离境机票预订",
+          "details": "需提供确认的机票预订单，显示您将在授权停留期内离开泰国。"
+        },
+        "accommodation": {
+          "title": "住宿证明",
+          "description": "酒店预订或本地联系人信息",
+          "details": "提供酒店预订确认或泰国朋友/亲戚的详细联系信息，包括地址和电话号码。"
         },
         "funds": {
-          "title": "资金证明"
+          "title": "充足资金",
+          "description": "现金、信用卡或银行流水",
+          "details": "建议携带足够现金或出示信用卡/银行对账单，证明有足够资金支付停留期间的费用。"
+        },
+        "healthCheck": {
+          "title": "健康要求",
+          "description": "检查当前健康规定",
+          "details": "确认入境所需的任何健康要求或文件。在抵达前完成所有必需的健康申报。"
+        }
+      },
+      "status": {
+        "info": {
+          "title": "随时开始填写",
+          "subtitle": "我们支持递进式的完成清单"
+        }
+      },
+      "startButton": "开始填写"
+    },
+    "selection": {
+      "hybrid": {
+        "stage": {
+          "token": "请完成 Cloudflare 验证",
+          "instructions": "请在下方页面完成“我不是机器人”验证。"
+        }
+      }
+    },
+    "occupations": {
+      "SOFTWARE_ENGINEER": "软件工程师",
+      "STUDENT": "学生",
+      "TEACHER": "教师",
+      "DOCTOR": "医生",
+      "ACCOUNTANT": "会计师",
+      "SALES_MANAGER": "销售经理",
+      "RETIRED": "退休",
+      "ENGINEER": "工程师",
+      "CIVIL_SERVANT": "公务员",
+      "LAWYER": "律师",
+      "NURSE": "护士",
+      "FREELANCER": "自由职业者",
+      "BUSINESS_OWNER": "企业主",
+      "HOMEMAKER": "家庭主妇",
+      "DESIGNER": "设计师",
+      "OTHER": "其他"
+    }
+  },
+  "canada": {
+    "pikGuide": {
+      "headerTitle": "自助通关指南",
+      "title": "自助通关机操作指南",
+      "subtitle": "Primary Inspection Kiosk (PIK)",
+      "description": "加拿大边境的自助通关机很简单\n跟着这个指南一步步做就可以了",
+      "fontSizeLabel": "字体大小：",
+      "step": "第 {{number}} 步",
+      "stepImportant": "第 {{number}} 步 ⭐",
+      "importantBadge": "重要",
+      "step1": {
+        "title": "找到自助机器",
+        "description": "下飞机后，跟着 \"Arrivals\" 或 \"入境\" 的指示牌走\n\n进入入境大厅，找这种带大屏幕的机器\n\n通常有很多台排成一排，跟 ATM 取款机差不多大小"
+      },
+      "step2": {
+        "title": "选择中文",
+        "description": "屏幕上会显示语言选择\n\n用手指点击 \"中文\" 或 \"Chinese\"\n\n⚠️ 如果找不到中文，选择 \"English\" 也没关系\n后面的步骤都有图片提示"
+      },
+      "step3": {
+        "title": "扫描护照",
+        "description": "把护照翻到有照片的那一页（照片页）\n\n护照平放，照片朝下\n\n放到机器下方的扫描口（像复印机一样）\n\n听到 \"哔\" 一声，或者屏幕显示 \"✓\"，就扫描成功了"
+      },
+      "step3Tip": "小贴士：护照要放平整，不要弯曲\n如果扫描失败，重新放一次就好",
+      "step4": {
+        "title": "回答问题",
+        "description": "屏幕会显示几个问题\n\n每个问题下面有 \"是/YES\" 和 \"否/NO\" 两个按钮\n\n根据下面的答案，用手指点击对应的按钮："
+      },
+      "answersTitle": "📋 您的答案（照着点就行）",
+      "answerLabel": "点击：",
+      "step4Warning": "重要：一定要如实回答！\n如果回答 \"是\"，可能需要额外检查，但不会有麻烦",
+      "step5": {
+        "title": "取收据",
+        "description": "所有问题回答完后，机器会打印一张小纸条\n\n收据会从机器下方或侧面出来\n\n⚠️ 一定要拿好这张收据！\n\n等会要交给海关官员"
+      },
+      "step6": {
+        "title": "去人工柜台",
+        "description": "拿着护照和刚才打印的收据\n\n跟着人群排队，走到人工柜台\n\n把收据和护照一起交给海关官员\n\n官员可能会问几个简单问题：\n• 来加拿大做什么？（旅游）\n• 住在哪里？（酒店名字）\n• 停留多久？（几天）\n\n✅ 完成！欢迎来到加拿大"
+      },
+      "helpTitle": "如果不会操作怎么办？",
+      "helpOption1": {
+        "title": "找工作人员帮忙",
+        "description": "机器旁边通常有穿制服的工作人员\n对他们说：\"I need help\"\n他们会帮您操作"
+      },
+      "helpOption2": {
+        "title": "找中国旅客帮忙",
+        "description": "周围如果有中国旅客，可以请他们帮忙\n大家都很乐意帮助同胞"
+      },
+      "helpOption3": {
+        "title": "去人工柜台",
+        "description": "实在不会用机器，直接找人工柜台排队\n虽然慢一点，但一样可以入境\n把护照和手机上的表格给官员看就行"
+      },
+      "reassuranceTitle": "放心！不用紧张",
+      "reassuranceText": "• 加拿大边境官员都很友好，不会为难您\n\n• 很多机场有中文服务或中文翻译\n\n• 即使不会用机器，也可以走人工通道\n\n• 每年有几百万中国游客入境加拿大，都很顺利\n\n最重要的是：诚实回答问题，不要携带违禁品",
+      "phrasesTitle": "常用英文短语（给工作人员看）",
+      "phrases": {
+        "helpKiosk": {
+          "en": "I need help with the kiosk.",
+          "zh": "我需要帮助使用自助机。"
+        },
+        "canYouHelp": {
+          "en": "Can you help me?",
+          "zh": "你能帮我吗？"
+        },
+        "whereManualCounter": {
+          "en": "Where is the manual counter?",
+          "zh": "人工柜台在哪里？"
+        },
+        "noEnglish": {
+          "en": "I don't speak English.",
+          "zh": "我不会说英语。"
+        },
+        "chineseInterpreter": {
+          "en": "Do you have Chinese interpreter?",
+          "zh": "有中文翻译吗？"
+        }
+      },
+      "buttonViewInfo": "📋 查看我的信息",
+      "buttonCopyMode": "✍️ 抄写模式",
+      "customsQuestions": {
+        "currencyOverLimit": "携带现金或等值货币超过 $10,000 加元？",
+        "foodAnimals": "携带食品、植物、动物或相关产品？",
+        "visitedFarm": "近期访问过农场或接触过农场动物？",
+        "commercialGoods": "携带商业物品、样品或用于转售的商品？",
+        "firearms": "携带枪支或武器？",
+        "dutyFree": "携带的物品总价值超过免税额度？"
+      }
+    }
+  },
+  "entryPackDisplay": {
+    "my": {
+      "header": {
+        "title": "🇲🇾 入境资料包",
+        "subtitle": "提交给移民官的重要信息"
+      },
+      "tabs": {
+        "mdac": {
+          "label": "MDAC",
+          "labelSecondary": "数字入境卡"
+        },
+        "personal": {
+          "label": "个人信息",
+          "labelSecondary": "Peribadi"
         },
         "travel": {
-          "title": "旅行详情"
+          "label": "行程信息",
+          "labelSecondary": "Perjalanan"
+        },
+        "funds": {
+          "label": "资金证明",
+          "labelSecondary": "Kewangan"
+        }
+      },
+      "status": {
+        "notSubmittedTitle": "尚未提交 MDAC",
+        "notSubmittedDescription": "请在抵达前3天内完成 MDAC 提交",
+        "note": "仍可向移民官出示其他资料"
+      }
+    }
+  },
+  "china": {
+    "entryFlow": {
+      "title": "中国入境准备"
+    },
+    "travelInfo": {
+      "hero": {
+        "title": "中国入境准备指南",
+        "subtitle": "别担心，我们来帮你！",
+        "valuePropositions": {
+          "0": "3分钟完成",
+          "1": "100%隐私保护",
+          "2": "避免通关延误"
+        },
+        "beginnerTip": "第一次过中国海关？我们会一步步教你准备所有必需文件，确保顺利通关！"
+      },
+      "sections": {
+        "travel": {
+          "title": "行程信息",
+          "subtitle": "航班与住宿信息",
+          "provincePlaceholder": "请选择省份/直辖市",
+          "districtPlaceholder": "请选择城市/区县"
+        }
+      },
+      "fields": {
+        "province": {
+          "label": "省份/直辖市"
+        },
+        "district": {
+          "label": "城市/区县"
+        },
+        "hotelAddress": {
+          "label": "住宿地址",
+          "placeholder": "请输入地址"
+        },
+        "arrivalFlightNumber": {
+          "label": "入境航班号"
+        },
+        "arrivalDate": {
+          "label": "入境日期"
+        },
+        "departureDate": {
+          "label": "离境日期"
+        },
+        "accommodationType": {
+          "label": "住宿类型"
         }
       }
     }

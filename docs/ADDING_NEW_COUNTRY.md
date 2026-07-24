@@ -9,6 +9,7 @@ This guide walks you through adding a new country destination to TripSecretary, 
 ## Overview
 
 The TripSecretary app uses a **modular country configuration system** that separates:
+
 - **Generic infrastructure** (utilities, validation engine, data models) - reusable across countries
 - **Country-specific configuration** (metadata, rules, mappings) - isolated per country
 - **Country-specific services** (API integrations, submission logic) - when needed
@@ -17,9 +18,18 @@ The TripSecretary app uses a **modular country configuration system** that separ
 
 ---
 
+Before starting:
+
+1. ✅ Review Thailand implementation: `app/config/destinations/thailand/`
+2. ✅ Understand the destination config system: `app/config/destinations/index.ts`
+3. ✅ Familiarize yourself with utilities: `app/utils/`
+4. ✅ Check if the country has a digital arrival card system (affects complexity)
+5. ✅ **TypeScript Setup**: Ensure you're familiar with TypeScript interfaces and types used in the project
+
 ## Prerequisites
 
 Before starting:
+
 1. ✅ Review Thailand implementation: `app/config/destinations/thailand/`
 2. ✅ Understand the destination config system: `app/config/destinations/index.js`
 3. ✅ Familiarize yourself with utilities: `app/utils/`
@@ -35,26 +45,26 @@ Before starting:
 
 Create the following directory structure:
 
-```
+````
 app/config/destinations/<country-code>/
 ├── index.js                    # Main country config aggregator
 ├── metadata.js                 # Country metadata (ID, name, currency, etc.)
 ├── financialInfo.js           # ATM fees, cash recommendations, banks
 ├── emergencyInfo.js           # Emergency contacts, embassy info
 ├── accommodationTypes.js      # Accommodation type mappings (if needed)
-├── travelPurposes.js         # Travel purpose mappings (if needed)
-└── validationRules.js        # Country-specific validation rules
-```
-
-**Example: Vietnam (`vn`)**
-
-```javascript
-// app/config/destinations/vietnam/index.js
+```typescript
+// app/config/destinations/vietnam/index.ts
 import metadata from './metadata';
 import financialInfo from './financialInfo';
 import emergencyInfo from './emergencyInfo';
 
-const vietnamConfig = {
+interface VietnamConfig extends CountryConfig {
+  // TypeScript interface for Vietnam-specific config
+  emergency: VietnamEmergencyInfo;
+  financial: VietnamFinancialInfo;
+}
+
+const vietnamConfig: VietnamConfig = {
   ...metadata,
   financial: financialInfo,
   emergency: emergencyInfo,
@@ -69,6 +79,33 @@ const vietnamConfig = {
 };
 
 export default vietnamConfig;
+├── travelPurposes.js         # Travel purpose mappings (if needed)
+└── validationRules.js        # Country-specific validation rules
+````
+
+**Example: Vietnam (`vn`)**
+
+```javascript
+// app/config/destinations/vietnam/index.js
+import metadata from "./metadata";
+import financialInfo from "./financialInfo";
+import emergencyInfo from "./emergencyInfo";
+
+const vietnamConfig = {
+  ...metadata,
+  financial: financialInfo,
+  emergency: emergencyInfo,
+
+  // Feature flags
+  features: {
+    digitalArrivalCard: false, // Vietnam doesn't have one yet
+    entryGuide: true,
+    multiLanguageSupport: true,
+    offlineMode: true,
+  },
+};
+
+export default vietnamConfig;
 ```
 
 ---
@@ -79,9 +116,46 @@ export default vietnamConfig;
 
 Create `metadata.js` with essential country information:
 
-```javascript
+````javascript
 // app/config/destinations/vietnam/metadata.js
 export const VIETNAM_METADATA = {
+  // Identifiers
+  id: 'vn',
+**Key Fields:**
+- `id`: **2-letter lowercase code** (ISO 3166-1 alpha-2) - used everywhere
+- `code`: 3-letter uppercase code (ISO 3166-1 alpha-3)
+- `currency.code`: ISO 4217 currency code
+- `timezone`: IANA timezone identifier
+- `enabled`: Set to `false` during development
+
+### TypeScript Metadata Example
+
+```typescript
+// app/config/destinations/vietnam/metadata.ts
+export interface CountryMetadata {
+  id: string;
+  code: string;
+  name: string;
+  nameZh: string;
+  nameTh?: string;
+  flag: string;
+  emoji: string;
+  currency: {
+    code: string;
+    symbol: string;
+    name: string;
+    nameZh: string;
+    exchangeRateUSD: number;
+  };
+  timezone: string;
+  utcOffset: string;
+  capital: string;
+  majorCities: string[];
+  enabled: boolean;
+  beta?: boolean;
+}
+
+export const VIETNAM_METADATA: CountryMetadata = {
   // Identifiers
   id: 'vn',
   code: 'VNM',
@@ -116,9 +190,42 @@ export const VIETNAM_METADATA = {
 };
 
 export default VIETNAM_METADATA;
-```
+  code: 'VNM',
+  name: 'Vietnam',
+  nameZh: '越南',
+  nameTh: 'เวียดนาม',
+
+  // Display
+  flag: '🇻🇳',
+  emoji: '🇻🇳',
+
+  // Currency
+  currency: {
+    code: 'VND',
+    symbol: '₫',
+    name: 'Vietnamese Dong',
+    nameZh: '越南盾',
+    exchangeRateUSD: 24000  // Approximate, update regularly
+  },
+
+  // Time
+  timezone: 'Asia/Ho_Chi_Minh',
+  utcOffset: '+07:00',
+
+  // Geography
+  capital: 'Hanoi',
+  majorCities: ['Ho Chi Minh City', 'Hanoi', 'Da Nang', 'Nha Trang'],
+
+  // Status
+  enabled: true,
+  beta: false
+};
+
+export default VIETNAM_METADATA;
+````
 
 **Key Fields:**
+
 - `id`: **2-letter lowercase code** (ISO 3166-1 alpha-2) - used everywhere
 - `code`: 3-letter uppercase code (ISO 3166-1 alpha-3)
 - `currency.code`: ISO 4217 currency code
@@ -140,19 +247,20 @@ export const VIETNAM_FINANCIAL_INFO = {
   atm: {
     fee: {
       amount: 50000,
-      currency: 'VND',
-      description: 'Most ATMs charge 50,000 VND (~$2) per withdrawal'
+      currency: "VND",
+      description: "Most ATMs charge 50,000 VND (~$2) per withdrawal",
     },
     dailyLimit: {
       amount: 10000000,
-      currency: 'VND',
-      description: 'Most ATMs limit withdrawals to 10 million VND per transaction'
+      currency: "VND",
+      description:
+        "Most ATMs limit withdrawals to 10 million VND per transaction",
     },
     recommendations: [
-      'Use Vietcombank or BIDV ATMs for lower fees',
-      'Withdraw larger amounts to minimize ATM fees',
-      'Many ATMs accept UnionPay, Visa, and Mastercard'
-    ]
+      "Use Vietcombank or BIDV ATMs for lower fees",
+      "Withdraw larger amounts to minimize ATM fees",
+      "Many ATMs accept UnionPay, Visa, and Mastercard",
+    ],
   },
 
   // Cash Recommendations
@@ -160,41 +268,42 @@ export const VIETNAM_FINANCIAL_INFO = {
     recommended: {
       min: 2000000,
       max: 5000000,
-      currency: 'VND',
-      description: 'Carry 2-5 million VND for daily expenses'
+      currency: "VND",
+      description: "Carry 2-5 million VND for daily expenses",
     },
-    acceptance: 'Cash is king in Vietnam. Many small shops do not accept cards.',
+    acceptance:
+      "Cash is king in Vietnam. Many small shops do not accept cards.",
     tips: [
-      'Break large bills at hotels or big stores',
-      'Keep small denominations (10k, 20k, 50k) for taxis and street food',
-      'Mobile payment (MoMo, ZaloPay) is popular in cities'
-    ]
+      "Break large bills at hotels or big stores",
+      "Keep small denominations (10k, 20k, 50k) for taxis and street food",
+      "Mobile payment (MoMo, ZaloPay) is popular in cities",
+    ],
   },
 
   // Banking
   banking: {
     majorBanks: [
-      { name: 'Vietcombank', nameZh: '越南外贸银行' },
-      { name: 'BIDV', nameZh: '越南投资发展银行' },
-      { name: 'Techcombank', nameZh: '越南技术商业银行' }
+      { name: "Vietcombank", nameZh: "越南外贸银行" },
+      { name: "BIDV", nameZh: "越南投资发展银行" },
+      { name: "Techcombank", nameZh: "越南技术商业银行" },
     ],
-    creditCardAcceptance: 'Widely accepted in hotels and major restaurants',
-    mobilePayment: ['MoMo', 'ZaloPay', 'ViettelPay']
+    creditCardAcceptance: "Widely accepted in hotels and major restaurants",
+    mobilePayment: ["MoMo", "ZaloPay", "ViettelPay"],
   },
 
   // Exchange
   exchange: {
     bestPlaces: [
-      'Banks offer official rates with receipts',
-      'Gold shops in District 1 (HCMC) often have better rates',
-      'Avoid airport exchange counters (poor rates)'
+      "Banks offer official rates with receipts",
+      "Gold shops in District 1 (HCMC) often have better rates",
+      "Avoid airport exchange counters (poor rates)",
     ],
     tips: [
-      'Bring USD for best exchange rates',
-      'Negotiate rates at gold shops',
-      'Keep exchange receipts for reconversion'
-    ]
-  }
+      "Bring USD for best exchange rates",
+      "Negotiate rates at gold shops",
+      "Keep exchange receipts for reconversion",
+    ],
+  },
 };
 
 export default VIETNAM_FINANCIAL_INFO;
@@ -213,77 +322,77 @@ Create `emergencyInfo.js` with critical contacts:
 export const VIETNAM_EMERGENCY_INFO = {
   // Emergency Numbers
   emergency: {
-    police: '113',
-    ambulance: '115',
-    fire: '114',
-    general: '112'  // Universal emergency number in Vietnam
+    police: "113",
+    ambulance: "115",
+    fire: "114",
+    general: "112", // Universal emergency number in Vietnam
   },
 
   // Tourist Police (with Chinese-speaking support if available)
   touristPolice: [
     {
-      city: 'Ho Chi Minh City',
-      cityZh: '胡志明市',
-      phone: '+84-28-3829-2877',
-      address: '254 Nguyen Trai, District 1',
-      chineseSupport: false
+      city: "Ho Chi Minh City",
+      cityZh: "胡志明市",
+      phone: "+84-28-3829-2877",
+      address: "254 Nguyen Trai, District 1",
+      chineseSupport: false,
     },
     {
-      city: 'Hanoi',
-      cityZh: '河内',
-      phone: '+84-24-3826-9965',
-      address: '44 Ly Thuong Kiet',
-      chineseSupport: false
-    }
+      city: "Hanoi",
+      cityZh: "河内",
+      phone: "+84-24-3826-9965",
+      address: "44 Ly Thuong Kiet",
+      chineseSupport: false,
+    },
   ],
 
   // Chinese Embassy/Consulates
   embassies: [
     {
-      type: 'embassy',
-      city: 'Hanoi',
-      cityZh: '河内',
-      name: 'Chinese Embassy in Vietnam',
-      nameZh: '中国驻越南大使馆',
-      phone: '+84-24-3845-3736',
-      emergency: '+84-24-3845-3738',  // 24-hour hotline
-      address: '46 Hoang Dieu, Ba Dinh District',
-      addressZh: '河内市巴亭区黄耀街46号'
+      type: "embassy",
+      city: "Hanoi",
+      cityZh: "河内",
+      name: "Chinese Embassy in Vietnam",
+      nameZh: "中国驻越南大使馆",
+      phone: "+84-24-3845-3736",
+      emergency: "+84-24-3845-3738", // 24-hour hotline
+      address: "46 Hoang Dieu, Ba Dinh District",
+      addressZh: "河内市巴亭区黄耀街46号",
     },
     {
-      type: 'consulate',
-      city: 'Ho Chi Minh City',
-      cityZh: '胡志明市',
-      name: 'Chinese Consulate General in HCMC',
-      nameZh: '中国驻胡志明市总领事馆',
-      phone: '+84-28-3829-2457',
-      emergency: '+84-28-3829-2459',
-      address: '39 Nguyen Thi Minh Khai, District 1',
-      addressZh: '胡志明市第一郡阮氏明开街39号'
-    }
+      type: "consulate",
+      city: "Ho Chi Minh City",
+      cityZh: "胡志明市",
+      name: "Chinese Consulate General in HCMC",
+      nameZh: "中国驻胡志明市总领事馆",
+      phone: "+84-28-3829-2457",
+      emergency: "+84-28-3829-2459",
+      address: "39 Nguyen Thi Minh Khai, District 1",
+      addressZh: "胡志明市第一郡阮氏明开街39号",
+    },
   ],
 
   // Medical
   hospitals: [
     {
-      name: 'FV Hospital',
-      nameZh: 'FV医院',
-      city: 'Ho Chi Minh City',
-      phone: '+84-28-5411-3333',
-      emergency: '+84-28-5411-3500',
-      services: 'International hospital with English/Chinese-speaking staff',
-      chineseSupport: true
+      name: "FV Hospital",
+      nameZh: "FV医院",
+      city: "Ho Chi Minh City",
+      phone: "+84-28-5411-3333",
+      emergency: "+84-28-5411-3500",
+      services: "International hospital with English/Chinese-speaking staff",
+      chineseSupport: true,
     },
     {
-      name: 'Hanoi French Hospital',
-      nameZh: '河内法国医院',
-      city: 'Hanoi',
-      phone: '+84-24-3577-1100',
-      emergency: '+84-24-3577-1100',
-      services: 'International standard, English-speaking',
-      chineseSupport: false
-    }
-  ]
+      name: "Hanoi French Hospital",
+      nameZh: "河内法国医院",
+      city: "Hanoi",
+      phone: "+84-24-3577-1100",
+      emergency: "+84-24-3577-1100",
+      services: "International standard, English-speaking",
+      chineseSupport: false,
+    },
+  ],
 };
 
 export default VIETNAM_EMERGENCY_INFO;
@@ -295,16 +404,46 @@ export default VIETNAM_EMERGENCY_INFO;
 
 **Time:** 5-10 minutes
 
+**Use the validation engine:**
+
+```typescript
+// app/utils/vietnam/VietnamValidationRules.ts
+import ValidationRuleEngine from "../validation/ValidationRuleEngine";
+import { VIETNAM_VALIDATION_RULES } from "../../config/destinations/vietnam/validationRules";
+
+const vietnamValidator = new ValidationRuleEngine(VIETNAM_VALIDATION_RULES);
+
+export const validateField = (
+  fieldName: string,
+  fieldValue: string,
+  context: ValidationContext = {},
+): ValidationResult => {
+  return vietnamValidator.validate(fieldName, fieldValue, context);
+};
+
+// TypeScript interfaces
+interface ValidationContext {
+  required?: boolean;
+  destination?: string;
+}
+
+interface ValidationResult {
+  isValid: boolean;
+  isWarning: boolean;
+  errorMessage: string;
+}
+```
+
 Add your country to `app/config/destinations/index.js`:
 
 ```javascript
 // app/config/destinations/index.js
-import thailand from './thailand';
-import vietnam from './vietnam';  // Add import
+import thailand from "./thailand";
+import vietnam from "./vietnam"; // Add import
 
 export const DESTINATIONS = {
   th: thailand,
-  vn: vietnam,  // Add entry
+  vn: vietnam, // Add entry
 };
 
 export const getDestination = (destinationId) => {
@@ -316,7 +455,7 @@ export const getDestination = (destinationId) => {
 };
 
 export const getActiveDestinations = () => {
-  return Object.values(DESTINATIONS).filter(dest => dest.enabled);
+  return Object.values(DESTINATIONS).filter((dest) => dest.enabled);
 };
 ```
 
@@ -334,27 +473,27 @@ If your country has a digital arrival card with specific accommodation type code
 // app/config/destinations/vietnam/accommodationTypes.js
 export const ACCOMMODATION_TYPES = {
   HOTEL: {
-    key: 'HOTEL',
-    displayEn: 'Hotel',
-    displayZh: '酒店',
-    display: 'Hotel (酒店)',
-    aliases: ['HOTEL', '酒店', 'KHÁCH SẠN']
+    key: "HOTEL",
+    displayEn: "Hotel",
+    displayZh: "酒店",
+    display: "Hotel (酒店)",
+    aliases: ["HOTEL", "酒店", "KHÁCH SẠN"],
   },
   HOMESTAY: {
-    key: 'HOMESTAY',
-    displayEn: 'Homestay',
-    displayZh: '民宿',
-    display: 'Homestay (民宿)',
-    aliases: ['HOMESTAY', '民宿', 'NHÀ DÂN']
+    key: "HOMESTAY",
+    displayEn: "Homestay",
+    displayZh: "民宿",
+    display: "Homestay (民宿)",
+    aliases: ["HOMESTAY", "民宿", "NHÀ DÂN"],
   },
   // ... more types
 };
 
 export const normalizeAccommodationType = (input) => {
-  if (!input) return 'HOTEL';
+  if (!input) return "HOTEL";
   const normalized = input.toString().toUpperCase().trim();
   // Implement alias lookup
-  return ALIAS_MAP.get(normalized) || 'HOTEL';
+  return ALIAS_MAP.get(normalized) || "HOTEL";
 };
 ```
 
@@ -372,11 +511,11 @@ Similar to accommodation types, if the country requires purpose mappings:
 // app/config/destinations/vietnam/travelPurposes.js
 export const TRAVEL_PURPOSES = {
   TOURISM: {
-    key: 'TOURISM',
-    displayEn: 'Tourism',
-    displayZh: '旅游',
-    display: 'Tourism (旅游)',
-    aliases: ['TOURISM', 'VACATION', '旅游', 'DU LỊCH']
+    key: "TOURISM",
+    displayEn: "Tourism",
+    displayZh: "旅游",
+    display: "Tourism (旅游)",
+    aliases: ["TOURISM", "VACATION", "旅游", "DU LỊCH"],
   },
   // ... more purposes
 };
@@ -392,27 +531,27 @@ Create country-specific validation rules using the validation engine:
 
 ```javascript
 // app/config/destinations/vietnam/validationRules.js
-import { PATTERNS } from '../../../utils/validation/ValidationRuleEngine';
+import { PATTERNS } from "../../../utils/validation/ValidationRuleEngine";
 
 export const VIETNAM_VALIDATION_RULES = {
   fullName: {
-    ruleType: 'text',
+    ruleType: "text",
     required: true,
     minLength: 2,
     maxLength: 100,
     pattern: PATTERNS.ALPHA_SPACE_DASH,
-    patternMessage: 'Name should contain only letters, spaces, and hyphens',
+    patternMessage: "Name should contain only letters, spaces, and hyphens",
     allowChinese: false,
-    fieldLabel: 'Full name'
+    fieldLabel: "Full name",
   },
 
   passportNo: {
-    ruleType: 'alphanumeric',
+    ruleType: "alphanumeric",
     required: true,
     minLength: 6,
     maxLength: 12,
     pattern: PATTERNS.PASSPORT,
-    fieldLabel: 'Passport number'
+    fieldLabel: "Passport number",
   },
 
   // Visa number - Vietnam has specific format
@@ -421,7 +560,8 @@ export const VIETNAM_VALIDATION_RULES = {
       return {
         isValid: true,
         isWarning: context.required !== false,
-        errorMessage: context.required !== false ? 'Visa number is required' : ''
+        errorMessage:
+          context.required !== false ? "Visa number is required" : "",
       };
     }
 
@@ -430,11 +570,12 @@ export const VIETNAM_VALIDATION_RULES = {
       return {
         isValid: false,
         isWarning: false,
-        errorMessage: 'Vietnam visa format: 2 letters + 8 digits (e.g., DL12345678)'
+        errorMessage:
+          "Vietnam visa format: 2 letters + 8 digits (e.g., DL12345678)",
       };
     }
 
-    return { isValid: true, isWarning: false, errorMessage: '' };
+    return { isValid: true, isWarning: false, errorMessage: "" };
   },
 
   // ... more rules
@@ -447,8 +588,8 @@ export default VIETNAM_VALIDATION_RULES;
 
 ```javascript
 // app/utils/vietnam/VietnamValidationRules.js
-import ValidationRuleEngine from '../validation/ValidationRuleEngine';
-import VIETNAM_VALIDATION_RULES from '../../config/destinations/vietnam/validationRules';
+import ValidationRuleEngine from "../validation/ValidationRuleEngine";
+import VIETNAM_VALIDATION_RULES from "../../config/destinations/vietnam/validationRules";
 
 const vietnamValidator = new ValidationRuleEngine(VIETNAM_VALIDATION_RULES);
 
@@ -480,18 +621,18 @@ If the country has a digital arrival card system:
 ```javascript
 // app/services/vietnam/VietnamEVisaAPIService.js
 class VietnamEVisaAPIService {
-  static API_BASE_URL = 'https://evisa.xuatnhapcanh.gov.vn/api';
+  static API_BASE_URL = "https://evisa.xuatnhapcanh.gov.vn/api";
 
   static async submitApplication(travelerContext) {
     const payload = this.buildPayload(travelerContext);
 
     const response = await fetch(`${this.API_BASE_URL}/submit`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'TripSecretary/1.0'
+        "Content-Type": "application/json",
+        "User-Agent": "TripSecretary/1.0",
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -519,12 +660,12 @@ Map user data to API format:
 
 ```javascript
 // app/services/vietnam/VietnamTravelerContextBuilder.js
-import { parseFullName } from '../../utils/nameUtils';
-import { extractCountryCode } from '../../utils/phoneUtils';
+import { parseFullName } from "../../utils/nameUtils";
+import { extractCountryCode } from "../../utils/phoneUtils";
 
 class VietnamTravelerContextBuilder {
   static async buildContext(userId) {
-    const UserDataService = require('../UserDataService').default;
+    const UserDataService = require("../UserDataService").default;
     const userData = await UserDataService.getAllData(userId);
 
     return {
@@ -551,34 +692,35 @@ Handle submission lifecycle:
 
 ```javascript
 // app/services/vietnam/VietnamEVisaSubmissionService.js
-import VietnamEVisaAPIService from './VietnamEVisaAPIService';
-import VietnamTravelerContextBuilder from './VietnamTravelerContextBuilder';
+import VietnamEVisaAPIService from "./VietnamEVisaAPIService";
+import VietnamTravelerContextBuilder from "./VietnamTravelerContextBuilder";
 
 class VietnamEVisaSubmissionService {
-  static async submitEVisa(userId, destinationId = 'vn') {
-    console.log('📋 Building Vietnam e-Visa context...');
+  static async submitEVisa(userId, destinationId = "vn") {
+    console.log("📋 Building Vietnam e-Visa context...");
     const context = await VietnamTravelerContextBuilder.buildContext(userId);
 
-    console.log('🚀 Submitting to Vietnam Immigration...');
+    console.log("🚀 Submitting to Vietnam Immigration...");
     const response = await VietnamEVisaAPIService.submitApplication(context);
 
-    console.log('💾 Saving submission record...');
+    console.log("💾 Saving submission record...");
     await this.saveSubmissionRecord(userId, response, destinationId);
 
     return response;
   }
 
   static async saveSubmissionRecord(userId, response, destinationId) {
-    const DigitalArrivalCardService = require('../DigitalArrivalCardService').default;
+    const DigitalArrivalCardService =
+      require("../DigitalArrivalCardService").default;
 
     await DigitalArrivalCardService.saveDigitalArrivalCard({
       userId,
       destinationId,
-      cardType: 'EVISA',
+      cardType: "EVISA",
       applicationNo: response.applicationNumber,
       qrUri: response.qrCodeUrl,
       pdfUrl: response.pdfUrl,
-      status: 'success'
+      status: "success",
     });
   }
 }
@@ -607,12 +749,12 @@ app/screens/vietnam/
 
 ```javascript
 // app/screens/vietnam/VietnamEntryFlowScreen.js
-import React from 'react';
-import { getDestination } from '../../config/destinations';
-import ProgressiveEntryFlowScreen from '../common/ProgressiveEntryFlowScreen';
+import React from "react";
+import { getDestination } from "../../config/destinations";
+import ProgressiveEntryFlowScreen from "../common/ProgressiveEntryFlowScreen";
 
 const VietnamEntryFlowScreen = ({ navigation, route }) => {
-  const destination = getDestination('vn');
+  const destination = getDestination("vn");
 
   return (
     <ProgressiveEntryFlowScreen
@@ -636,8 +778,8 @@ Register screens in your navigation system:
 
 ```javascript
 // app/navigation/MainNavigator.js
-import VietnamInfo from '../screens/vietnam/VietnamInfo';
-import VietnamEntryFlowScreen from '../screens/vietnam/VietnamEntryFlowScreen';
+import VietnamInfo from "../screens/vietnam/VietnamInfo";
+import VietnamEntryFlowScreen from "../screens/vietnam/VietnamEntryFlowScreen";
 
 const Stack = createStackNavigator();
 
@@ -649,12 +791,12 @@ export default function MainNavigator() {
       <Stack.Screen
         name="VietnamInfo"
         component={VietnamInfo}
-        options={{ title: 'Vietnam 🇻🇳' }}
+        options={{ title: "Vietnam 🇻🇳" }}
       />
       <Stack.Screen
         name="VietnamEntryFlow"
         component={VietnamEntryFlowScreen}
-        options={{ title: 'Vietnam Entry Preparation' }}
+        options={{ title: "Vietnam Entry Preparation" }}
       />
     </Stack.Navigator>
   );
@@ -671,7 +813,7 @@ Add country to destination list:
 
 ```javascript
 // app/screens/HomeScreen.js
-import { getActiveDestinations } from '../config/destinations';
+import { getActiveDestinations } from "../config/destinations";
 
 const HomeScreen = () => {
   const destinations = getActiveDestinations();
@@ -716,58 +858,64 @@ Test all functionality:
 ### Pattern 1: Reuse Utilities
 
 **✅ DO:**
+
 ```javascript
-import { parseFullName } from '../../utils/nameUtils';
-import { extractCountryCode } from '../../utils/phoneUtils';
-import { formatLocationCode } from '../../utils/locationUtils';
+import { parseFullName } from "../../utils/nameUtils";
+import { extractCountryCode } from "../../utils/phoneUtils";
+import { formatLocationCode } from "../../utils/locationUtils";
 
 const context = {
   familyName: parseFullName(fullName).familyName,
   countryCode: extractCountryCode(phoneNumber),
-  province: formatLocationCode(provinceCode)
+  province: formatLocationCode(provinceCode),
 };
 ```
 
 **❌ DON'T:**
+
 ```javascript
 // Don't reimplement parsing logic
-const familyName = fullName.split(',')[0];  // Fragile!
+const familyName = fullName.split(",")[0]; // Fragile!
 ```
 
 ### Pattern 2: Use Validation Engine
 
 **✅ DO:**
+
 ```javascript
-import ValidationRuleEngine from '../../utils/validation/ValidationRuleEngine';
-import COUNTRY_RULES from '../../config/destinations/country/validationRules';
+import ValidationRuleEngine from "../../utils/validation/ValidationRuleEngine";
+import COUNTRY_RULES from "../../config/destinations/country/validationRules";
 
 const validator = new ValidationRuleEngine(COUNTRY_RULES);
-const result = validator.validate('passportNo', value, context);
+const result = validator.validate("passportNo", value, context);
 ```
 
 **❌ DON'T:**
+
 ```javascript
 // Don't write switch statements
 switch (fieldName) {
-  case 'passportNo':
-    // Complex validation logic...
+  case "passportNo":
+  // Complex validation logic...
 }
 ```
 
 ### Pattern 3: Centralize Configuration
 
 **✅ DO:**
+
 ```javascript
 // app/config/destinations/country/accommodationTypes.js
 export const ACCOMMODATION_TYPES = {
-  HOTEL: { key: 'HOTEL', display: 'Hotel (酒店)' }
+  HOTEL: { key: "HOTEL", display: "Hotel (酒店)" },
 };
 ```
 
 **❌ DON'T:**
+
 ```javascript
 // Don't hardcode mappings
-if (type === 'HOTEL' || type === '酒店' || type === 'Hotel') {
+if (type === "HOTEL" || type === "酒店" || type === "Hotel") {
   // ...
 }
 ```
@@ -792,6 +940,7 @@ static parseAccommodationType(type) {
 ### Issue: Country doesn't appear in home screen
 
 **Solution:**
+
 1. Check `enabled: true` in metadata
 2. Verify country is registered in `DESTINATIONS` object
 3. Check `getActiveDestinations()` filter logic
@@ -799,6 +948,7 @@ static parseAccommodationType(type) {
 ### Issue: Validation not working
 
 **Solution:**
+
 1. Verify validation rules are imported correctly
 2. Check ValidationRuleEngine is instantiated
 3. Ensure field names match exactly
@@ -807,6 +957,7 @@ static parseAccommodationType(type) {
 ### Issue: API submission fails
 
 **Solution:**
+
 1. Verify API endpoint URL is correct
 2. Check request headers (User-Agent, Content-Type)
 3. Log request/response to inspect payload
@@ -816,6 +967,7 @@ static parseAccommodationType(type) {
 ### Issue: Digital arrival card not saved
 
 **Solution:**
+
 1. Check `DigitalArrivalCardService.saveDigitalArrivalCard()` is called
 2. Verify `entry_info` record exists first
 3. Check database constraints and foreign keys
@@ -826,6 +978,7 @@ static parseAccommodationType(type) {
 ## Example: Complete Country Implementation
 
 For a complete reference implementation, see:
+
 - **Thailand**: `app/config/destinations/thailand/`
 - **Services**: `app/services/thailand/`
 - **Screens**: `app/screens/thailand/`
@@ -837,6 +990,7 @@ For a complete reference implementation, see:
 Use this checklist to track your progress:
 
 ### Configuration
+
 - [ ] Create country directory structure
 - [ ] Define metadata (ID, currency, timezone)
 - [ ] Add financial information (ATM, cash, banks)
@@ -847,6 +1001,7 @@ Use this checklist to track your progress:
 - [ ] Register country in central registry
 
 ### Services (If Digital Arrival Card)
+
 - [ ] Research and document API
 - [ ] Create API service class
 - [ ] Create traveler context builder
@@ -854,6 +1009,7 @@ Use this checklist to track your progress:
 - [ ] Integrate with data persistence
 
 ### UI
+
 - [ ] Create info screen
 - [ ] Create entry flow screen
 - [ ] Create form screens
@@ -861,6 +1017,7 @@ Use this checklist to track your progress:
 - [ ] Update home screen
 
 ### Testing
+
 - [ ] Test all validation rules
 - [ ] Test API submission (if applicable)
 - [ ] Test data persistence
@@ -869,6 +1026,7 @@ Use this checklist to track your progress:
 - [ ] Verify translations
 
 ### Documentation
+
 - [ ] Document API integration (if applicable)
 - [ ] Document any country-specific quirks
 - [ ] Update README if needed

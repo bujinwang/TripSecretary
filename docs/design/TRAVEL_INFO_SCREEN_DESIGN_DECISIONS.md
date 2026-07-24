@@ -80,8 +80,46 @@ If a future use case requires the progress overview card:
 
 1. Check if it's truly needed (consider the reasons above)
 2. Get UX team approval
+
+### If You Need Progress Overview
+
+If a future use case requires the progress overview card:
+
+```typescript
+interface CountryConfig {
+  features: {
+    showProgressOverview?: boolean;
+  };
+  // ... other config properties
+}
+
+const vietnamConfig: CountryConfig = {
+  features: {
+    showProgressOverview: true // Enable for this country
+  },
+  // ... other config
+};
+
+// Usage in component
+const ProgressOverviewCard: React.FC<{ config: CountryConfig }> = ({ config }) => {
+  if (!config.features.showProgressOverview) {
+    return null; // Don't render if disabled
+  }
+
+  return (
+    <View style={styles.progressCard}>
+      {/* Progress card implementation */}
+    </View>
+  );
+};
+```
+
+1. Check if it's truly needed (consider the reasons above)
+2. Get UX team approval
 3. Set `features.showProgressOverview: true` in country config
 4. Document the exception and reasoning
+5. Set `features.showProgressOverview: true` in country config
+6. Document the exception and reasoning
 
 ---
 

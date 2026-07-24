@@ -27,6 +27,12 @@ export type { ProgressOverviewCardProps, ProgressSection } from './ProgressOverv
 
 // Selector Components
 export { default as BaseSearchableSelector } from './BaseSearchableSelector';
+export type {
+  BaseSearchableSelectorProps,
+  SearchableOption,
+  FilterOptionsFn,
+  GetDisplayValueFn,
+} from './BaseSearchableSelector';
 
 // Re-export commonly used Tamagui primitives for convenience
 export {
