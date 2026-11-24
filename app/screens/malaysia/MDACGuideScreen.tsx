@@ -1,0 +1,287 @@
+// 马来西亚 MDAC 引导页面
+import React, { useMemo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import BackButton from '../../components/BackButton';
+import { colors, typography, spacing } from '../../theme';
+import { useLocale } from '../../i18n/LocaleContext';
+import UserDataService from '../../services/data/UserDataService';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MDACGuideScreen = ({ navigation, route }: any) => {
+  const { passport: rawPassport, destination, travelInfo } = route.params || {};
+  const passport = UserDataService.toSerializablePassport(rawPassport);
+  const { t } = useLocale();
+
+  const steps = useMemo(() => {
+    const result = t('malaysia.guide.steps', {
+        returnObjects: true,
+        defaultValue: [],
+        passport,
+        travelInfo,
+      } as unknown as Record<string, string | number | undefined>);
+    return (typeof result === 'string' ? JSON.parse(result) : result) as unknown[];
+  },
+    [t, passport, travelInfo]
+  );
+
+  const quickActions = useMemo(() => {
+    const result = t('malaysia.guide.quickActions.items', {
+        returnObjects: true,
+        defaultValue: [],
+      } as unknown as Record<string, string | number | undefined>);
+    return (typeof result === 'string' ? JSON.parse(result) : result) as unknown[];
+  },
+    [t]
+  );
+
+  const handleOpenWebView = () => {
+    navigation.navigate('MDACWebView', { passport, destination, travelInfo });
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <BackButton
+            onPress={() => navigation.goBack()}
+            label={t('common.back')}
+            style={styles.backButton}
+          />
+          <Text style={styles.headerTitle}>{t('malaysia.guide.headerTitle')}</Text>
+          <View style={styles.headerRight} />
+        </View>
+
+        <View style={styles.banner}>
+          <Text style={styles.bannerEmoji}>🇲🇾</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.bannerTitle}>{t('malaysia.guide.banner.title')}</Text>
+            <Text style={styles.bannerSubtitle}>
+              {t('malaysia.guide.banner.subtitle')}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('malaysia.guide.stepSectionTitle')}</Text>
+          {steps.map((step, index: number) => {
+            const s = step as Record<string, unknown>;
+            return (
+            <View key={`step-${index}`} style={styles.stepCard}>
+              <View style={styles.stepHeader}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>{index + 1}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.stepTitle}>{s.title as string}</Text>
+                  <Text style={styles.stepSubtitle}>{s.subtitle as string}</Text>
+                </View>
+              </View>
+              <View style={styles.stepBody}>
+                {(s.details as string[] | undefined)?.map((detail: string, detailIndex: number) => (
+                  <Text key={`detail-${detailIndex}`} style={styles.stepBullet}>
+                    • {detail}
+                  </Text>
+                ))}
+              </View>
+            </View>
+            );
+          })}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('malaysia.guide.quickActions.title')}</Text>
+          <View style={styles.quickActions}>
+            {quickActions.map((action, index: number) => {
+              const a = action as Record<string, unknown>;
+              return (
+              <View key={`quick-${index}`} style={styles.quickActionCard}>
+                <Text style={styles.quickActionIcon}>{a.icon as string}</Text>
+                <Text style={styles.quickActionTitle}>{a.title as string}</Text>
+                <Text style={styles.quickActionDescription}>{a.description as string}</Text>
+              </View>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.primaryButton} onPress={handleOpenWebView} activeOpacity={0.9}>
+            <Text style={styles.primaryButtonText}>
+              {t('malaysia.guide.primaryCta')}
+            </Text>
+          </TouchableOpacity>
+          <Text style={styles.buttonHint}>{t('malaysia.guide.ctaHint')}</Text>
+        </View>
+
+        <View style={{ height: spacing.xl }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  backButton: {
+    marginLeft: -spacing.sm,
+  },
+  headerTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  headerRight: {
+    width: 40,
+  },
+  banner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    margin: spacing.md,
+    padding: spacing.lg,
+    borderRadius: 16,
+    backgroundColor: '#E3F2FD',
+  },
+  bannerEmoji: {
+    fontSize: 36,
+    marginRight: spacing.md,
+  },
+  bannerTitle: {
+    ...typography.h3,
+    fontWeight: '700',
+    color: '#0D47A1',
+    marginBottom: spacing.xs,
+  },
+  bannerSubtitle: {
+    ...typography.body2,
+    color: '#1565C0',
+  },
+  section: {
+    paddingHorizontal: spacing.md,
+    marginTop: spacing.lg,
+  },
+  sectionTitle: {
+    ...typography.h3,
+    color: colors.text,
+    fontWeight: '600',
+    marginBottom: spacing.md,
+  },
+  stepCard: {
+    backgroundColor: colors.white,
+    padding: spacing.lg,
+    borderRadius: 16,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: '#E3F2FD',
+  },
+  stepHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  stepNumber: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#0D47A1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  stepNumberText: {
+    ...typography.body1,
+    color: colors.white,
+    fontWeight: '700',
+  },
+  stepTitle: {
+    ...typography.h4,
+    color: colors.text,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  stepSubtitle: {
+    ...typography.body2,
+    color: colors.textSecondary,
+  },
+  stepBody: {
+    marginTop: spacing.md,
+    paddingLeft: spacing.md + 36,
+  },
+  stepBullet: {
+    ...typography.body2,
+    color: colors.text,
+    marginBottom: spacing.xs,
+    lineHeight: 20,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  quickActionCard: {
+    width: '48%',
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: '#BBDEFB',
+  },
+  quickActionIcon: {
+    fontSize: 28,
+    marginBottom: spacing.sm,
+  },
+  quickActionTitle: {
+    ...typography.body1,
+    color: colors.text,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  quickActionDescription: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    lineHeight: 18,
+  },
+  buttonContainer: {
+    paddingHorizontal: spacing.md,
+    marginTop: spacing.lg,
+    alignItems: 'center',
+  },
+  primaryButton: {
+    backgroundColor: '#0D47A1',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    borderRadius: 14,
+    width: '100%',
+    alignItems: 'center',
+  },
+  primaryButtonText: {
+    ...typography.h4,
+    color: colors.white,
+    fontWeight: '700',
+  },
+  buttonHint: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: spacing.sm,
+  },
+});
+
+export default MDACGuideScreen;

@@ -13,8 +13,8 @@ console.log('🔍 验证 TDAC 日志功能...\n');
 // 检查核心文件是否存在
 const filesToCheck = [
   'app/services/tdac/TDACSubmissionLogger.js',
-  'app/screens/thailand/TDACHybridScreen.js',
-  'app/screens/thailand/TDACWebViewScreen.js',
+  'app/screens/thailand/TDACHybridScreen.tsx',
+  'app/screens/thailand/TDACWebViewScreen.tsx',
   'app/services/tdac/__tests__/TDACSubmissionLogger.test.js',
   'docs/features/TDAC_SUBMISSION_LOGGING.md',
   'docs/examples/TDAC_LOGGING_EXAMPLE.md'
@@ -60,7 +60,7 @@ requiredMethods.forEach(method => {
 });
 
 // 检查TDACHybridScreen是否集成了日志功能
-const hybridPath = 'app/screens/thailand/TDACHybridScreen.js';
+const hybridPath = 'app/screens/thailand/TDACHybridScreen.tsx';
 const hybridContent = fs.readFileSync(hybridPath, 'utf8');
 
 if (hybridContent.includes('TDACSubmissionLogger.logHybridSubmission')) {
@@ -78,7 +78,7 @@ if (hybridContent.includes('showSubmissionConfirmation')) {
 }
 
 // 检查TDACWebViewScreen是否集成了日志功能
-const webviewPath = 'app/screens/thailand/TDACWebViewScreen.js';
+const webviewPath = 'app/screens/thailand/TDACWebViewScreen.tsx';
 const webviewContent = fs.readFileSync(webviewPath, 'utf8');
 
 if (webviewContent.includes('TDACSubmissionLogger.logWebViewFill')) {

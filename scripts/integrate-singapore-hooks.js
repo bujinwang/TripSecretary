@@ -4,7 +4,7 @@
  * Singapore Travel Info Screen - Automated Hooks Integration Script
  *
  * This script automatically applies all the refactoring changes to integrate
- * the custom hooks into SingaporeTravelInfoScreen.js
+ * the custom hooks into SingaporeTravelInfoScreen.tsx
  *
  * Usage: node scripts/integrate-singapore-hooks.js
  */
@@ -13,9 +13,9 @@ const fs = require('fs');
 const path = require('path');
 
 // File paths
-const SCREEN_FILE = path.join(__dirname, '../app/screens/singapore/SingaporeTravelInfoScreen.js');
-const BACKUP_FILE = path.join(__dirname, '../app/screens/singapore/SingaporeTravelInfoScreen.js.backup');
-const OUTPUT_FILE = path.join(__dirname, '../app/screens/singapore/SingaporeTravelInfoScreen.refactored.js');
+const SCREEN_FILE = path.join(__dirname, '../app/screens/singapore/SingaporeTravelInfoScreen.tsx');
+const BACKUP_FILE = path.join(__dirname, '../app/screens/singapore/SingaporeTravelInfoScreen.tsx.backup');
+const OUTPUT_FILE = path.join(__dirname, '../app/screens/singapore/SingaporeTravelInfoScreen.refactored.tsx');
 
 console.log('🔄 Starting Singapore Hooks Integration...\n');
 
@@ -23,7 +23,7 @@ console.log('🔄 Starting Singapore Hooks Integration...\n');
 if (!fs.existsSync(BACKUP_FILE)) {
   console.error('❌ Backup file not found! Creating backup...');
   fs.copyFileSync(SCREEN_FILE, BACKUP_FILE);
-  console.log('✅ Backup created: SingaporeTravelInfoScreen.js.backup\n');
+  console.log('✅ Backup created: SingaporeTravelInfoScreen.tsx.backup\n');
 } else {
   console.log('✅ Backup file exists\n');
 }
@@ -501,11 +501,11 @@ console.log(`   - ${BACKUP_FILE.split('/').pop()} (backup)\n`);
 
 console.log('🧪 Next steps:');
 console.log('   1. Review the refactored file');
-console.log('   2. Run syntax check: node -c app/screens/singapore/SingaporeTravelInfoScreen.refactored.js');
+console.log('   2. Run syntax check: node -c app/screens/singapore/SingaporeTravelInfoScreen.refactored.tsx');
 console.log('   3. Test the refactored version');
 console.log('   4. If all looks good, replace original:');
-console.log('      mv app/screens/singapore/SingaporeTravelInfoScreen.refactored.js \\');
-console.log('         app/screens/singapore/SingaporeTravelInfoScreen.js');
+console.log('      mv app/screens/singapore/SingaporeTravelInfoScreen.refactored.tsx \\');
+console.log('         app/screens/singapore/SingaporeTravelInfoScreen.tsx');
 console.log('   5. Commit the changes\n');
 
 console.log('🎉 Integration complete!\n');

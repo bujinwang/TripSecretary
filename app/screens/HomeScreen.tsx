@@ -1,0 +1,1696 @@
+// 入境通 - Home Screen
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  Modal,
+  Animated,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Button from '../components/Button';
+import Card from '../components/Card';
+import CountryCard from '../components/CountryCard';
+import { colors, typography, spacing, borderRadius } from '../theme';
+import { findRecentValidGeneration, formatDate } from '../utils/historyChecker';
+import api from '../services/api';
+import { useLocale } from '../i18n/LocaleContext';
+import UserDataService from '../services/data/UserDataService';
+import EntryInfoService from '../services/EntryInfoService';
+import Passport from '../models/Passport';
+import CountdownFormatter from '../utils/CountdownFormatter';
+import DateFormatter from '../utils/DateFormatter';
+import PerformanceMonitor from '../utils/PerformanceMonitor';
+import { getHotCountries, navigateToCountry, getCountryFlag, getCountryName } from '../utils/countriesService';
+import type { TranslateFunction, CountryDisplay } from '../utils/countriesService';
+
+type InProgressDestinationItem = {
+  destinationId: string;
+  destinationName: string;
+  completionPercent: number;
+  isReady: boolean;
+  entryInfoId: string;
+  arrivalDate?: string | null;
+  flightNumber?: string | null;
+};
+
+interface HistoryItem {
+  id?: string;
+  destination?: {
+    id?: string;
+    name?: string;
+    flag?: string;
+    [key: string]: unknown;
+  };
+  passport?: Record<string, unknown>;
+  travelInfo?: Record<string, unknown>;
+  createdAt?: string;
+  type?: string;
+  status?: string;
+  entryInfoId?: string;
+  formData?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+interface ActiveEntryPackItem {
+  id: string;
+  destinationId: string;
+  destinationName: string;
+  status: string;
+  arrivalDate?: string;
+  submittedAt?: string;
+  cardType?: string;
+  flightNumber?: string;
+  departureDate?: string;
+  visaNumber?: string;
+  hotelName?: string;
+  [key: string]: unknown;
+}
+
+const UPCOMING_TRIPS_CONFIG = [
+  {
+    id: 'jp',
+    flag: '🇯🇵',
+    titleKey: 'home.pendingTrips.cards.jp.title',
+    city: '东京',
+    cityEn: 'Tokyo',
+    daysFromNow: 0,
+    flightNumber: 'CA981',
+    hotelName: 'Tokyo New Otani Hotel',
+    hotelAddress: '4-1 Kioicho, Chiyoda City, Tokyo',
+    contactPhone: '+81 3 3261 1111',
+    stayDuration: '7',
+  },
+  // Thailand trip removed as requested - keeping only Japan upcoming trip
+  // {
+  //   id: 'th',
+  //   flag: '🇹🇭',
+  //   titleKey: 'home.pendingTrips.cards.th.title',
+  //   city: '曼谷',
+  //   cityEn: 'Bangkok',
+  //   daysFromNow: 2,
+  //   flightNumber: 'TG615',
+  //   hotelName: 'Bangkok Grand Hotel',
+  //   hotelAddress: '123 Sukhumvit Road, Bangkok',
+  //   contactPhone: '+66 2 123 4567',
+  //   stayDuration: '7',
+  // },
+];
+
+const HomeScreen = ({ navigation }: { navigation: { navigate: (screen: string, params?: Record<string, unknown>) => void; goBack: () => void } }) => {
+  const [historyList, setHistoryList] = useState<HistoryItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [passportData, setPassportData] = useState<Passport | null>(null);
+  const [activeEntryPacks, setActiveEntryPacks] = useState<ActiveEntryPackItem[]>([]);
+  const [multiDestinationData, setMultiDestinationData] = useState<Record<string, unknown> | null>(null);
+  const [inProgressDestinations, setInProgressDestinations] = useState<InProgressDestinationItem[]>([]);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+
+  const locale = useLocale();
+  const { t, language } = locale;
+  const setLanguage = locale.setLanguage as (code: string) => void;
+
+  // Available languages for selection
+  const availableLanguages = [
+    { code: 'en', label: 'English' },
+    { code: 'zh-CN', label: '简体中文' },
+    { code: 'zh-TW', label: '繁體中文' },
+    { code: 'fr', label: 'Français' },
+    { code: 'de', label: 'Deutsch' },
+    { code: 'es', label: 'Español' },
+  ];
+
+  const handleLanguageSelect = (selectedLanguage: string) => {
+    setLanguage(selectedLanguage);
+    setShowLanguageModal(false);
+  };
+
+  // Get hot countries using centralized service
+  const localizedHotCountries = useMemo(() => {
+    // Get IDs of destinations that already have active entry packs or in-progress entries
+    const activeDestinationIds = new Set([
+      ...activeEntryPacks.map(pack => pack.destinationId),
+      ...inProgressDestinations.map(dest => dest.destinationId)
+    ]);
+
+    // Get hot countries from centralized service
+    const hotCountries = getHotCountries(t as TranslateFunction, language, Array.from(activeDestinationIds));
+
+    // Filter out destinations that already have active entry packs
+    return hotCountries.filter(
+      (country): country is CountryDisplay => country !== null && !activeDestinationIds.has(country.id)
+    );
+  }, [language, t, activeEntryPacks, inProgressDestinations]);
+
+  const upcomingTrips = useMemo(() => {
+    const DAY_MS = 24 * 60 * 60 * 1000;
+    return UPCOMING_TRIPS_CONFIG.map((trip) => {
+      const targetDate = new Date(Date.now() + trip.daysFromNow * DAY_MS);
+      const isoDate = targetDate.toISOString().split('T')[0];
+
+      return {
+        ...trip,
+        title: t(trip.titleKey),
+        departureLabel: `${isoDate} ${t('home.pendingTrips.departSuffix')}`,
+        destination: {
+          id: trip.id,
+          name: t(`home.destinationNames.${trip.id}`, {
+            defaultValue: trip.id,
+          }),
+          flag: trip.flag,
+        },
+        travelInfo: {
+          flightNumber: trip.flightNumber,
+          arrivalDate: isoDate,
+          hotelName: trip.hotelName,
+          hotelAddress: trip.hotelAddress,
+          contactPhone: trip.contactPhone,
+          stayDuration: trip.stayDuration,
+          travelPurpose: 'tourism',
+        },
+      };
+    });
+  }, [t, language]);
+
+  // Get passport name for greeting (use surname with honorific)
+  const getSurnameWithHonorific = () => {
+    if (!passportData?.getSurname) {
+return '';
+}
+    const surname = passportData.getSurname();
+    if (!surname) {
+return '';
+}
+    
+    // Add honorific based on language
+    if ((language as string) === 'zh') {
+      return `${surname}先生`;
+    } else if (language === 'en') {
+      return `Mr. ${surname}`;
+    } else if (language === 'es') {
+      return `Sr. ${surname}`;
+    }
+    return surname;
+  };
+  
+  const passportName = getSurnameWithHonorific();
+  const hasPassport = !!passportData;
+
+  const headerTitle = t('home.header.title');
+  const greetingText = t('home.greeting', { name: passportName });
+  const welcomeMessage = t('home.welcomeText');
+  const pendingSectionTitle = t('home.sections.pending');
+  const exploreSectionTitle = t('home.sections.whereToGo');
+
+  // Debug: Log when inProgressDestinations changes
+  useEffect(() => {
+    console.log('[HomeScreen] inProgressDestinations state changed:', {
+      length: inProgressDestinations.length,
+      destinations: inProgressDestinations.map(d => ({
+        id: d.entryInfoId,
+        destinationId: d.destinationId,
+        destinationName: d.destinationName,
+        completionPercent: d.completionPercent
+      }))
+    });
+  }, [inProgressDestinations]);
+
+  // 加载护照、历史记录和多目的地数据
+  useEffect(() => {
+    loadPassportData();
+    loadHistory();
+    loadMultiDestinationData();
+
+    // Animate empty state when component mounts
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const loadPassportData = async () => {
+    try {
+      // Load primary passport for the current user
+      const userId = 'user_001'; // TODO: Get from auth context
+
+      // Ensure secure storage is initialized before accessing data
+      await UserDataService.initialize(userId);
+
+      // Try multiple methods to get passport data
+      let passport = await UserDataService.getPrimaryPassport(userId);
+
+      if (!passport) {
+        const allPassports = await UserDataService.getAllPassports(userId);
+        passport = allPassports?.[0] || null;
+      }
+
+      // Also check if passport data exists in other formats
+      if (passport) {
+        setPassportData(passport);
+      } else {
+        // No passport data found - user needs to input it
+        setPassportData(null);
+      }
+    } catch (error: unknown) {
+      console.log('Failed to load passport data:', (error as Error).message);
+      // No mock data - data must come from user input or SQLite
+      setPassportData(null);
+    }
+  };
+
+  const loadHistory = async () => {
+    try {
+      // 尝试从API加载历史记录
+      const result = await api.getHistory(20, 0);
+      setHistoryList(result.items || []);
+    } catch (error: unknown) {
+      console.log('无法连接后端API，使用本地模拟数据:', (error as Error).message);
+      // 使用mock数据作为后备（后端未运行时）
+      setHistoryList(getMockHistory());
+    }
+  };
+
+  const loadMultiDestinationData = useCallback(async () => {
+    const operationId = PerformanceMonitor.startTiming('loadMultiDestinationData');
+
+    try {
+      const userId = 'user_001'; // TODO: Get from auth context
+      console.log('[HomeScreen] Starting to load multi-destination data for user:', userId);
+      
+      // Invalidate entryInfo cache to ensure fresh data
+      const CacheManager = require('../services/data/cache/CacheManager').default;
+      CacheManager.invalidate('entryInfo', userId);
+      console.log('[HomeScreen] Invalidated entryInfo cache');
+      
+      await UserDataService.initialize(userId);
+      console.log('[HomeScreen] UserDataService initialized');
+      
+      // Load home screen data with multi-destination support
+      console.log('[HomeScreen] Calling EntryInfoService.getHomeScreenData...');
+      const homeScreenData = await EntryInfoService.getHomeScreenData(userId);
+      console.log('[HomeScreen] getHomeScreenData completed');
+      
+      console.log('[HomeScreen] Multi-destination data loaded:', {
+        submittedPacks: homeScreenData.submittedEntryPacks.length,
+        inProgressDestinations: homeScreenData.inProgressDestinations.length,
+        overallCompletion: homeScreenData.summary.overallCompletionPercent,
+        totalRecords: homeScreenData.submittedEntryPacks.length + homeScreenData.inProgressDestinations.length,
+        submittedPackDetails: homeScreenData.submittedEntryPacks.map(pack => ({
+          id: pack.id,
+          destinationId: pack.destinationId,
+          destinationName: pack.destinationName,
+          status: pack.status
+        })),
+        inProgressDetails: homeScreenData.inProgressDestinations.map(dest => ({
+          id: dest.entryInfoId,
+          destinationId: dest.destinationId,
+          destinationName: dest.destinationName,
+          completionPercent: dest.completionPercent
+        }))
+      });
+      
+      // Log warning if we expected 9 records but got fewer
+      const totalRecords = homeScreenData.submittedEntryPacks.length + homeScreenData.inProgressDestinations.length;
+      if (totalRecords < 9) {
+        console.warn(`[HomeScreen] ⚠️ Expected 9 entry_info records but only found ${totalRecords}`, {
+          submitted: homeScreenData.submittedEntryPacks.length,
+          inProgress: homeScreenData.inProgressDestinations.length,
+          submittedDestinations: homeScreenData.submittedEntryPacks.map(p => p.destinationId),
+          inProgressDestinations: homeScreenData.inProgressDestinations.map(d => d.destinationId)
+        });
+      }
+      
+      // Filter out archived entry packs from active display
+      const activeSubmittedPacks = homeScreenData.submittedEntryPacks.filter(pack => 
+        pack.status !== 'archived' && pack.status !== 'expired'
+      );
+      
+      console.log('[HomeScreen] Setting state with:', {
+        activeSubmittedPacks: activeSubmittedPacks.length,
+        inProgressDestinations: homeScreenData.inProgressDestinations.length
+      });
+      
+      // Validate data structure
+      if (!Array.isArray(homeScreenData.inProgressDestinations)) {
+        console.error('[HomeScreen] ERROR: inProgressDestinations is not an array:', typeof homeScreenData.inProgressDestinations);
+        console.error('[HomeScreen] homeScreenData:', homeScreenData);
+      } else {
+        console.log('[HomeScreen] Validated inProgressDestinations array:', {
+          length: homeScreenData.inProgressDestinations.length,
+          firstItem: homeScreenData.inProgressDestinations[0]
+        });
+      }
+      
+      // Set active entry packs (submitted ones, excluding archived)
+      setActiveEntryPacks(activeSubmittedPacks as ActiveEntryPackItem[]);
+      
+      // Set in-progress destinations
+      console.log('[HomeScreen] About to set inProgressDestinations state:', homeScreenData.inProgressDestinations);
+      setInProgressDestinations(homeScreenData.inProgressDestinations);
+      console.log('[HomeScreen] State set - inProgressDestinations should now be:', homeScreenData.inProgressDestinations.length, 'items');
+
+      // Set overall multi-destination data
+      setMultiDestinationData({
+        ...homeScreenData,
+        submittedEntryPacks: activeSubmittedPacks,
+      });
+
+      PerformanceMonitor.endTiming(operationId as string, {
+        submittedPacks: activeSubmittedPacks.length,
+        inProgressDestinations: homeScreenData.inProgressDestinations.length,
+        overallCompletion: homeScreenData.summary.overallCompletionPercent
+      });
+      
+    } catch (error: unknown) {
+      console.error('[HomeScreen] Failed to load multi-destination data:', error);
+      console.error('[HomeScreen] Error message:', (error as Error).message);
+      console.error('[HomeScreen] Error stack:', (error as Error).stack);
+      if ((error as Error).cause) {
+        console.error('[HomeScreen] Error cause:', (error as Error).cause);
+      }
+      PerformanceMonitor.endTiming(operationId as string, { error: (error as Error).message });
+      setActiveEntryPacks([]);
+      setInProgressDestinations([]);
+      setMultiDestinationData(null);
+    }
+  }, []);
+
+  type StatusUpdateConfig = {
+    reason?: string;
+    successMessage?: string;
+  };
+
+  const performStatusUpdate = useCallback(
+    async (entryInfoId: string, nextStatus: string, config: StatusUpdateConfig = {}) => {
+      try {
+        setLoading(true);
+        const options = config.reason ? { reason: config.reason } : {};
+        await UserDataService.updateEntryInfoStatus(entryInfoId, nextStatus, options);
+        await loadMultiDestinationData();
+        if (config.successMessage) {
+          Alert.alert('', config.successMessage);
+        }
+      } catch (error: unknown) {
+        console.error('[HomeScreen] Failed to update entry info status:', error);
+        Alert.alert(
+          t('home.actions.errorTitle', { defaultValue: '操作失败' }),
+          t('home.actions.errorMessage', {
+            defaultValue: (error as Error)?.message || '请稍后再试。',
+          })
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loadMultiDestinationData, t]
+  );
+
+  const getMockHistory = () => 
+    // 返回空数组，不使用mock数据
+     []
+  ;
+
+  const handleScanPassport = () => {
+    navigation.navigate('ScanPassport');
+  };
+
+  const handleCountrySelect = async (country: { enabled: boolean; displayName?: string; id: string; name?: string; flag: string; flightTime?: string }) => {
+    // Check if country is enabled
+    if (!country.enabled) {
+      Alert.alert(t('home.alerts.notAvailableTitle'), t('home.alerts.notAvailableBody'));
+      return;
+    }
+
+    const countryName = country.displayName || t(`home.destinationNames.${country.id}`, {
+      defaultValue: country.name || country.id,
+    });
+    const destinationForNav = {
+      id: country.id,
+      name: countryName,
+      flag: country.flag,
+    };
+
+    // Convert passport data to legacy format for navigation
+    const passportForNav = hasPassport
+      ? {
+          type: t('home.passport.type'),
+          name: passportData.fullName || '',
+          nameEn: passportData.fullName || '',
+          passportNo: passportData.passportNumber || '',
+          expiry: passportData.expiryDate || '',
+        }
+      : null;
+
+    // Use centralized navigation helper
+    navigateToCountry(
+      navigation,
+      country.id,
+      'info', // Navigate to info screen first
+      {
+        passport: passportForNav,
+        destination: destinationForNav,
+      }
+    );
+  };
+
+  const handleViewAllCountries = () => {
+    // 查看所有国家
+    const passportForNav = hasPassport
+      ? {
+          type: t('home.passport.type'),
+          name: passportData.fullName || '',
+          nameEn: passportData.fullName || '',
+          passportNo: passportData.passportNumber || '',
+          expiry: passportData.expiryDate || '',
+        }
+      : null;
+
+    navigation.navigate('SelectDestination', {
+      passport: passportForNav
+    });
+  };
+
+
+  const getHistoryDisplayTime = (item: Record<string, unknown>) => {
+    const travelInfo = item.travelInfo as Record<string, unknown> | undefined;
+    if (travelInfo?.generatedAtLabel) {
+      return travelInfo.generatedAtLabel as string;
+    }
+
+    if (travelInfo?.arrivalDate) {
+      return formatDate(travelInfo.arrivalDate as string);
+    }
+
+    if (item?.createdAt) {
+      return formatDate(item.createdAt as string);
+    }
+
+    return '';
+  };
+
+  const renderHistoryCards = () => {
+    if (!historyList.length) {
+      return (
+        <Card style={styles.historyCard}>
+          <View style={styles.historyItem}>
+            <View style={styles.historyInfo}>
+              <Text style={styles.historyTitle}>{t('home.history.emptyTitle')}</Text>
+              <Text style={styles.historyTime}>{t('home.history.emptySubtitle')}</Text>
+            </View>
+          </View>
+        </Card>
+      );
+    }
+
+    return historyList.slice(0, 2).map((item) => (
+      <Card
+        key={item.id}
+        style={styles.historyCard}
+        pressable
+        onPress={() =>
+          navigation.navigate('Result', {
+            passport: item.passport,
+            destination: {
+              ...item.destination,
+              name: t(`home.destinationNames.${item.destination?.id}`, {
+                defaultValue: item.destination?.name || t('home.common.unknown'),
+              }),
+            },
+            travelInfo: item.travelInfo,
+            generationId: item.id,
+            fromHistory: true,
+          })
+        }
+      >
+        <View style={styles.historyItem}>
+          <Text style={styles.historyFlag}>{item.destination?.flag || '🌍'}</Text>
+          <View style={styles.historyInfo}>
+            <Text style={styles.historyTitle}>
+              {t('home.history.cardTitle', {
+                country: t(`home.destinationNames.${item.destination?.id}`, {
+                  defaultValue:
+                    item.destination?.name || t('home.common.unknown'),
+                }),
+              })}
+            </Text>
+            <Text style={styles.historyTime}>{getHistoryDisplayTime(item)}</Text>
+          </View>
+          <Text style={styles.historyArrow}>›</Text>
+        </View>
+      </Card>
+    ));
+  };
+
+
+  const getDestinationName = useCallback(
+    (destinationId: string | null, fallbackName?: string | null) => {
+      if (!destinationId) {
+        return fallbackName || t('home.common.unknown', { defaultValue: '未知目的地' });
+      }
+
+      const localized = getCountryName(destinationId, language);
+      if (localized && localized !== destinationId) {
+        return localized;
+      }
+
+      return (
+        fallbackName ||
+        t(`home.destinationNames.${destinationId}`, {
+          defaultValue: destinationId,
+        })
+      );
+    },
+    [language, t]
+  );
+
+  const getDestinationFlag = (destinationId: string | null) => getCountryFlag(destinationId as string);
+
+  const confirmLeaveEntry = useCallback(
+    (destination: InProgressDestinationItem) => {
+      const destinationName = getDestinationName(destination.destinationId, destination.destinationName);
+      Alert.alert(
+        t('home.leaveTrip.title', { defaultValue: '暂停这个行程？' }),
+        t('home.leaveTrip.message', {
+          destination: destinationName,
+          defaultValue: `${destinationName} 将移动到“已离开的行程”，稍后可以再恢复。`,
+        }),
+        [
+          {
+            text: t('home.actions.cancel', { defaultValue: '取消' }),
+            style: 'cancel',
+          },
+          {
+            text: t('home.leaveTrip.confirm', { defaultValue: '确认离开' }),
+            style: 'destructive',
+            onPress: () =>
+              void performStatusUpdate(destination.entryInfoId, 'left', {
+                reason: 'user_marked_left',
+                successMessage: t('home.feedback.tripLeft', {
+                  destination: destinationName,
+                  defaultValue: `${destinationName} 已移动到“已离开的行程”。`,
+                }),
+              }),
+          },
+        ]
+      );
+    },
+    [performStatusUpdate, t, getDestinationName]
+  );
+
+  // Get estimated flight duration based on destination
+  const getFlightDuration = (destinationId: string) => {
+    // Try to get from country data
+    try {
+      const country = getHotCountries(t as TranslateFunction, language, []).find((c): c is CountryDisplay => c !== null && c.id === destinationId);
+      if (country?.flightTime) {
+        return country.flightTime;
+      }
+    } catch (_error: unknown) {
+      // Fallback to translation key
+    }
+    return t(`home.destinations.${destinationId}.flightTime`, { defaultValue: '' });
+  };
+
+  const getArrivalCountdown = (arrivalDate: string | null) => {
+    if (!arrivalDate) {
+return '';
+}
+
+    try {
+      const arrival = new Date(arrivalDate);
+      const now = new Date();
+      const diffMs = arrival.getTime() - now.getTime();
+
+      if (diffMs <= 0) {
+        return t('progressiveEntryFlow.entryPack.arrivedToday', { defaultValue: '今日抵达' });
+      }
+
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+      if (diffDays === 1) {
+        return t('progressiveEntryFlow.entryPack.arrivesTomorrow', { defaultValue: '明日抵达' });
+      } else if (diffDays <= 7) {
+        return t('progressiveEntryFlow.entryPack.arrivesInDays', {
+          days: diffDays,
+          defaultValue: `${diffDays}天后抵达`
+        });
+      } else {
+        return DateFormatter.formatDate(arrival, language);
+      }
+    } catch (error: unknown) {
+      console.log('Error formatting arrival countdown:', error);
+      return '';
+    }
+  };
+
+  // Get submission countdown - recommends submitting 3-7 days before arrival
+  const getSubmissionCountdown = (arrivalDate: string | null) => {
+    if (!arrivalDate) {
+return null;
+}
+
+    try {
+      const arrival = new Date(arrivalDate);
+      const now = new Date();
+      const diffMs = arrival.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+      // If already passed or today
+      if (diffDays <= 0) {
+        return {
+          text: t('progressiveEntryFlow.inProgress.submitNow', { defaultValue: '请尽快提交' }),
+          urgent: true
+        };
+      }
+
+      // Recommend submitting 3-7 days before arrival
+      const recommendedSubmitDays = 3; // Submit at least 3 days before
+
+      if (diffDays <= recommendedSubmitDays) {
+        return {
+          text: t('progressiveEntryFlow.inProgress.submitSoon', {
+            days: diffDays,
+            defaultValue: `建议 ${diffDays} 天内提交`
+          }),
+          urgent: true
+        };
+      } else if (diffDays <= 7) {
+        return {
+          text: t('progressiveEntryFlow.inProgress.canSubmitNow', {
+            defaultValue: '可以提交了'
+          }),
+          urgent: false
+        };
+      } else {
+        return {
+          text: t('progressiveEntryFlow.inProgress.submitLater', {
+            days: diffDays - recommendedSubmitDays,
+            defaultValue: `还有 ${diffDays - recommendedSubmitDays} 天可提交`
+          }),
+          urgent: false
+        };
+      }
+    } catch (error: unknown) {
+      console.log('Error calculating submission countdown:', error);
+      return null;
+    }
+  };
+
+  const renderEntryPackCards = useCallback(() => {
+    if (!activeEntryPacks.length) {
+      return null;
+    }
+
+    return activeEntryPacks.map((pack) => {
+      const flag = getDestinationFlag(pack.destinationId);
+      const destinationName = getDestinationName(pack.destinationId, pack.destinationName);
+
+      // Get arrival date from entry info
+      const arrivalCountdown = getArrivalCountdown(pack.arrivalDate ?? null);
+
+      // Get flight duration
+      const flightDuration = getFlightDuration(pack.destinationId);
+
+      // Format visa info
+      const visaInfo = pack.visaNumber
+        ? t('progressiveEntryFlow.entryPack.visaRequired', { defaultValue: '需要签证' })
+        : t('progressiveEntryFlow.entryPack.visaFree', { defaultValue: '免签' });
+
+      return (
+        <Card
+          key={pack.id}
+          style={[styles.historyCard, styles.entryPackCard]}
+          pressable
+          onPress={() => {
+            // Use centralized navigation helper for entry flow
+            navigateToCountry(
+              navigation,
+              pack.destinationId,
+              'entryFlow', // Navigate to entry flow screen
+              {
+                destination: {
+                  id: pack.destinationId,
+                  name: destinationName,
+                  flag
+                },
+                passport: passportData ? {
+                  id: 'user_001', // TODO: Get from auth context
+                  type: t('home.passport.type'),
+                  name: passportData.fullName || '',
+                  nameEn: passportData.fullName || '',
+                  passportNo: passportData.passportNumber || '',
+                  expiry: passportData.expiryDate || '',
+                } : null,
+                entryPackId: pack.id, // Pass the entry info ID for loading existing data
+              }
+            );
+          }}
+        >
+          <View style={styles.entryPackItem}>
+            <View style={styles.entryPackLeft}>
+              <Text style={styles.entryPackFlag}>{flag}</Text>
+              <View style={styles.entryPackQR}>
+                <Text style={styles.qrPlaceholder}>QR</Text>
+              </View>
+            </View>
+            <View style={styles.entryPackInfo}>
+              <Text style={styles.entryPackTitle}>
+                {t('progressiveEntryFlow.entryPack.title', {
+                  destination: destinationName,
+                  defaultValue: `${destinationName}`
+                })}
+              </Text>
+              <Text style={styles.entryPackStatus}>
+                {t('progressiveEntryFlow.entryPack.submitted', { defaultValue: '已提交' })}
+              </Text>
+              {/* Prominent arrival countdown */}
+              {pack.arrivalDate ? (
+                <Text style={styles.entryPackArrivalCountdown}>
+                  📅 {arrivalCountdown}
+                </Text>
+              ) : (
+                <Text style={styles.entryPackArrivalCountdownMissing}>
+                  📅 {t('progressiveEntryFlow.entryPack.noArrivalDate', { defaultValue: '待填写入境日期' })}
+                </Text>
+              )}
+              <View style={styles.entryPackDetailsRow}>
+                {pack.flightNumber && (
+                  <Text style={styles.entryPackDetail}>
+                    🎫 {pack.flightNumber}
+                  </Text>
+                )}
+                {flightDuration && (
+                  <Text style={styles.entryPackDetail}>
+                    ✈️ {flightDuration}
+                  </Text>
+                )}
+                <Text style={styles.entryPackDetail}>
+                  {pack.visaNumber ? '📋 需要签证' : '✅ 免签'}
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.historyArrow}>›</Text>
+          </View>
+        </Card>
+      );
+    });
+  }, [activeEntryPacks, t, navigation, passportData]);
+
+  const renderInProgressDestinationCards = useCallback(() => {
+    console.log('[HomeScreen] renderInProgressDestinationCards called:', {
+      inProgressDestinationsLength: inProgressDestinations.length,
+      destinations: inProgressDestinations
+    });
+    
+    if (!inProgressDestinations.length) {
+      console.log('[HomeScreen] No in-progress destinations, returning null');
+      return null;
+    }
+
+    console.log('[HomeScreen] Rendering', inProgressDestinations.length, 'in-progress destination cards');
+    const cards = inProgressDestinations.map((destination, index) => {
+      try {
+        const flag = getDestinationFlag(destination.destinationId);
+        const destinationName = getDestinationName(
+          destination.destinationId,
+          destination.destinationName
+        );
+        console.log('[HomeScreen] Rendering card', index, 'for:', { 
+          destinationId: destination.destinationId, 
+          destinationName, 
+          flag,
+          entryInfoId: destination.entryInfoId,
+          completionPercent: destination.completionPercent
+        });
+
+        // Get submission countdown if arrival date is set
+        const submissionCountdown = getSubmissionCountdown(destination.arrivalDate ?? null);
+
+        // Prefer entryInfoId for stability; otherwise include arrivalDate + index
+        // to avoid duplicate keys when multiple drafts share the same destination + progress.
+        const uniqueKey = destination.entryInfoId
+          || `${destination.destinationId}-${destination.arrivalDate || 'unknown'}-${index}`;
+
+        return (
+          <Card
+            key={uniqueKey}
+            style={[styles.historyCard, styles.inProgressCard]}
+            pressable
+            onPress={() => {
+              // Use centralized navigation helper for travel info screen
+              // Pass entryInfoId if available for loading existing data
+              navigateToCountry(
+                navigation,
+                destination.destinationId,
+                'travelInfo', // Navigate to travel info screen
+                {
+                  destination: {
+                    id: destination.destinationId,
+                    name: destinationName,
+                    flag
+                  },
+                  passport: passportData ? {
+                    type: t('home.passport.type'),
+                    name: passportData.fullName || '',
+                    nameEn: passportData.fullName || '',
+                    passportNo: passportData.passportNumber || '',
+                    expiry: passportData.expiryDate || '',
+                  } : null,
+                  entryInfoId: destination.entryInfoId // Pass entry info ID for loading existing data
+                }
+              );
+            }}
+          >
+            <View style={styles.entryPackItem}>
+              <View style={styles.inProgressLeft}>
+                <Text style={styles.entryPackFlag}>{flag}</Text>
+                <View style={styles.progressIndicator}>
+                  <Text style={styles.progressPercent}>{destination.completionPercent}%</Text>
+                </View>
+              </View>
+              <View style={styles.entryPackInfo}>
+                <Text style={styles.entryPackTitle}>
+                  {t('progressiveEntryFlow.inProgress.title', {
+                    destination: destinationName,
+                    defaultValue: `${destinationName}`
+                  })}
+                </Text>
+                <Text style={styles.inProgressStatus}>
+                  {destination.isReady
+                    ? t('progressiveEntryFlow.inProgress.ready', { defaultValue: '准备提交' })
+                    : t('progressiveEntryFlow.inProgress.incomplete', { defaultValue: '填写中' })
+                  }
+                </Text>
+                <View style={styles.entryPackDetailsRow}>
+                  <Text style={styles.entryPackDetail}>
+                    {t('progressiveEntryFlow.inProgress.completionPercent', {
+                      percent: destination.completionPercent,
+                      defaultValue: `${destination.completionPercent}% 完成`
+                    })}
+                  </Text>
+                  {destination.flightNumber && (
+                    <Text style={styles.entryPackDetail}>
+                      🎫 {destination.flightNumber}
+                    </Text>
+                  )}
+                </View>
+                {submissionCountdown && (
+                  <Text style={[
+                    styles.submissionCountdown,
+                    submissionCountdown.urgent && styles.submissionCountdownUrgent
+                  ]}>
+                    ⏰ {submissionCountdown.text}
+                  </Text>
+                )}
+              </View>
+              <Text style={styles.historyArrow}>›</Text>
+            </View>
+            <View style={styles.entryActionsRow}>
+              <Button
+                title={t('home.actions.leaveTrip', { defaultValue: '不去了' })}
+                onPress={() => confirmLeaveEntry(destination)}
+                variant="secondary"
+                icon="🚪"
+                disabled={loading}
+                style={styles.entryActionButton}
+              />
+            </View>
+          </Card>
+        );
+      } catch (error: unknown) {
+        console.error('[HomeScreen] Error rendering card for destination:', destination.destinationId, error);
+        return null;
+      }
+    }).filter(Boolean); // Remove any null entries from errors
+    console.log('[HomeScreen] Returning', cards.length, 'cards from renderInProgressDestinationCards');
+    if (cards.length === 0) {
+      console.warn('[HomeScreen] WARNING: No cards were rendered despite having', inProgressDestinations.length, 'destinations');
+    }
+    return cards;
+  }, [inProgressDestinations, t, navigation, passportData, confirmLeaveEntry, loading]);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>👤</Text>
+            </View>
+          </View>
+          <Text style={styles.headerTitle}>{headerTitle}</Text>
+          <View style={styles.headerRight}>
+            <TouchableOpacity
+              style={styles.languageButton}
+              onPress={() => setShowLanguageModal(true)}
+            >
+              <Text style={styles.settingsIcon}>🌐</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Welcome */}
+        <View style={styles.welcomeSection}>
+          <Text style={styles.greeting}>{greetingText}</Text>
+          <Text style={styles.welcomeText}>{welcomeMessage}</Text>
+        </View>
+
+        {/* Active Entry Packs Section - Priority #1 */}
+        {activeEntryPacks.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>
+                {t('home.sections.activeTrips', { defaultValue: '我的行程' })}
+              </Text>
+              <Text style={styles.sectionBadge}>
+                {activeEntryPacks.length}
+              </Text>
+            </View>
+            {renderEntryPackCards()}
+          </View>
+        )}
+
+        {/* In-Progress Destinations Section - Priority #2 */}
+        {inProgressDestinations.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>
+                {t('home.sections.inProgress', { defaultValue: '填写中' })}
+              </Text>
+              <Text style={styles.sectionBadge}>
+                {inProgressDestinations.length}
+              </Text>
+            </View>
+            {(() => {
+              const cards = renderInProgressDestinationCards();
+              console.log('[HomeScreen] Cards returned from renderInProgressDestinationCards:', cards ? cards.length : 'null/undefined', cards);
+              if (!cards || cards.length === 0) {
+                console.warn('[HomeScreen] No cards to render!');
+                return <Text style={{ padding: 20, color: 'red' }}>DEBUG: No cards rendered</Text>;
+              }
+              // Wrap in Fragment to ensure proper rendering
+              return (
+                <>
+                  {cards}
+                </>
+              );
+            })()}
+          </View>
+        )}
+
+        {/* Empty State - No Active Trips */}
+        {activeEntryPacks.length === 0 && inProgressDestinations.length === 0 && hasPassport && (
+          <View style={styles.section}>
+            <Animated.View
+              style={[
+                styles.emptyStateCard,
+                {
+                  opacity: fadeAnim,
+                  transform: [{ scale: scaleAnim }],
+                },
+              ]}
+            >
+              <View style={styles.emptyStateContentCompact}>
+                <Text style={styles.emptyStateIconCompact}>🗺️</Text>
+                <Text style={styles.emptyStateTitleCompact}>
+                  {t('home.emptyState.title', { defaultValue: '还没有行程计划' })}
+                </Text>
+              </View>
+            </Animated.View>
+          </View>
+        )}
+
+        {/* Empty State - No Passport */}
+        {!hasPassport && (
+          <View style={styles.section}>
+            <Card style={styles.emptyStateCard}>
+              <View style={styles.emptyStateContent}>
+                <Text style={styles.emptyStateIcon}>📱</Text>
+                <Text style={styles.emptyStateTitle}>
+                  {t('home.emptyState.noPassport.title', { defaultValue: '开始您的第一次旅行' })}
+                </Text>
+                <Text style={styles.emptyStateText}>
+                  {t('home.emptyState.noPassport.subtitle', { defaultValue: '扫描护照快速填写信息' })}
+                </Text>
+                <Button
+                  title={t('home.emptyState.noPassport.action', { defaultValue: '扫描护照' })}
+                  onPress={handleScanPassport}
+                  style={styles.emptyStateButton}
+                  icon="📷"
+                />
+              </View>
+            </Card>
+          </View>
+        )}
+
+        {/* Where to Go - Priority #3 */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{exploreSectionTitle}</Text>
+          </View>
+          <View style={styles.countriesGrid}>
+            {localizedHotCountries.map((country) => (
+              <CountryCard
+                key={country.id}
+                flag={country.flag}
+                name={country.displayName}
+                flightTime={country.flightTime}
+                visaRequirement={country.visaRequirement}
+                onPress={() => handleCountrySelect(country as CountryDisplay)}
+                disabled={!country.enabled}
+              />
+            ))}
+          </View>
+        </View>
+
+        {/* History Section - At Bottom */}
+        {historyList.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>
+                {t('home.sections.history', { defaultValue: '历史记录' })}
+              </Text>
+            </View>
+            {renderHistoryCards()}
+          </View>
+        )}
+
+        {/* Bottom Spacing */}
+        <View style={{ height: spacing.xxl }} />
+      </ScrollView>
+
+      {/* Language Selection Modal - iOS Style */}
+      <Modal
+        visible={showLanguageModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowLanguageModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={() => setShowLanguageModal(false)}
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalHandle} />
+              <Text style={styles.modalTitle}>{t('home.languageModal.title')}</Text>
+              <View style={styles.languageList}>
+                {availableLanguages.map((lang, index) => (
+                  <TouchableOpacity
+                    key={lang.code}
+                    style={[
+                      styles.languageOption,
+                      index === 0 && styles.languageOptionFirst,
+                      index === availableLanguages.length - 1 && styles.languageOptionLast,
+                      language === lang.code && styles.languageOptionSelected
+                    ]}
+                    onPress={() => handleLanguageSelect(lang.code)}
+                  >
+                    <Text style={[
+                      styles.languageOptionText,
+                      language === lang.code && styles.languageOptionTextSelected
+                    ]}>
+                      {lang.label}
+                    </Text>
+                    {language === lang.code && (
+                      <Text style={styles.checkmark}>✓</Text>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setShowLanguageModal(false)}
+              >
+                <Text style={styles.cancelButtonText}>{t('common.buttons.cancel')}</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.white,
+  },
+  headerLeft: {
+    width: 40,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    fontSize: 20,
+  },
+  headerTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  languageButton: {
+    padding: 4,
+  },
+  settingsIcon: {
+    fontSize: 24,
+  },
+  welcomeSection: {
+    padding: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl,
+    backgroundColor: colors.white,
+  },
+  greeting: {
+    ...typography.h2,
+    color: colors.text,
+    marginBottom: spacing.xs,
+    fontWeight: '700',
+  },
+  welcomeText: {
+    ...typography.body1,
+    color: colors.textSecondary,
+    lineHeight: 22,
+  },
+  
+  // Passport Card Styles
+  passportCard: {
+    margin: spacing.md,
+    backgroundColor: colors.primaryLight,
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
+  passportHeader: {
+    flexDirection: 'row',
+    marginBottom: spacing.md,
+  },
+  passportIcon: {
+    fontSize: 56,
+    marginRight: spacing.md,
+  },
+  passportInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  passportLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+  },
+  passportName: {
+    ...typography.h2,
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  passportDetails: {
+    ...typography.body1,
+    color: colors.textSecondary,
+  },
+  updatePassportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  updatePassportText: {
+    ...typography.body1,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  updatePassportArrow: {
+    ...typography.h3,
+    color: colors.primary,
+    marginLeft: spacing.xs,
+  },
+
+
+  // Scan Section (when no passport)
+  scanSection: {
+    padding: spacing.md,
+    alignItems: 'center',
+  },
+  scanButton: {
+    width: '100%',
+    height: 72,
+    marginBottom: spacing.sm,
+  },
+  scanIcon: {
+    fontSize: 28,
+  },
+  scanHint: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+
+  // Sections
+  section: {
+    marginTop: spacing.xl,
+    paddingHorizontal: spacing.md,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+    paddingBottom: spacing.xs,
+  },
+  sectionTitle: {
+    ...typography.h3,
+    color: colors.text,
+    fontWeight: '600',
+  },
+  sectionBadge: {
+    ...typography.caption,
+    fontWeight: '700',
+    color: colors.white,
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.full,
+    minWidth: 24,
+    textAlign: 'center',
+    overflow: 'hidden',
+  },
+
+  // Empty State Styles
+  emptyStateCard: {
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderStyle: 'dashed',
+    borderRadius: borderRadius.lg,
+  },
+  emptyStateContent: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
+  },
+  emptyStateContentCompact: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  emptyStateIcon: {
+    fontSize: 64,
+    marginBottom: spacing.md,
+  },
+  emptyStateIconSmall: {
+    fontSize: 32,
+    marginBottom: spacing.sm,
+  },
+  emptyStateIconCompact: {
+    fontSize: 24,
+    marginBottom: spacing.xs,
+  },
+  emptyStateTitle: {
+    ...typography.h3,
+    fontWeight: '600',
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+  },
+  emptyStateTitleCompact: {
+    ...typography.body1,
+    fontWeight: '500',
+    color: colors.primary,
+    textAlign: 'center',
+  },
+  emptyStateText: {
+    ...typography.body1,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+  emptyStateButton: {
+    marginTop: spacing.sm,
+    minWidth: 200,
+  },
+
+  // Countries Grid
+  countriesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginHorizontal: -spacing.xs,
+  },
+
+  // History Cards
+  historyCard: {
+    marginBottom: spacing.md,
+  },
+  historyItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  historyFlag: {
+    fontSize: 36,
+    marginRight: spacing.md,
+  },
+  historyInfo: {
+    flex: 1,
+  },
+  historyTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 2,
+  },
+  historyTime: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  historyArrow: {
+    ...typography.h2,
+    color: colors.textDisabled,
+  },
+
+  // Entry Pack Card Styles
+  entryPackCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: colors.success,
+    backgroundColor: colors.white,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  entryPackItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  entryPackLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  entryPackFlag: {
+    fontSize: 32,
+    marginRight: spacing.sm,
+  },
+  entryPackQR: {
+    width: 40,
+    height: 40,
+    backgroundColor: colors.backgroundLight,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  qrPlaceholder: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  entryPackInfo: {
+    flex: 1,
+  },
+  entryPackTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 2,
+  },
+  entryPackStatus: {
+    ...typography.caption,
+    color: colors.success,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  entryPackCountdown: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+  entryPackArrivalCountdown: {
+    ...typography.body2,
+    color: colors.primary,
+    fontWeight: '600',
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  entryPackArrivalCountdownMissing: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  entryPackDetailsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.xs,
+    flexWrap: 'wrap',
+  },
+  entryPackDetail: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontSize: 11,
+  },
+
+  // In-Progress Destination Card Styles
+  inProgressCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: colors.warning,
+    backgroundColor: colors.white,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  inProgressLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  progressIndicator: {
+    width: 40,
+    height: 40,
+    backgroundColor: colors.warningLight,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.warning,
+  },
+  progressPercent: {
+    ...typography.caption,
+    color: colors.warning,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  inProgressStatus: {
+    ...typography.caption,
+    color: colors.warning,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  submissionCountdown: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontSize: 11,
+    marginTop: spacing.xs,
+  },
+  submissionCountdownUrgent: {
+    color: colors.error,
+    fontWeight: '600',
+  },
+  entryActionsRow: {
+    marginTop: spacing.sm,
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  entryActionButton: {
+    flex: 1,
+  },
+  entryActionDangerText: {
+    color: colors.error,
+    fontWeight: '600',
+  },
+  leftCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: colors.border,
+    backgroundColor: colors.backgroundLight,
+  },
+  archivedCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: colors.textDisabled,
+    backgroundColor: colors.white,
+  },
+  leftStatusLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  archivedStatusLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    fontWeight: '600',
+    marginBottom: spacing.xs,
+  },
+  entryMetaText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+
+  // Multi-destination Summary Card Styles
+  summaryCard: {
+    backgroundColor: colors.primaryLight,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    marginBottom: spacing.sm,
+  },
+  summaryContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  summaryLeft: {
+    marginRight: spacing.md,
+  },
+  summaryIcon: {
+    fontSize: 32,
+  },
+  summaryInfo: {
+    flex: 1,
+  },
+  summaryTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.primary,
+    marginBottom: 2,
+  },
+  summaryStats: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
+
+  // Language Selection Modal Styles - iOS Style
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  modalBackdrop: {
+    flex: 1,
+  },
+  modalContainer: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: spacing.xl,
+    maxHeight: '70%',
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: colors.border,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  modalTitle: {
+    ...typography.body2,
+    fontWeight: '600',
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+  languageList: {
+    paddingHorizontal: spacing.md,
+  },
+  languageOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.md,
+  },
+  languageOptionFirst: {
+    borderTopWidth: 0,
+  },
+  languageOptionLast: {
+    borderBottomWidth: 0,
+  },
+  languageOptionSelected: {
+    backgroundColor: colors.primaryLight,
+  },
+  languageOptionText: {
+    ...typography.body1,
+    color: colors.text,
+    flex: 1,
+  },
+  languageOptionTextSelected: {
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  checkmark: {
+    ...typography.body1,
+    color: colors.primary,
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    backgroundColor: colors.white,
+    marginTop: spacing.md,
+    marginHorizontal: spacing.md,
+    borderRadius: borderRadius.lg,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  cancelButtonText: {
+    ...typography.body1,
+    color: colors.text,
+    fontWeight: '600',
+  },
+});
+
+export default HomeScreen;

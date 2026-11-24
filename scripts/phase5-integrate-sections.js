@@ -12,7 +12,7 @@ const path = require('path');
 
 console.log('🔄 Starting Phase 5: Section Component Integration...\n');
 
-const screenPath = path.join(__dirname, '../app/screens/singapore/SingaporeTravelInfoScreen.js');
+const screenPath = path.join(__dirname, '../app/screens/singapore/SingaporeTravelInfoScreen.tsx');
 
 // Read the current screen file
 console.log('📖 Reading current screen file...');
@@ -164,7 +164,7 @@ if (travelMatch) {
 
 // Save the updated file
 console.log('\n💾 Saving updated file...');
-const outputPath = path.join(__dirname, '../app/screens/singapore/SingaporeTravelInfoScreen.sections.js');
+const outputPath = path.join(__dirname, '../app/screens/singapore/SingaporeTravelInfoScreen.sections.tsx');
 fs.writeFileSync(outputPath, content, 'utf8');
 
 const newLineCount = content.split('\n').length;

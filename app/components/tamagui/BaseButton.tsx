@@ -13,9 +13,10 @@
  */
 
 import React from 'react';
-import { Button, ButtonProps, Text, Spinner } from 'tamagui';
+import { Button, type ButtonProps, Text, Spinner } from 'tamagui';
 
-export interface BaseButtonProps extends Omit<ButtonProps, 'size'> {
+export interface BaseButtonProps
+  extends Omit<ButtonProps, 'size' | 'icon' | 'iconAfter' | 'variant'> {
   /**
    * Visual style variant
    * - primary: Green WeChat-style button (default)
@@ -127,18 +128,21 @@ const variantStyles = {
 
 const sizeStyles = {
   sm: {
-    height: 32,
+    minHeight: 32,
     paddingHorizontal: '$md',
+    paddingVertical: '$xs',
     fontSize: '$1',
   },
   md: {
-    height: 44,
+    minHeight: 44,
     paddingHorizontal: '$lg',
+    paddingVertical: '$sm',
     fontSize: '$2',
   },
   lg: {
-    height: 52,
+    minHeight: 52,
     paddingHorizontal: '$xl',
+    paddingVertical: '$md',
     fontSize: '$3',
   },
 };
@@ -195,6 +199,9 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
           fontSize={sizeStyles[size].fontSize}
           fontWeight="600"
           color={textColors[variant]}
+          textAlign="center"
+          flexShrink={1}
+          lineHeight={sizeStyles[size].fontSize}
         >
           {slot}
         </Text>
@@ -214,6 +221,7 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
       alignItems="center"
       justifyContent="center"
       gap="$xs"
+      flexWrap="wrap"
       animation="quick"
       width={fullWidth ? '100%' : undefined}
       opacity={isDisabled ? 0.5 : 1}

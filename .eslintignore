@@ -52,5 +52,8 @@ cloudflare-backend/
 # Scripts that interact with databases
 scripts/
 
-# Template files with placeholders
-docs/templates/
+# Documentation and template backups
+docs/
+docs-backup-*/
+docs*/templates/
+docs*/examples/

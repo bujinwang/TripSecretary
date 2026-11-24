@@ -91,6 +91,26 @@ export interface CollapsibleSectionProps {
    * Variant style
    */
   variant?: 'default' | 'card' | 'minimal';
+
+  /**
+   * Optional filled/total badge shorthand
+   */
+  fieldCount?: { filled: number; total: number };
+
+  /**
+   * Optional container style overrides
+   */
+  style?: any;
+
+  /**
+   * Optional header style overrides
+   */
+  headerStyle?: any;
+
+  /**
+   * Optional content style overrides
+   */
+  contentStyle?: any;
 }
 
 const Container = styled(YStack, {
@@ -265,6 +285,10 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   children,
   disabled = false,
   variant = 'default',
+  fieldCount,
+  style,
+  headerStyle,
+  contentStyle,
 }) => {
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
 
@@ -273,8 +297,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 
   const rotation = useSharedValue(isExpanded ? 180 : 0);
 
-  const arrowStyle = useAnimatedStyle(() => {
-    return {
+  const arrowStyle = useAnimatedStyle(() => ({
       transform: [
         {
           rotate: withTiming(`${rotation.value}deg`, {
@@ -283,11 +306,12 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
           }),
         },
       ],
-    };
-  });
+    }));
 
   const handleToggle = () => {
-    if (disabled) return;
+    if (disabled) {
+return;
+}
 
     const newExpanded = !isExpanded;
 
@@ -315,9 +339,9 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   };
 
   return (
-    <Container variant={variant}>
+    <Container variant={variant} style={style}>
       {/* Header */}
-      <Header disabled={disabled} onPress={handleToggle}>
+      <Header disabled={disabled} onPress={handleToggle} style={headerStyle}>
         {/* Icon */}
         {icon && (
           <IconContainer>
@@ -337,6 +361,13 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
             <BadgeText variant={badgeVariant}>{badge}</BadgeText>
           </Badge>
         )}
+        {!badge && fieldCount && (
+          <Badge variant={fieldCount.filled === fieldCount.total ? 'success' : 'warning'}>
+            <BadgeText variant={fieldCount.filled === fieldCount.total ? 'success' : 'warning'}>
+              {`${fieldCount.filled}/${fieldCount.total}`}
+            </BadgeText>
+          </Badge>
+        )}
 
         {/* Arrow */}
         <Animated.View style={arrowStyle}>
@@ -346,7 +377,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 
       {/* Content */}
       {isExpanded ? (
-        <Content>{children}</Content>
+        <Content style={contentStyle}>{children}</Content>
       ) : (
         collapsedContent && <CollapsedContent>{collapsedContent}</CollapsedContent>
       )}

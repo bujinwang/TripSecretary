@@ -197,8 +197,8 @@ async function runTests() {
     logSection('Test 6: TDAC Screen Updates');
 
     const screenPaths = [
-      '../app/screens/thailand/TDACHybridScreen.js',
-      '../app/screens/thailand/TDACAPIScreen.js'
+      '../app/screens/thailand/TDACHybridScreen.tsx',
+      '../app/screens/thailand/TDACAPIScreen.tsx'
     ];
 
     let screenTestsPassed = true;
